@@ -1,0 +1,7 @@
+exportClasses("AnnotationOrganismDb")
+exportMethods("cols",
+              "keys",
+              "keytypes",
+              "select"
+              )
+export("makeOrganismPackage")

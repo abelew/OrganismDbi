@@ -1,0 +1,77 @@
+\name{AnnotationOrganismDb-class}
+
+\alias{AnnotationOrganismDb-class}
+\alias{class:AnnotationOrganismDb}
+\alias{AnnotationOrganismDb}
+
+% select and select related methods
+\alias{cols,AnnotationOrganismDb-method}
+\alias{keytypes,AnnotationOrganismDb-method}
+\alias{keys,AnnotationOrganismDb-method}
+\alias{select,AnnotationOrganismDb-method}
+
+\title{AnnotationOrganismDb objects}
+
+\description{
+  The AnnotationOrganismDb class is a container for storing knowledge
+  about existing Annotation packages and the relationships between these
+  resources.  The purpose of this object and it's associated methods is
+  to provide a means by which users can conveniently query for data from
+  several different annotation resources at the same time using a
+  familiar interface.
+
+  The supporting methods \code{select}, \code{cols} and \code{keys} are
+  used together to extract data from an \code{AnnotationOrganismDb}
+  object in a manner that should be consistent with how these are used
+  on the supporting annotation resources.
+}
+
+\section{Methods}{
+  In the code snippets below, \code{x} is a AnnotationOrganismDb object. For the
+  metadata and show methods, there is also support for FeatureDb objects.
+
+  \describe{
+    \item{}{
+      \code{keytypes(x)}:
+      allows the user to discover which keytypes can be passed in to
+      \code{select} or \code{keys} and the \code{keytype} argument.
+    }
+    \item{}{
+      \code{keys(x, keytype)}:
+      returns keys for the database contained in the \code{AnnotationOrganismDb}
+      object .  By default it will return the "TXNAME" keys for the database,
+      but if used with the \code{keytype} argument, it will return the keys
+      from that keytype.
+    }
+    \item{}{
+      \code{cols(x)}:
+      shows which kinds of data can be returned for the
+      \code{AnnotationOrganismDb} object.
+    }
+    \item{}{
+      \code{select(x, keys, cols, keytype)}:
+      When all the appropriate arguments are specifiedm \code{select}
+      will retrieve the matching data as a data.frame based on
+      parameters for selected \code{keys} and \code{cols} and
+      \code{keytype} arguments.
+    }
+}
+}
+
+\author{Marc Carlson}
+
+\seealso{
+  \code{\link{makeOrganismPackage}}
+}
+
+\examples{
+## load a package that creates an AnnotationOrganismDb
+library(Homo.sapiens)
+ls(2)
+## then the methods can be used on this object.
+cols <- cols(Homo.sapiens)[c(7,10,11,12)]
+keys <- head(keys(org.Hs.eg.db, "ENTREZID"))
+keytype <- "ENTREZID"
+res <- select(Homo.sapiens, keys, cols, keytype)
+head(res)
+}
