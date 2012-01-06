@@ -4,7 +4,7 @@ Description: @PKGDESCRIPTION@
 Version: @PKGVERSION@
 Author: @AUTHOR@
 Maintainer: @MAINTAINER@
-Depends: R (>= 1.6), AnnotationDbi (>= 1.17.11), methods, AnnotationDbi (>= 1.16.2), OrganismDbi, GenomicFeatures, GO.db, @ORGPKG@, @TXDBPKG@ 
+Depends: R (>= 1.6), AnnotationDbi (>= 1.17.11), methods, OrganismDbi, GenomicFeatures, GO.db, @ORGPKG@, @TXDBPKG@ 
 Imports: GenomicFeatures, AnnotationDbi
 License: @LIC@
 organism: @ORGANISM@

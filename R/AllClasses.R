@@ -25,8 +25,8 @@
 
 
 
-require(AnnotationDbi)
-require(GenomicFeatures)
+## require(AnnotationDbi)
+## require(GenomicFeatures)
 
 
 ## I need an initialize method just to allow me to do things like
