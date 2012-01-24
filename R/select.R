@@ -236,7 +236,7 @@ setMethod("keys", "AnnotationOrganismDb",
       }
       ## keys <- keys(dbs[[i]], keytype)  ##gets ALL keys  :(
       prevKeyType <- mkeys[[paste(mtype,collapse="_")]][1]
-      keys <- res[[1]][[prevKeyType]]
+      keys <- unique(res[[1]][[prevKeyType]])
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }
   }
@@ -358,9 +358,15 @@ setMethod("keys", "AnnotationOrganismDb",
 
   ## Then call code to clean up, reorder the rows (and add NA rows as needed).
   if(dim(res)[1]>0){
-    res <- AnnotationDbi:::.resort(res, keys, keytype)
+    res <- AnnotationDbi:::.resort(tab=res, keys=keys, jointype=keytype,
+                                   reqCols=colnames(res))
+    ## TODO: reqCols is kind of being faked here.  What we really want is to
+    ## better clean up colnames(res) and to pass in a SHORTER list here.  Then
+    ## the shorter list will act as a filter to "clean up" the columns by
+    ## getting rid of unwanted columns. at least one kind of kruft that ends
+    ## up in here is cols that are duplicated like: Ontology.x, Ontology.y
+    ## etc.
   }
-  
   unique(res)
 }
 

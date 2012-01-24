@@ -218,9 +218,25 @@ test_select <- function(){
 }
 
 
+## TODO: I may want to change what I am passing to reqCols when calling
+## AnnotationDbi:::.resort().  This may be a better place than elsewhere to
+## clean up the columns.  But it may not be a good way to get rid of
+## duplicated columns...
+
 ## TODO: add more tests from other kinds of IDs
 ## Right now there seem to be some performance issues for these.
 ## test_select__otherIDTypes <- function(){
+
+## cols <- cols(x)[c(7,12)]
+## keys <- head(keys(x, "ALIAS"))
+## keytype <- "ALIAS"
+## res <- OrganismDbi:::.select(x, keys, cols, keytype)
+
+## debug(OrganismDbi:::.getSelects)
+## debug(OrganismDbi:::.mergeSelectResults)
+## debug(AnnotationDbi:::.resort)
+
+
 ##   cols <- cols(x)[c(7,10,11,12)]
 ##   keys <- head(keys(x, "ALIAS"))
 ##   keytype <- "ALIAS"
