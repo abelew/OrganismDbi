@@ -147,7 +147,7 @@ test_mergeSelectResults <- function(){
   sels <- OrganismDbi:::.getSelects(dbs, keys, cols, keytype, mkeys)
   
   res <- OrganismDbi:::.mergeSelectResults(sels, mkeys)
-  checkTrue(dim(res)[2]==10)
+  checkTrue(dim(res)[2]==6)
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("GENEID" %in% colnames(res))
@@ -161,7 +161,7 @@ test_select <- function(){
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
-  checkTrue(dim(res)[2]==11)
+  checkTrue(dim(res)[2]==7)
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
@@ -170,15 +170,19 @@ test_select <- function(){
 
   cols <- cols(x)[c(7,10,11,37)]
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
-  checkTrue(dim(res)[2]==11)
+  checkTrue(dim(res)[2]==7)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))  
   checkTrue("CDSSTART" %in% colnames(res))
-  
+
+  ## trouble here
+  ## This is the worst case of col duplication I have seen...
+  ## I have some cleanup to do in the helper functions for merging the data to
+  ## prevent this duplication
   cols <- cols(x)[c(7,8)]
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
-  checkTrue(dim(res)[2]==14)
+  checkTrue(dim(res)[2]==7)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("Term" %in% colnames(res))  

@@ -244,8 +244,16 @@ setMethod("keys", "AnnotationOrganismDb",
   res
 }
 
-
-
+##.dropDuplicatedMergeCols helper just takes advantage of the fact that my
+##dupicates columns will always have the form a.x, a.y etc. and will drop the
+##.y columns and then keep the .x ones.
+.dropDuplicatedMergeCols <- function(tab){
+  cols <- colnames(tab)  
+  cols <- cols[!grepl(".y", cols)]  
+  tab <- tab[,cols]
+  colnames(tab) <- gsub(".x","",colnames(tab))
+  tab
+}
 
 ## This merges things based on the key relationships from mkeys
 .mergeSelectResults <- function(sels, mkeys){
@@ -260,6 +268,7 @@ setMethod("keys", "AnnotationOrganismDb",
         ykey <- mkeys[[paste(mtype,collapse="_")]][2]
         res <- merge(res, sels[[i]],by.x=xkey, by.y=ykey, all=TRUE)
                                         #, suffixes = c("",""))
+        res <- .dropDuplicatedMergeCols(res)
       }
   }
   res
