@@ -210,6 +210,15 @@ setMethod("keys", "AnnotationOrganismDb",
 }
 
 
+## also a helper to filter our cols that are duplicated after select()
+## TODO: migrate this version of the method down to AnnotationDbi so that we
+## never get column duplicates
+.dropDuplicatedgetSelectsCols <- function(tab){
+  cols <- colnames(tab)
+  cols <- cols[!duplicated(cols)]  
+  tab <- tab[,cols]
+  tab
+}
 
 .getSelects <- function(dbs, keys, cols, keytype, mkeys){
   res <- list(length(dbs))
@@ -225,6 +234,9 @@ setMethod("keys", "AnnotationOrganismDb",
       if(length(dbs) > 1){ 
         colsLocal <- .addAppropriateCols(db, dbs, colsLocal)
       }
+      ## sel <- select(dbs[[i]], keys, colsLocal, keytype)
+      ## sel <- .dropDuplicatedgetSelectsCols(sel)
+      ## res[[i]] <- sel
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }else{ ## more than one
       mtype <- c(mtype,db)
@@ -237,6 +249,9 @@ setMethod("keys", "AnnotationOrganismDb",
       ## keys <- keys(dbs[[i]], keytype)  ##gets ALL keys  :(
       prevKeyType <- mkeys[[paste(mtype,collapse="_")]][1]
       keys <- unique(res[[1]][[prevKeyType]])
+      ## sel <- select(dbs[[i]], keys, colsLocal, keytype)
+      ## sel <- .dropDuplicatedgetSelectsCols(sel)
+      ## res[[i]] <- sel
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }
   }
@@ -254,6 +269,7 @@ setMethod("keys", "AnnotationOrganismDb",
   colnames(tab) <- gsub(".x","",colnames(tab))
   tab
 }
+
 
 ## This merges things based on the key relationships from mkeys
 .mergeSelectResults <- function(sels, mkeys){

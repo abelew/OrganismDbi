@@ -177,12 +177,15 @@ test_select <- function(){
   checkTrue("CDSSTART" %in% colnames(res))
 
   ## trouble here
-  ## This is the worst case of col duplication I have seen...
-  ## I have some cleanup to do in the helper functions for merging the data to
-  ## prevent this duplication
+  ## I have column duplications coming from previous select statements.
+  ## I either have to clean up the other stuff with a function like
+  ## .dropDuplicatedMergeCols() OR I need a new strategy
+  ## Also, I probably should make sure that the columns I am deleting are
+  ## really duplicates (not just in name only), IF I have name only dups, I
+  ## should throw an error about column names
   cols <- cols(x)[c(7,8)]
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
-  checkTrue(dim(res)[2]==7)
+  checkTrue(dim(res)[2]==5)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("Term" %in% colnames(res))  
