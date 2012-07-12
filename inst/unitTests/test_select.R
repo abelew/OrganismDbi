@@ -123,7 +123,7 @@ test_getSelects <- function(){
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
   checkTrue("GO" %in% colnames(res[[2]]))
-  checkTrue("Term" %in% colnames(res[[3]]))
+  checkTrue("TERM" %in% colnames(res[[3]]))
   
   cols <- c("SYMBOL")
   keytype <- "OMIM"
