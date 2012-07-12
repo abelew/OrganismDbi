@@ -99,11 +99,10 @@ test_addAppropriateCols <- function(){
   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cols)
   checkTrue("ENTREZID" %in% res)
 
-  cols <- c("OBSOLETE")
+  cols <- c("OBSOLETE") ## this is a defunct ID
   db <- "GODb"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID")
-  res <- OrganismDbi:::.addAppropriateCols(db, dbs, cols)
-  checkTrue("TERM" %in% res)
+  ## And this should therefore throw an error
+  checkException(OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID"))
 
   cols <- c("CDSID","CDSCHROM")
   db <- "TranscriptDb"

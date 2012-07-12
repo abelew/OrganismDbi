@@ -71,6 +71,10 @@ setMethod("cols", "AnnotationOrganismDb",
 }
 
 .keys <- function(x, keytype){
+    kts <- keytypes(x)
+    if(!(keytype %in% kts)){
+      stop("supplied keytype is not allowed.  Please call the keytypes method to see which keytypes are allowed for this organism.")
+    }
     ## We need to retrieve the keys from the relevant slot...
     ## So 1st we have to determine WHO has the keys we are after
     if(length(keytype) !=1){
@@ -137,6 +141,10 @@ setMethod("keys", "AnnotationOrganismDb",
 }
 
 .lookupDbsFromCol <- function(x, col){
+  cols <- cols(x)
+  if(!(col %in% cols)){
+    stop("col must be a value returned by cols(x).")
+  }
     res <- .makecolMapping(x)
     ## no duplicates so I can just return the name
     db <- names(res)[res %in% col]
@@ -299,8 +307,8 @@ setMethod("keys", "AnnotationOrganismDb",
   ## I also need to keep track of which keys are needed to merge things.
   ## mkeys is just how we are mapping this.  A graph would be more efficient.
   list(
-    OrgDb_GODb = c(GODb = "GO", OrgDb = "GO"),
-    GODb_OrgDb = c(GODb = "GO", OrgDb = "GO"),
+    OrgDb_GODb = c(GODb = "GOID", OrgDb = "GO"),
+    GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"),
     OrgDb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
     TranscriptDb_OrgDb = c(TranscriptDb = "GENEID",OrgDb = "ENTREZID"),
 ## no TranscriptDb_GODb should ever happen - that case should always be a
@@ -309,8 +317,8 @@ setMethod("keys", "AnnotationOrganismDb",
     ## triple joins define the relationship between the 1st and last table.
     OrgDb_GODb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
     GODb_OrgDb_TranscriptDb = c(TranscriptDb = "GENEID", OrgDb = "ENTREZID"),
-    TranscriptDb_OrgDb_GODb = c(OrgDb = "GO", GODb = "GO"),
-    TranscriptDb_GODb_OrgDb = c(GODb = "GO", OrgDb = "GO"))
+    TranscriptDb_OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
+    TranscriptDb_GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"))
 }
 
 
