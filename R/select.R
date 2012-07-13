@@ -286,7 +286,8 @@ setMethod("keys", "AnnotationOrganismDb",
       ## mtype starts with table i, and just accumulates a history of tables
       ## that we have merged so far.
       mtype <- names(sels)[i]
-      res <- sels[[1]] }else{## There is more than one, so we must merge...
+      res <- sels[[1]]
+    }else{## There is more than one, so we must merge...
         mtype <- c(mtype,names(sels)[i])
         xkey <- mkeys[[paste(mtype,collapse="_")]][1]
         ykey <- mkeys[[paste(mtype,collapse="_")]][2]
@@ -307,7 +308,7 @@ setMethod("keys", "AnnotationOrganismDb",
   ## I also need to keep track of which keys are needed to merge things.
   ## mkeys is just how we are mapping this.  A graph would be more efficient.
   list(
-    OrgDb_GODb = c(GODb = "GOID", OrgDb = "GO"),
+    OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
     GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"),
     OrgDb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
     TranscriptDb_OrgDb = c(TranscriptDb = "GENEID",OrgDb = "ENTREZID"),
@@ -322,7 +323,7 @@ setMethod("keys", "AnnotationOrganismDb",
 }
 
 
-.select <- function(x, keys, cols, keytype, jointype){
+.select <- function(x, keys, cols, keytype){
   ## if asked for what they have, just return that.
   if(all(cols %in% keytype)  && length(cols)==1){
     res <- data.frame(keys=keys)
