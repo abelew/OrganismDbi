@@ -37,6 +37,9 @@ setMethod("cols", "AnnotationOrganismDb",
 ## of the other OR if there is substantial overlap - this second case would
 ## merit a warning), then we could just unique them together, but in this case
 ## we still have a much more complicated situation to deal with
+## !!!
+## I think that in the above case you just remove keys like that...
+
 
 ## Another strategy is just not to allow keytypes with the same name when you
 ## make the AnnotationOrganismDb object...
@@ -162,6 +165,7 @@ setMethod("keys", "AnnotationOrganismDb",
   x
 }
 
+## This should be replaced by the list of DBs "in order of shortest path"
 .lookupDbsFromCols <- function(x, cols, keytype){
   ## 1st we want cols ordered so that the one that matches our keytype is FIRST
   ## Also, we must always have keytype be part of cols here
@@ -180,8 +184,8 @@ setMethod("keys", "AnnotationOrganismDb",
 ## to use the foreign key information so that we can extract the appropriate
 ## data each time.  So the 1st time i==1, it will just be a regular select
 ## with the keys, but thereafter, we have to call select by 1) adding the
-## foreign key to its cols (so it will be mergable later) and 2 remembering to
-## use the default keytype in those cases...
+## foreign key to its cols (so it will be mergable later) and 2) remembering
+## to use the default keytype in those cases...
 
 ## right now we always add the fkeys cols to colsLocal (not efficient, but
 ## guarantees that we will have what we need - these will ALSO have to be
@@ -736,3 +740,18 @@ setMethod("select", "AnnotationOrganismDb",
 ##    (where the edge represents a relationship between foreign keys).
 ## 3) There must be a unique (namespaces?) way of naming IDs that connect nodes
 ##    (ie. GOID and GO)
+
+
+
+## as an input I think I will ask for just a data.frame (from the user).
+## Then internally I can call ftM2graphNEL().  That way users won't have to
+## call new() to make a graphNEL
+## the three collumns can be DB1, DB2, and key to use for merging.
+## Paul recommends that I use graphNELs (I can use internally)
+## graphNEL
+
+## Paul also recommends that use 
+## RBGL for a shortest path algorithm.  dijkstra.sp() ?
+
+
+
