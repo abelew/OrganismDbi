@@ -185,7 +185,7 @@ test_select <- function(){
  
   cols <- c("ALIAS","CHR","EXONNAME") 
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
-  checkTrue(dim(res)[2]==5)
+  checkTrue(dim(res)[2]==4)
   checkTrue("ALIAS" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("EXONNAME" %in% colnames(res))  
