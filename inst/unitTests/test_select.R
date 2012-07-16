@@ -176,36 +176,19 @@ test_select <- function(){
   checkTrue("ALIAS" %in% colnames(res))  
   checkTrue("CDSSTART" %in% colnames(res))
 
-  ## trouble here: BORKED example!
-  ## I have column duplications coming from previous select statements.
-  ## I either have to clean up the other stuff with a function like
-  ## .dropDuplicatedMergeCols() OR I need a new strategy
-  ## Also, I probably should make sure that the columns I am deleting are
-  ## really duplicates (not just in name only), IF I have name only dups, I
-  ## should throw an error about column names
-
-
-  ## This one is a bug from HERE (keys are backwards! for the merge in
-  ## .mergeSelectResults between OrgDb and GODb... - FIXED.
   cols <- c("GOID","ENTREZID")
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
   checkTrue(dim(res)[2]==5)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("TERM" %in% colnames(res))  
-
-  
-  ## And this bug is from select for the TxDb
-  ## From the WTH?!? department...
-  ##  cols <- c("ALIAS","CHR","EXONNAME") ## FAILS!
-  ##  res <- OrganismDbi:::.select(x, keys, cols, keytype)
-## SAME bug as: 
-## library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-##   cols = c("ALIAS","CHR","EXONNAME")
-##   keys= c("1",  "2",  "3",  "9",  "10", "11")
-##   keytype= "GENEID"
-##   select(TxDb.Hsapiens.UCSC.hg19.knownGene, keys=keys, cols=cols, keytype="GENEID")
-
+ 
+  cols <- c("ALIAS","CHR","EXONNAME") 
+  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  checkTrue(dim(res)[2]==5)
+  checkTrue("ALIAS" %in% colnames(res)) 
+  checkTrue("ENTREZID" %in% colnames(res))
+  checkTrue("EXONNAME" %in% colnames(res))  
   
   cols <- c("ACCNUM","CDSSTART") 
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
@@ -228,7 +211,6 @@ test_select <- function(){
   checkTrue("CDSSTART" %in% colnames(res))
   checkTrue("CDSEND" %in% colnames(res))
 
-  
   cols <- c("CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cols, keytype)
   checkTrue(dim(res)[2]==2)
