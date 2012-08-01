@@ -1,11 +1,38 @@
 ## This will just hold code for the initial implementation of select and friends
 
-.keytypes <- function(x){
-  ## Need to retrieve the keytypes from all the slots...
-  unique(c(keytypes(x@GODb),keytypes(x@OrgDb),keytypes(x@TranscriptDb)))
+## Some helpers for retrieval of data.
+
+## 1st some getters
+setGeneric("keyFrame", function(x) standardGeneric("keyFrame"))
+setMethod("keyFrame", "OrganismDb",
+    function(x){x@keys}
+)
+setGeneric("dbGraph", function(x) standardGeneric("dbGraph"))
+setMethod("dbGraph", "OrganismDb",
+    function(x){x@graph}
+)
+
+## helper to convert text strings into objects
+.makeReal <- function(x){
+  eval(parse(text=x))
 }
 
-setMethod("keytypes", "AnnotationOrganismDb",
+## Then some helpers to process some of these results a bit
+.getDbObjs <- function(x){
+  gd <- as.matrix(keyFrame(x))
+  dbs <- unique(c(gd[,1],gd[,2]))
+  objs <- lapply(dbs, .makeReal)
+}
+
+
+
+## Standard methods:
+.keytypes <- function(x){
+  dbs <- .getDbObjs(x)
+  unique(unlist(lapply(dbs, keytypes)))
+}
+
+setMethod("keytypes", "OrganismDb",
     function(x) .keytypes(x)
 )
 
@@ -15,11 +42,11 @@ setMethod("keytypes", "AnnotationOrganismDb",
 
 
 .cols <- function(x){
-  ## Need to retrieve the cols from all the slots...
-  unique(c(cols(x@GODb),cols(x@OrgDb),cols(x@TranscriptDb)))
+  dbs <- .getDbObjs(x)
+  unique(unlist(lapply(dbs, cols)))
 }
 
-setMethod("cols", "AnnotationOrganismDb",
+setMethod("cols", "OrganismDb",
     function(x) .cols(x)
 )
 
@@ -42,7 +69,7 @@ setMethod("cols", "AnnotationOrganismDb",
 
 
 ## Another strategy is just not to allow keytypes with the same name when you
-## make the AnnotationOrganismDb object...
+## make the OrganismDb object...
 
 
 ## Strategy for keys: I need a lookup function that can 1) generate the keys
@@ -88,9 +115,10 @@ setMethod("cols", "AnnotationOrganismDb",
     keys(db, keytype)
 }
 
-setMethod("keys", "AnnotationOrganismDb",
+setMethod("keys", "OrganismDb",
     function(x, keytype){.keys(x, keytype)}
 )
+
 
 ## Usage: (so far this works, but there is something dumb happening with the method
 ## head(keys(Homo.sapiens, keytype="PMID"))
@@ -129,7 +157,7 @@ setMethod("keys", "AnnotationOrganismDb",
 ## So select will work by just knowing how to merge together the results from
 ## the separate select() calls.  I will need know know who can be joined with
 ## who for this (and how).  That info should be stored in the
-## AnnotationOrganismDb when it is created.  
+## OrganismDb when it is created.  
 
 ## vectorized keytype->DB matching BUT ALSO: we have to sort this so
 ## that we will do select() first for the DB that we actually have a key for
@@ -411,7 +439,7 @@ setMethod("keys", "AnnotationOrganismDb",
 
 
 
-setMethod("select", "AnnotationOrganismDb",
+setMethod("select", "OrganismDb",
     function(x, keys, cols, keytype) {
           .select(x, keys, cols, keytype)
         }

@@ -17,6 +17,7 @@
 ## able to call select on each of the tables, and then merge it to the rest
 ## based on the foreign keytype etc.
 
+
 ## So lets start with an object where we have a slot for an OrgDb and also a
 ## slot for a GODb, then lets add in a slot for a TranscriptDb.  Since
 ## AnnotationDbi does not know about TranscriptDbs, I will have to define the
@@ -24,98 +25,121 @@
 ## this stuff later on.
 
 
-
 ## require(AnnotationDbi)
 ## require(GenomicFeatures)
 
 
+
+
 ## I need an initialize method just to allow me to do things like
 ## require(GO.db) etc.
-AnnotationOrganismDb <-
-    setClass("AnnotationOrganismDb",
-        representation(GODb="GODb", OrgDb="OrgDb", TranscriptDb="TranscriptDb")
+OrganismDb <-
+    setClass("OrganismDb",
+             representation(keys="data.frame",
+                            graph="graphNEL")
 )
 
 
 
 
+## A generalized constructor (in the style of loadDb).
+
+
+## helpers
+## TODO: modify this so that it inits all the members of graph
+
+.initPkg <- function(pkg){
+  if (missing(pkg)){
+    stop(paste(pkg,"is strictly required, please make sure you have installed it"))
+  }else{
+    require(pkg, character.only = TRUE)
+  }
+}
+
+
+
+## Constructor helper (guts) OR 
+## function version of constructor 
+OrganismDb <- function(dbType, graphData){
+    ## make graphData into a graphNEL
+    gd <- as.matrix(graphData)
+    graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
+    
+    ## We should try to call require on all the supporting packages.
+    pkgs <- unique(c(gd[,1],gd[,2]))
+    lapply(pkgs, .initPkg)
+    ## Then make the object.
+
+    ## TODO: getClassDef() presumes that a package exists that defines
+    ## this already (so you can't just make one on the fly this way)
+    ## If possible I think I would like to make it so that I can just generate
+    ## an object here without requiring that a package exist ahead of time...
+    obj <- getClassDef(dbType, where=getNamespace(dbType))
+    
+    ## BUT I cannot (for example) do this:
+    ## obj <- setClass(dbType, contains="OrganismDb")
+    ## assign(dbType, obj)
+    ## Because the environment is sealed once the package is loaded, so by the
+    ## time I am defining this, it's too late...  The only way around this is
+    ## probably to use reference classes, but those had other problems.  For
+    ## now, this is proably sufficient.
+    new(obj, keys=graphData, graph=graph)
+}
+
+
+
+## planned usage.  I think the constructor should take a data.frame.  The user
+## just doesn't ever need to see that.  But internally I do want to store a
+## graphNEL, because I want to be able to call shortest path algorithms later
+## on...
+
+## HERE we define an example of what that data.frame might look like (one row per edge):
+
+##  xDbs <- c("GO.db","org.Hs.eg.db")
+##  yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
+##  xKeys <- c("GOID","ENTREZID")
+##  yKeys <- c("GO","GENEID")
+##  gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+
+## Constructor should look like:
+##  hs <- OrganismDbi:::OrganismDb(dbType= "Homo.sapiens", graphData=gd)
+
+
+
+
+## How about this: (OR: Just how general IS this???)
+
+##  xDbs <- c("GO.db","org.Rn.eg.db")
+##  yDbs <- c("org.Hs.eg.db","TxDb.Rnorvegicus.UCSC.rn4.ensGene")
+##  xKeys <- c("GOID","ENSEMBL")
+##  yKeys <- c("GO","GENEID")
+##  gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+
+## Constructor should look like:
+##  rn <- OrganismDbi:::OrganismDb(dbType= "Rattus.norvegicus", graphData=gd)
+
+
+
+ 
+
+## Other TODOs:
+## 1) add checks to make sure that the data.frame entered is reasonable.
+
+
+
+
+
+
+###########################################################
+## Convenience function that will load the package.
+## IOW, there will be a call to this in zzz.R
 .loadOrganismDbiPkg <- function(pkgname,
-                                GOPkg,
-                                OrgPkg,
-                                TranscriptPkg){
-  obj <- OrganismDbi:::AnnotationOrganismDb(dbType= pkgname,
-                                           GOPkg=GOPkg,
-                                           OrgPkg=OrgPkg,
-                                           TranscriptPkg=TranscriptPkg)
+                                graphData){
+  obj <- OrganismDbi:::OrganismDb(dbType= pkgname,
+                                  graphData=graphData)
   ns <- asNamespace(pkgname)
   assign(pkgname, obj, envir=ns)
   namespaceExport(ns, pkgname)
 }
-
-
-
-
-## A generalized constructor (in the style of loadDb), except notice that
-## there can be ONLY one type of DB per package.  This constraint is not
-## shared by loadDb, where one package can just be like an instance of a
-## particular type.  Here we only want one Homo.sapiens package.  As currently
-## imagined, users can toggle the contents of the slots if they want to change
-## it.
-
-## helpers
-.initPkg <- function(pkg){
-  if (missing(pkg)){
-    stop(paste("The",pkg,"argument is strictly required, please supply it"))
-  }else{
-    require(pkg, character.only = TRUE)
-    res <- eval(parse(text=pkg))
-  }
-  return(res)
-}
-
-## generalize this to loop over a vector of DBs ...
-.initAnnotationDbs <- function(GOPkg, OrgPkg, TranscriptPkg){
-  .GODb <- .initPkg(GOPkg)
-  .OrgDb <- .initPkg(OrgPkg)
-  .TranscriptDb <- .initPkg(TranscriptPkg)
-  list(GODb=.GODb, OrgDb=.OrgDb, TranscriptDb=.TranscriptDb)
-}
-
-## Constructor helper (guts) OR 
-## function version of constructor 
-AnnotationOrganismDb <- function(dbType, GOPkg, OrgPkg, TranscriptPkg){
-    Dbs <- .initAnnotationDbs(GOPkg, OrgPkg, TranscriptPkg)
-    #obj <- getRefClass(dbType, where=getNamespace(dbType))
-    obj <- getClassDef(dbType, where=getNamespace(dbType))
-    #obj$new(GODb=Dbs[['GODb']],OrgDb=Dbs[['OrgDb']],
-    #        TranscriptDb=Dbs[['TranscriptDb']])
-    new(obj,GODb=Dbs[['GODb']],OrgDb=Dbs[['OrgDb']],
-        TranscriptDb=Dbs[['TranscriptDb']])
-}
-
-## Turns out that I just don't need a method here at all.  I will just pass
-## the string I need for the unique organism name and (providing that there is
-## a type for that defined above (or in someone elses code), then it should
-## work fine with a generic constructor function.
-
-## Constructor Generic
-## setGeneric("AnnotationOrganismDb",
-##            function(dbType, GOPkg, OrgPkg, TranscriptPkg)
-##            standardGeneric("AnnotationOrganismDb"))
-
-
-## Constructor for method (so that later I can call
-## AnnotationOrganismDb("Mus.musculus" ...) etc.
-## setMethod(AnnotationOrganismDb,
-##           c("character", "character", "character", "character"),
-##           .AnnotationOrganismDb)
-
-
-
-
-## planned usage.
-## Works
-##  hs <- AnnotationOrganismDb(dbType= "Homo.sapiens", GOPkg="GO.db", OrgPkg="org.Hs.eg.db", TranscriptPkg="TxDb.Hsapiens.UCSC.hg19.knownGene")
-
 
 

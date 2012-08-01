@@ -10,8 +10,8 @@
 }
 
 makeOrganismPackage <- function(pkgname,
-                                OrgPkg,
-                                TxDbPkg,
+                                graphData,
+                                organism,
                                 version,
                                 maintainer,
                                 author,
@@ -19,25 +19,24 @@ makeOrganismPackage <- function(pkgname,
                                 license="Artistic-2.0"){
    ## there should only be one template
    template_path <- system.file("OrgPkg-template",package="OrganismDbi")
+   ## We need to get a list of dependencies:
+   gd <- as.matrix(graphData)
+   deps <- paste(unique(c(gd[,1],gd[,2])),collapse=", ")
    ## We need to define some symbols in order to have the
-   ## template filled out correctly.
-   require(OrgPkg, character.only=TRUE)
-   db <- eval(parse(text=OrgPkg))
+   ## template filled out correctly. 
    symvals <- list(
-    ORGPKG = OrgPkg,
-    TXDBPKG = TxDbPkg,
     PKGTITLE=paste("Annotation package for the",pkgname,
       "object"),
     PKGDESCRIPTION=paste("Contains the",pkgname,"object",
-      "which allows access to data from the GO.db,",OrgPkg,"and",TxDbPkg,
-      "packages."),
+      "which allows access to data from several related annotation packages."),
     PKGVERSION=version,
     AUTHOR=author,
     MAINTAINER=maintainer,
     LIC=license,        
-    ORGANISM=.getMetaDataValue(db,'ORGANISM'),
-    ORGANISMBIOCVIEW=gsub(" ","_",.getMetaDataValue(db,'ORGANISM')),
-    PKGNAME=pkgname 
+    ORGANISM=organism,
+    ORGANISMBIOCVIEW=gsub(" ","_",organism),
+    PKGNAME=pkgname,
+    DEPENDENCIES=deps
    )
    ## Should never have duplicates
    if (any(duplicated(names(symvals)))) {
@@ -55,4 +54,11 @@ makeOrganismPackage <- function(pkgname,
                  originDir=template_path,
                  symbolValues=symvals)
 
+   ## Now just do work to save the data.frame (pass that in instead of the
+   ## other stuff) in /data as a serialized R file.
+   ## There will already be a /data dir in the template
+   ## So just save to it:
+   save(graphData, file=file.path(destDir,pkgname,"data","graphData.Rda"))
 }
+
+

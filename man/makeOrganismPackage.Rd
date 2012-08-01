@@ -54,10 +54,17 @@ makeOrganismPackage (pkgname,
 }
 
 \examples{
+## set up the data.frame with the relevant relationships:
+xDbs <- c("GO.db","org.Hs.eg.db")
+yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
+xKeys <- c("GOID","ENTREZID")
+yKeys <- c("GO","GENEID")
+gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+
 ## makes an Organism package for human called Homo.sapiens
 makeOrganismPackage(pkgname = "Homo.sapiens",
-  OrgPkg = "org.Hs.eg.db",
-  TxDbPkg = "TxDb.Hsapiens.UCSC.hg19.knownGene",
+  graphData = gd,
+  organism = "Homo sapiens",
   version = "1.0.0",
   maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
   author = "Bioconductor Core Team",
@@ -65,4 +72,22 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
   license = "Artistic-2.0")
 }
 
+
+
+% ## set up the data.frame with the relevant relationships:
+% xDbs <- c("GO.db","org.Rn.eg.db")
+% yDbs <- c("org.Hs.eg.db","TxDb.Rnorvegicus.UCSC.rn4.ensGene")
+% xKeys <- c("GOID","ENSEMBL")
+% yKeys <- c("GO","GENEID")
+% gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+
+% ## makes an Organism package for human called Homo.sapiens
+% makeOrganismPackage(pkgname = "Homo.sapiens",
+%   graphData = gd,
+%   organism = "Homo sapiens",
+%   version = "1.0.0",
+%   maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
+%   author = "Bioconductor Core Team",
+%   destDir = ".",
+%   license = "Artistic-2.0")
 

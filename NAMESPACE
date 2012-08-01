@@ -1,4 +1,6 @@
-exportClasses("AnnotationOrganismDb")
+importFrom("graph", ftM2graphNEL)
+importClassesFrom("graph", graphNEL)
+exportClasses("OrganismDb")
 exportMethods("cols",
               "keys",
               "keytypes",
