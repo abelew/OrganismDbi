@@ -82,9 +82,9 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
 % gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
 
 % ## makes an Organism package for human called Homo.sapiens
-% makeOrganismPackage(pkgname = "Homo.sapiens",
+% makeOrganismPackage(pkgname = "Rattus.norvegicus",
 %   graphData = gd,
-%   organism = "Homo sapiens",
+%   organism = "Rattus norvegicus",
 %   version = "1.0.0",
 %   maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
 %   author = "Bioconductor Core Team",

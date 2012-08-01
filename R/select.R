@@ -22,6 +22,8 @@ setMethod("dbGraph", "OrganismDb",
   gd <- as.matrix(keyFrame(x))
   dbs <- unique(c(gd[,1],gd[,2]))
   objs <- lapply(dbs, .makeReal)
+  names(objs) <- dbs
+  objs
 }
 
 
@@ -84,11 +86,8 @@ setMethod("cols", "OrganismDb",
 
 
 .makekeytypeMapping <- function(x){
-    res <- list(3)
-    res[[1]] <- keytypes(x@GODb)
-    res[[2]] <- keytypes(x@OrgDb)
-    res[[3]] <- keytypes(x@TranscriptDb)
-    names(res) <- c("GODb", "OrgDb", "TranscriptDb")
+    objs <- .getDbObjs(x)
+    res <- lapply(objs, keytypes)
     res2 <- unlist2(res)
     res2
 }
@@ -97,7 +96,7 @@ setMethod("cols", "OrganismDb",
     res <- .makekeytypeMapping(x)
     ## no duplicates so I can just return the name
     db <- names(res)[res %in% keytype]
-    eval(parse(text=paste("x@",db,sep="")))
+    eval(parse(text=db))
 }
 
 .keys <- function(x, keytype){
