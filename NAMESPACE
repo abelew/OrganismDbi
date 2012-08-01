@@ -1,5 +1,6 @@
 importFrom("graph", ftM2graphNEL)
 importClassesFrom("graph", graphNEL)
+importFrom("RBGL", dijkstra.sp)
 exportClasses("OrganismDb")
 exportMethods("cols",
               "keys",

@@ -143,3 +143,14 @@ OrganismDb <- function(dbType, graphData){
 }
 
 
+
+
+
+
+
+### TODO:
+## 1) Fix the show method (here or in select.R, call .getDbObjs and show those.
+## 2) 
+
+
+

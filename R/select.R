@@ -88,14 +88,21 @@ setMethod("cols", "OrganismDb",
 .makekeytypeMapping <- function(x){
     objs <- .getDbObjs(x)
     res <- lapply(objs, keytypes)
-    res2 <- unlist2(res)
-    res2
+    unlist2(res)
 }
 
-.lookupDbsFromKeytype <- function(x, keytype){
+.lookupDbNameFromKeytype <- function(x, keytype){
+  kts <- keytypes(x)
+  if(!(keytype %in% kts)){
+    stop("keytype must be a value returned by keytypes(x).")
+  }  
     res <- .makekeytypeMapping(x)
     ## no duplicates so I can just return the name
-    db <- names(res)[res %in% keytype]
+    names(res)[res %in% keytype]  
+}
+
+.lookupDbFromKeytype <- function(x, keytype){
+    db <- .lookupDbNameFromKeytype(x, keytype)
     eval(parse(text=db))
 }
 
@@ -109,7 +116,7 @@ setMethod("cols", "OrganismDb",
     if(length(keytype) !=1){
       stop("The keys method can only accept one keytype at a time.")
     }
-    db <- .lookupDbsFromKeytype(x, keytype)
+    db <- .lookupDbFromKeytype(x, keytype)
     ## And then we can just call keys...
     keys(db, keytype)
 }
@@ -161,50 +168,67 @@ setMethod("keys", "OrganismDb",
 ## vectorized keytype->DB matching BUT ALSO: we have to sort this so
 ## that we will do select() first for the DB that we actually have a key for
 .makecolMapping <- function(x){
-    res <- list(3)
-    res[[1]] <- cols(x@GODb)
-    res[[2]] <- cols(x@OrgDb)
-    res[[3]] <- cols(x@TranscriptDb)
-    names(res) <- c("GODb", "OrgDb", "TranscriptDb")
-    res2 <- unlist2(res)
-    res2
+    objs <- .getDbObjs(x)
+    res <- lapply(objs, cols)
+    unlist2(res)
 }
 
-.lookupDbsFromCol <- function(x, col){
+.lookupDbNameFromCol <- function(x, col){
   cols <- cols(x)
   if(!(col %in% cols)){
     stop("col must be a value returned by cols(x).")
   }
     res <- .makecolMapping(x)
     ## no duplicates so I can just return the name
-    db <- names(res)[res %in% col]
-    eval(parse(text=paste("x@",db,sep="")))
+    names(res)[res %in% col]
 }
 
-## hard coded for both the content and the sorting, but if we had graphs then
-## this could be a LOT smarter.
-.resortDbs <- function(x){
-  if(length(x)>2){
-    if(class(x[[3]]) == "OrgDb"){
-      x <- c(x[[1]],x[[3]],x[[2]]) ## then flip 2 and 3
-    }
-  }
-  x
+.lookupDbFromCol <- function(x, col){
+    db <- .lookupDbNameFromCol(x, col)
+    eval(parse(text=db))
+}
+
+## now uses graphs to order things better
+.resortDbs <- function(x, objs, keytype){
+  ## use the shortest path algorithm to get them into the order desired.
+  g <- dbGraph(x)
+  startNode <- .lookupDbNameFromKeytype(x, keytype)
+  sp <- dijkstra.sp(g, start=startNode)
+  res <- sp$distances
+
+  ## So from HERE, I will know how many steps each thing is from my start
+  ## node...
+  ## That means that I have an ordered path to follow when connecting these
+  ## things.  So as long as I start with node 0, and then do all 1 nodes,
+  ## followed by all 2 nodes etc. I will succeed at getting everything joined
+  ## together.  It might still take forever (if it inflates too much), but it
+  ## should be at least feasible to join these results..
+
+  ## So now I just have to sort the names in order of distance.
+  dbs <- names(res)[order(res)]
+  ## Then convert into actual objects
+  objs <- lapply(dbs, .makeReal)
+  ## Then return 
+  objs
 }
 
 ## This should be replaced by the list of DBs "in order of shortest path"
-.lookupDbsFromCols <- function(x, cols, keytype){
+.lookupDbFromCols <- function(x, cols, keytype){
   ## 1st we want cols ordered so that the one that matches our keytype is FIRST
   ## Also, we must always have keytype be part of cols here
   cols <- unique(c(keytype, cols))
-  res <- list(length(cols))
+  objs <- list(length(cols))
   for(i in seq_len(length(cols))){
-    res[i] <- .lookupDbsFromCol(x, cols[[i]])
+    objs[i] <- .lookupDbNameFromCol(x, cols[[i]])
   }
-  res <- unique(res)
-  .resortDbs(res) ## OrgDb must always be 2nd if there are 3 things.
+  objs <- unique(unlist(objs))
+  ## Now use the graph to decide the path
+  .resortDbs(x, objs=objs, start=keytype) 
 }
-## .lookupDbsFromCols(x, cols, keytype)
+## .lookupDbFromCols(x, cols, keytype)
+
+## library(Homo.sapiens); x= Homo.sapiens; cols=c("GOID","ENTREZID","TXNAME"); keytype="ENTREZID"; 
+
 
 
 ## .getSelects has to retrieve the data from each relevant DB, AND it also has
@@ -382,7 +406,7 @@ setMethod("keys", "OrganismDb",
   
   ## Then we need to decide which separate selects to call (we have to call
   ## each required one)
-  dbs <- .lookupDbsFromCols(x, cols, keytype)
+  dbs <- .lookupDbFromCols(x, cols, keytype)
   ## next we get the data from each.
   sels <- .getSelects(dbs, keys, cols, keytype, mkeys)
   
@@ -500,7 +524,7 @@ setMethod("select", "OrganismDb",
 
 ## library(Homo.sapiens);cols3 <- cols(Homo.sapiens)[c(10,11,37)];cols2 <- cols(Homo.sapiens)[c(7,10,11,37)];cols8 <- cols(Homo.sapiens)[c(37)];
 
-## debug(Homo.sapiens:::.lookupDbsFromCols);
+## debug(Homo.sapiens:::.lookupDbFromCols);
 ## debug(Homo.sapiens:::.mergeSelectResults);
 ## debug(Homo.sapiens:::.select);
 ## debug(Homo.sapiens:::.getSelects);
@@ -614,7 +638,6 @@ setMethod("select", "OrganismDb",
 
 ## Solution 3:
 ## write a post-process filter-helper to remove these when appropriate.
-
 
 
 
