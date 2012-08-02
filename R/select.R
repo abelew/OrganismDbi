@@ -191,16 +191,14 @@ setMethod("keys", "OrganismDb",
 ## now uses graphs to order things better
 .resortDbs <- function(x, pkgs, keytype){
   
-## TODO: pkgs tells us which things are needed, but right now it's still
+## BIG TODO #2: pkgs tells us which things are needed, but right now it's still
 ## ignored.  What needs to happen instead is that I need to use these data to
 ## filter out nodes that are 1) not in pkgs and 2) ALSO not on the "path" for
-## things that are in pkgs.
+## things that are in pkgs.  This should "fall out" if I just:
+## 1) Pass in only cols that actually are needed (either because they were requested or because they are needed to link the graph together) - upgrading .addAppropriateCols() should do this step for me and then
+## 2) actually use pkgs to filter in this function here.  IOW, do NOT return the whole graph, but only those nodes that are listed in pkgs.
 
-## ALSO: if the user chooses cols from GO and Txdb (for example), I still need
-## to join those via a dbs that they need no data from (org pkg in this
-## example).  So in that case, certain cols need to be incluced by a
-## graph-aware .addAppropriateCols() function.
-  
+
   ## use the shortest path algorithm to get them into the order desired.
   g <- dbGraph(x)
   startNode <- .lookupDbNameFromKeytype(x, keytype)
@@ -241,22 +239,6 @@ setMethod("keys", "OrganismDb",
 
 
 
-## .getSelects has to retrieve the data from each relevant DB, AND it also has
-## to use the foreign key information so that we can extract the appropriate
-## data each time.  So the 1st time i==1, it will just be a regular select
-## with the keys, but thereafter, we have to call select by 1) adding the
-## foreign key to its cols (so it will be mergable later) and 2) remembering
-## to use the default keytype in those cases...
-
-## right now we always add the fkeys cols to colsLocal (not efficient, but
-## guarantees that we will have what we need - these will ALSO have to be
-## filtered later)
-
-  ## fkeys <- c(GODb = "TERM", OrgDb = "ENTREZID", OrgDb="GO",
-  ##            TranscriptDb = "GENEID")
-
-
-
 ## this method needs to give us a list like above (where names are the types,
 ## and the values are the keys)
 .getDbObjFKeys <- function(x){
@@ -270,10 +252,22 @@ setMethod("keys", "OrganismDb",
 }
 
 
-## TODO: upgrade .addAppropriateCols() so that it pays attention to the graph.
+
+## BIG TODO: And if the user chooses cols from GO and Txdb (for example), I
+## still need to join those via a dbs that they need no data from (org pkg in
+## this example).  So in that case, certain cols need to be incluced by a
+## graph-aware .addAppropriateCols() function.
+
+## Upgrade .addAppropriateCols() so that it pays attention to the graph.
 ## IOW, the cols asked for should not just be all of them but only the ones
 ## that are needed based on the initial values of cols that was passed into
 ## select.
+
+## SO: Instead of just returning ALL the fkey columns I need to implement the
+## following rule:
+## IF the cols requested are separated on the graph by too big a distance:
+## THEN I need to get the keys from the intermediate nodes.
+
 
 ## this will return the cols, with appropriate things appended.
 .addAppropriateCols <- function(x, db, cols){
@@ -284,7 +278,7 @@ setMethod("keys", "OrganismDb",
 }
 
 
-## also a helper to filter our cols that are duplicated after select()
+## also a helper to filter out cols that are duplicated after select()
 ## TODO: migrate this version of the method down to AnnotationDbi so that we
 ## never get column duplicates
 .dropDuplicatedgetSelectsCols <- function(tab){
@@ -299,22 +293,17 @@ setMethod("keys", "OrganismDb",
   for(i in seq_len(length(dbs))){
     ## in addition to looping over the dbs, the appropriate cols must be
     ## selected for EACH
-    db <- as.character(class(dbs[[i]]))
+    dbtype <- as.character(class(dbs[[i]]))
     colsLocal <- cols[cols %in% cols(dbs[[i]])]
     if(i==1){
       ## mtype accumulates a history of tables that we have merged so far.
-      mtype <- db
-      ## I only need to join cols if there will be a join...
-      if(length(dbs) > 1){ 
-        colsLocal <- .addAppropriateCols(x, db, colsLocal)
-      }
+      mtype <- dbtype
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }else{ ## more than one
-      mtype <- c(mtype,db)
-      colsLocal <- .addAppropriateCols(x, db, colsLocal)
+      mtype <- c(mtype,dbtype)
       keytype <- mkeys[[paste(mtype,collapse="_")]][2] ## always the 2nd val
       ## An UGLY exception for GO.db:  (TODO: Is there a more elegant way?)
-      if(db=="GODb"){
+      if(dbtype=="GODb"){
         keytype="GOID"
       }
       prevKeyType <- mkeys[[paste(mtype,collapse="_")]][1]
@@ -358,10 +347,9 @@ setMethod("keys", "OrganismDb",
   res
 }
 
-  ##
-##**## TODO: fix this up to use the results of  the keyFrame() data from x.
-  ##
-
+ 
+## BIG TODO #3: fix this up to use the results of  the keyFrame() data from x.
+ 
 ## This just defines what the mkeys are.  This is hard coded, but a better
 ## implementation would derive these from something like the relationships in
 ## a graph.
@@ -431,13 +419,14 @@ setMethod("keys", "OrganismDb",
   ## the way 
   oriCols <- cols  
   
-  ## Then we need to decide which separate selects to call (we have to call
-  ## each required one)
+  ## 1st add any missing foreign key cols (based on what our graph looks like,
+  ## and also based on what was asked for)
+  cols <- .addAppropriateCols()
+  ## Now we only need to get the nodes that *have* those columns.
   dbs <- .lookupDbsFromCols(x, cols, keytype)
+  
   ## next we get the data from each.
   sels <- .getSelects(dbs, keys, cols, keytype, mkeys)
-  
-  
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(sels, mkeys)
   
