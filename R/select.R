@@ -18,9 +18,13 @@ setMethod("dbGraph", "OrganismDb",
 }
 
 ## Then some helpers to process some of these results a bit
-.getDbObjs <- function(x){
+.getDbObjNames <- function(x){
   gd <- as.matrix(keyFrame(x))
-  dbs <- unique(c(gd[,1],gd[,2]))
+  unique(c(gd[,1],gd[,2]))
+}
+
+.getDbObjs <- function(x){
+  dbs <- .getDbObjNames(x)
   objs <- lapply(dbs, .makeReal)
   names(objs) <- dbs
   objs
@@ -246,30 +250,55 @@ setMethod("keys", "OrganismDb",
   ##            TranscriptDb = "GENEID")
 
 
+  ##
+##**## TODO: .addAppropriateCols() needs to use the keyFrame() data from x
+  ##
+##  I think what I want to do here is to call .getDbObjNames(), and then also
+##  call .getDbObjFKeys() to get all possibe foreign keys.  Then deduce
+##  (below) which of the foreign keys that we actually need...
+
+## this method needs to give us a list like above (where names are the types,
+## and the values are the keys)
+.getDbObjFKeys <- function(x){
+  gd <- as.matrix(keyFrame(x))
+  ## now give all the keys as a vector, but named by their databases.
+  res <- c(gd[,3],gd[,4])
+  pkgs <-  c(gd[,1],gd[,2])
+  objs <- lapply(pkgs, .makeReal)
+  names(res) <- lapply(objs, class)
+  res
+}
+
+
+
+
 ## This function would have to be replaced with something smarter and more
 ## "graph oriented" if we switch to that
 ## this will return the cols, with appropriate things appended.
-.addAppropriateCols <- function(db, dbs, cols){
-  if(db=="OrgDb" && length(dbs)==3){
-    ## then we have to add them all
-    cols <- c(cols,"ENTREZID","GO")
-  }
-  if(db=="OrgDb" && length(dbs)==2){
-    ## Then we have to choose one to add
-    if(any(sapply(dbs,class) %in% "GODb")){
-      cols <- c(cols,"GO") ## not sure how to hit this one???
-    }else{
-      cols <- c(cols,"ENTREZID")
-    }
-  }
-  ## otherwise we just add the appropriate one per class.
-  if(db == "GODb"){
-    cols <- c(cols,"TERM")
-  }
-  if(db == "TranscriptDb"){
-    cols <- c(cols,"GENEID")
-  }
-  unique(cols)
+.addAppropriateCols <- function(x, db, dbs, cols){
+  fkeys <- .getDbObjFKeys(x)
+  ## 
+  
+##   if(db=="OrgDb" && length(dbs)==3){
+##     ## then we have to add them all
+##     cols <- c(cols,"ENTREZID","GO")
+##   }
+##   if(db=="OrgDb" && length(dbs)==2){
+##     ## Then we have to choose one to add
+##     if(any(sapply(dbs,class) %in% "GODb")){
+##       cols <- c(cols,"GO") ## not sure how to hit this one???
+##     }else{
+##       cols <- c(cols,"ENTREZID")
+##     }
+##   }
+##   ## otherwise we just add the appropriate one per class.
+##   if(db == "GODb"){
+##     cols <- c(cols,"TERM")
+##   }
+##   if(db == "TranscriptDb"){
+##     cols <- c(cols,"GENEID")
+##   }
+##   unique(cols)
 }
 
 
@@ -295,7 +324,7 @@ setMethod("keys", "OrganismDb",
       mtype <- db
       ## I only need to join cols if there will be a join...
       if(length(dbs) > 1){ 
-        colsLocal <- .addAppropriateCols(db, dbs, colsLocal)
+        colsLocal <- .addAppropriateCols(x, db, dbs, colsLocal)
       }
       ## sel <- select(dbs[[i]], keys, colsLocal, keytype)
       ## sel <- .dropDuplicatedgetSelectsCols(sel)
@@ -303,7 +332,7 @@ setMethod("keys", "OrganismDb",
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }else{ ## more than one
       mtype <- c(mtype,db)
-      colsLocal <- .addAppropriateCols(db, dbs, colsLocal)
+      colsLocal <- .addAppropriateCols(x, db, dbs, colsLocal)
       keytype <- mkeys[[paste(mtype,collapse="_")]][2] ## always the 2nd val
       ## An UGLY exception for GO.db:  (TODO: Is there a more elegant way?)
       if(db=="GODb"){
@@ -354,6 +383,9 @@ setMethod("keys", "OrganismDb",
   res
 }
 
+  ##
+##**## TODO: fix this up to use the results of  the keyFrame() data from x.
+  ##
 
 ## This just defines what the mkeys are.  This is hard coded, but a better
 ## implementation would derive these from something like the relationships in

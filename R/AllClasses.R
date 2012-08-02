@@ -154,3 +154,15 @@ OrganismDb <- function(dbType, graphData){
 
 
 
+
+
+
+###############################################################################
+## Rules for these kinds of packages:
+###############################################################################
+
+
+## 1) You cannot have more than one example of each field that can be retrieved from each type of package that is included.  So basically, all values for cols must be unique across ALL supporting packages.  You cannot combine resources together if the cols are not unique.  So if one package has a cols value that is "FOO", you cannot add any other packages that have a value of "FOO" for their cols.
+
+## 2) You cannot have more than one example of each object type.  So you cannot have two org packages (for example).
+
