@@ -270,14 +270,14 @@ setMethod("keys", "OrganismDb",
 }
 
 
+##
 
-
-## This function would have to be replaced with something smarter and more
-## "graph oriented" if we switch to that
 ## this will return the cols, with appropriate things appended.
-.addAppropriateCols <- function(x, db, dbs, cols){
+.addAppropriateCols <- function(x, db, cols){
   fkeys <- .getDbObjFKeys(x)
-  ## 
+  ## Now add the fkeys to the cols that go with the db
+  cols <- c(cols, fkeys[names(fkeys) %in% db])
+  unique(cols)
   
 ##   if(db=="OrgDb" && length(dbs)==3){
 ##     ## then we have to add them all
@@ -324,7 +324,7 @@ setMethod("keys", "OrganismDb",
       mtype <- db
       ## I only need to join cols if there will be a join...
       if(length(dbs) > 1){ 
-        colsLocal <- .addAppropriateCols(x, db, dbs, colsLocal)
+        colsLocal <- .addAppropriateCols(x, db, colsLocal)
       }
       ## sel <- select(dbs[[i]], keys, colsLocal, keytype)
       ## sel <- .dropDuplicatedgetSelectsCols(sel)
@@ -332,7 +332,7 @@ setMethod("keys", "OrganismDb",
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }else{ ## more than one
       mtype <- c(mtype,db)
-      colsLocal <- .addAppropriateCols(x, db, dbs, colsLocal)
+      colsLocal <- .addAppropriateCols(x, db, colsLocal)
       keytype <- mkeys[[paste(mtype,collapse="_")]][2] ## always the 2nd val
       ## An UGLY exception for GO.db:  (TODO: Is there a more elegant way?)
       if(db=="GODb"){
