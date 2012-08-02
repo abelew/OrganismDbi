@@ -20,16 +20,16 @@ test_makekeytypeMapping <- function(){
   checkTrue("OrgDb" == names(res)[res=='ENTREZID'] )
 }
 
-test_lookupDbsFromKeytype <- function(){
-  res <- OrganismDbi:::.lookupDbsFromKeytype(x, "GOID")
+test_lookupDbFromKeytype <- function(){
+  res <- OrganismDbi:::.lookupDbFromKeytype(x, "GOID")
   checkTrue(class(res)=="GODb")  
-  res <- OrganismDbi:::.lookupDbsFromKeytype(x, "TXID")
+  res <- OrganismDbi:::.lookupDbFromKeytype(x, "TXID")
   checkTrue(class(res)=="TranscriptDb")
-  res <- OrganismDbi:::.lookupDbsFromKeytype(x, "ENTREZID")
+  res <- OrganismDbi:::.lookupDbFromKeytype(x, "ENTREZID")
   checkTrue(class(res)=="OrgDb")
 }
 
-test_lookupDbsFromKeytype <- function(){
+test_lookupDbFromKeytype <- function(){
   res <- OrganismDbi:::.keys(x, "GOID")
   checkTrue(is.character(head(res)))
   checkTrue(length(res) > 33000)
@@ -52,14 +52,14 @@ test_makecolMapping <- function(){
   checkTrue("OrgDb" == names(res)[res=='ENTREZID'] )
 }
 
-test_lookupDbsFromCol <- function(){
-  res <- OrganismDbi:::.lookupDbsFromCol(x,"TERM")
-  checkTrue(class(res) == "GODb")
-  res <- OrganismDbi:::.lookupDbsFromCol(x,"TXID")
-  checkTrue(class(res) == "TranscriptDb")
-  res <- OrganismDbi:::.lookupDbsFromCol(x,"ENTREZID")
-  checkTrue(class(res) == "OrgDb")  
-}
+## test_lookupDbsFromCols <- function(){
+##   res <- OrganismDbi:::.lookupDbsFromCols(x,"TERM")
+##   checkTrue(class(res) == "GODb")
+##   res <- OrganismDbi:::.lookupDbsFromCols(x,"TXID")
+##   checkTrue(class(res) == "TranscriptDb")
+##   res <- OrganismDbi:::.lookupDbsFromCols(x,"ENTREZID")
+##   checkTrue(class(res) == "OrgDb")  
+## }
 
 
 ## x in this method is actually not an OrganismDb object, but a list of the
@@ -71,14 +71,14 @@ test_resortDbs <- function(){
 }
 
 
-test_lookupDbsFromCols <- function(){
-  res <- OrganismDbi:::.lookupDbsFromCols(x,
-                                          c("TXID","TERM","ENTREZID"),
-                                          "GENEID")
-  checkTrue(length(res)==3)
-  checkTrue(class(res)=="list")
-  checkTrue(class(res[[2]])=="OrgDb")
-}
+## test_lookupDbsFromCols <- function(){
+##   res <- OrganismDbi:::.lookupDbsFromCols(x,
+##                                           c("TXID","TERM","ENTREZID"),
+##                                           "GENEID")
+##   checkTrue(length(res)==3)
+##   checkTrue(class(res)=="list")
+##   checkTrue(class(res[[2]])=="OrgDb")
+## }
 
 
 test_addAppropriateCols <- function(){
@@ -115,9 +115,9 @@ test_addAppropriateCols <- function(){
 test_getSelects <- function(){
   cols <- c("TERM","ALIAS")
   keytype <- "GENEID"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
+#  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
   keys <- head(keys(x, keytype),n=2)
-  mkeys <- OrganismDbi:::.mkeys()
+#  mkeys <- OrganismDbi:::.mkeys()
   res <- OrganismDbi:::.getSelects(dbs, keys, cols, keytype, mkeys)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")

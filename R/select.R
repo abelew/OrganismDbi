@@ -177,9 +177,9 @@ setMethod("keys", "OrganismDb",
     unlist2(res)
 }
 
-.lookupDbNameFromCol <- function(x, col){
+.lookupDbNamesFromCols <- function(x, col){
   cols <- cols(x)
-  if(!(col %in% cols)){
+  if(!all(col %in% cols)){
     stop("col must be a value returned by cols(x).")
   }
     res <- .makecolMapping(x)
@@ -187,10 +187,6 @@ setMethod("keys", "OrganismDb",
     names(res)[res %in% col]
 }
 
-.lookupDbFromCol <- function(x, col){
-    db <- .lookupDbNameFromCol(x, col)
-    eval(parse(text=db))
-}
 
 ## now uses graphs to order things better
 .resortDbs <- function(x, objs, keytype){
@@ -216,20 +212,20 @@ setMethod("keys", "OrganismDb",
   objs
 }
 
-## This should be replaced by the list of DBs "in order of shortest path"
-.lookupDbFromCols <- function(x, cols, keytype){
+## The list of DBs "in order of shortest path"
+.lookupDbsFromCols <- function(x, cols, keytype){
   ## 1st we want cols ordered so that the one that matches our keytype is FIRST
   ## Also, we must always have keytype be part of cols here
   cols <- unique(c(keytype, cols))
   objs <- list(length(cols))
   for(i in seq_len(length(cols))){
-    objs[i] <- .lookupDbNameFromCol(x, cols[[i]])
+    objs[i] <- .lookupDbNamesFromCols(x, cols[[i]])
   }
   objs <- unique(unlist(objs))
   ## Now use the graph to decide the path
-  .resortDbs(x, objs=objs, start=keytype) 
+  .resortDbs(x, objs=objs, keytype=keytype) 
 }
-## .lookupDbFromCols(x, cols, keytype)
+## .lookupDbsFromCols(x, cols, keytype)
 
 ## library(Homo.sapiens); x= Homo.sapiens; cols=c("GOID","ENTREZID","TXNAME"); keytype="ENTREZID"; 
 
@@ -390,25 +386,42 @@ setMethod("keys", "OrganismDb",
 ## This just defines what the mkeys are.  This is hard coded, but a better
 ## implementation would derive these from something like the relationships in
 ## a graph.
-.mkeys <- function(){
-  ## mkeys are the keys you need to use to merge things together...
-  ## I also need to keep track of which keys are needed to merge things.
-  ## mkeys is just how we are mapping this.  A graph would be more efficient.
-  list(
-    OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
-    GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"),
-    OrgDb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
-    TranscriptDb_OrgDb = c(TranscriptDb = "GENEID",OrgDb = "ENTREZID"),
-## no TranscriptDb_GODb should ever happen - that case should always be a
-## triple join and should never occur in that order...
-##    TranscriptDb_GODb = c(TranscriptDb = "GENEID",GODb = "GO"),
-    ## triple joins define the relationship between the 1st and last table.
-    OrgDb_GODb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
-    GODb_OrgDb_TranscriptDb = c(TranscriptDb = "GENEID", OrgDb = "ENTREZID"),
-    TranscriptDb_OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
-    TranscriptDb_GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"))
-}
+## .mkeys <- function(){
+##   ## mkeys are the keys you need to use to merge things together...
+##   ## I also need to keep track of which keys are needed to merge things.
+##   ## mkeys is just how we are mapping this.  A graph would be more efficient.
+##   list(
+##     OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
+##     GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"),
+##     OrgDb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
+##     TranscriptDb_OrgDb = c(TranscriptDb = "GENEID",OrgDb = "ENTREZID"),
+## ## no TranscriptDb_GODb should ever happen - that case should always be a
+## ## triple join and should never occur in that order...
+## ##    TranscriptDb_GODb = c(TranscriptDb = "GENEID",GODb = "GO"),
+##     ## triple joins define the relationship between the 1st and last table.
+##     OrgDb_GODb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
+##     GODb_OrgDb_TranscriptDb = c(TranscriptDb = "GENEID", OrgDb = "ENTREZID"),
+##     TranscriptDb_OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
+##     TranscriptDb_GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"))
+## }
 
+## new plan for .mkeys will return appropriate value "on the fly" based on the
+## contents of keyFrame().  It will take at least three arguments: the two
+## tables plus an indicator for which of the two keys 1st or 2nd table key is
+## needed.
+
+.mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
+  key <- match.arg(key)
+  kf <- keyFrame(x)
+  
+  ## 1st I must extract the row where tbl1 AND tbl2 are in cols 1 and 2.
+  
+  
+  ## Then I have to get the keys, but remember that tbl1 and tbl2 might be in
+  ## opposite order, and the order is important.
+  
+
+}
 
 .select <- function(x, keys, cols, keytype){
   ## if asked for what they have, just return that.
@@ -469,7 +482,8 @@ setMethod("keys", "OrganismDb",
   ## fkeys <- c(GODb = "TERM", OrgDb = "ENTREZID", OrgDb="GO",
   ##            TranscriptDb = "GENEID")
 
-  extraKeys <- unique(unlist(mkeys))
+#  extraKeys <- unique(unlist(mkeys))
+  extraKeys <- .getDbObjFKeys(x)
   blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
   ## if they asked for one of the GO items, then GO is not blacklisted
   if(any(cols(GO.db) %in% oriCols)){
