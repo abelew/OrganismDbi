@@ -227,28 +227,34 @@ setMethod("keys", "OrganismDb",
 ## library(Homo.sapiens); x= Homo.sapiens; cols=c("GOID","ENTREZID","TXNAME"); keytype="ENTREZID"; 
 
 
-
-## this method needs to give us a list like above (where names are the types,
-## and the values are the keys)
-.getDbObjFKeys <- function(x){
+## This method just gets me the pkg names as names and vals are fkeys
+.getDbNameFKeys <- function(x){
   gd <- as.matrix(keyFrame(x))
   ## now give all the keys as a vector, but named by their databases.
   res <- c(gd[,3],gd[,4])
   pkgs <-  c(gd[,1],gd[,2])
-  objs <- lapply(pkgs, .makeReal)
-  names(res) <- lapply(objs, class)
+  names(res) <- pkgs 
   res
 }
+
+## ## this method gives us a vector where names are the types,
+## ## and the values are the keys
+## .getDbObjFKeys <- function(x){
+##   res <- .getDbNameFKeys(x) 
+##   objs <- lapply(names(res), .makeReal)
+##   names(res) <- lapply(objs, class)
+##   res
+## }
 
 
 
 ## this will return the cols, with appropriate things appended for a single Db.
-.getExtraColsForDb <- function(x, db, cols){
-  fkeys <- .getDbObjFKeys(x)
-  ## Now add the fkeys to the cols that go with the db
-  cols <- c(cols, fkeys[names(fkeys) %in% db])
-  unique(cols)
-}
+## .getExtraColsForDb <- function(x, db, cols){
+##   fkeys <- .getDbObjFKeys(x)
+##   ## Now add the fkeys to the cols that go with the db
+##   cols <- c(cols, fkeys[names(fkeys) %in% db])
+##   unique(cols)
+## }
 
 
 ## BIG TODO: And if the user chooses cols from GO and Txdb (for example), I
@@ -268,19 +274,55 @@ setMethod("keys", "OrganismDb",
 
 ## This one will actually get the extra cols for ALL the RELEVANT Dbs.
 .addAppropriateCols <- function(x, cols, keytype){
-  ## 1st we want to run dijkstras (factor from .resortDbs)
-  dist <- .getDistances(x, keytype)
+  ## get the graph
+  g <- dbGraph(x)
+  
+  ## We want to run dijkstras (factor from .resortDbs)
+  dst <- .getDistances(x, keytype)
   
   ## then we need to lookup the DBs we need (based on the cols alone). (
   pkgs <- .lookupDbNamesFromCols(x, cols)
+
+  ## make variable to hold intermediate packages.
+  extraPkgs <- character()
+
+  ## I need a recursive function that will walk back to the start, and will
+  ## add elements to extraPkgs along the way.
+  nodeWalker <- function(g, dst, pkg, curDist){
+    e <- edges(g)
+    pkgConts <- e[names(e) %in% pkg]
+    pkgDists <-  dst[names(dst) %in% pkgConts]
+    pkg <- names(pkgDists)[pkgDists < curDist]    
+    curDist <- dst[names(dst) %in% pkg]
+    if(curDist !=0){
+      extraPkgs <- c(extraPkgs, pkg)
+      nodeWalker(g, dst, pkg, curDist)
+    }
+  }
   
   ## Then we need to see if there are any cases where 1) a pkgs element is
   ## separated from the keytype node by > 1 step and also 2) the node in
   ## between is not present.  When this happens, we need to add it to pkgs.
+  ## Can do this by stepping through the pkgs.  For each pkg, ask if distance
+  ## is > 1 .  If true, walk recursively "down" a node (check if dst is less
+  ## and if it is an edge), and then check if that node is in pkgs (add it if
+  ## not), until you reach the start node.  Use edges(g) to get the next nodes
+  ## over.
+  for(i in seq_len(length(pkgs))){
+    pkg <- pkgs[i]
+    curDist <- dst[names(dst) %in% pkg]
+    if(curDist > 1){## then we need to take a walk
+      nodeWalker(g, dst, pkg, curDist)
+    }
+  }
 
-
+  ## Add extra packages to pkgs
+  pkgs <- unique(c(pkgs, extraPkgs))
+  
   ## finally, for each node of pkgs, we need to grab the appropriate fkeys and
   ## add them to cols.  One approach is to lapply on .getExtraColsForDb(
+  fkeys <- .getDbNameFKeys(x)
+  
   
 
 }
@@ -447,7 +489,7 @@ setMethod("keys", "OrganismDb",
   ## (oriCols and keytype).
 
 #  extraKeys <- unique(unlist(mkeys))
-  extraKeys <- .getDbObjFKeys(x)
+  extraKeys <- .getDbNameFKeys(x)
   blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
   ## if they asked for one of the GO items, then GO is not blacklisted
   if(any(cols(GO.db) %in% oriCols)){
