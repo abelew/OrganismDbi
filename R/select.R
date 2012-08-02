@@ -189,7 +189,18 @@ setMethod("keys", "OrganismDb",
 
 
 ## now uses graphs to order things better
-.resortDbs <- function(x, objs, keytype){
+.resortDbs <- function(x, pkgs, keytype){
+  
+## TODO: pkgs tells us which things are needed, but right now it's still
+## ignored.  What needs to happen instead is that I need to use these data to
+## filter out nodes that are 1) not in pkgs and 2) ALSO not on the "path" for
+## things that are in pkgs.
+
+## ALSO: if the user chooses cols from GO and Txdb (for example), I still need
+## to join those via a dbs that they need no data from (org pkg in this
+## example).  So in that case, certain cols need to be incluced by a
+## graph-aware .addAppropriateCols() function.
+  
   ## use the shortest path algorithm to get them into the order desired.
   g <- dbGraph(x)
   startNode <- .lookupDbNameFromKeytype(x, keytype)
@@ -201,29 +212,28 @@ setMethod("keys", "OrganismDb",
   ## That means that I have an ordered path to follow when connecting these
   ## things.  So as long as I start with node 0, and then do all 1 nodes,
   ## followed by all 2 nodes etc. I will succeed at getting everything joined
-  ## together.  It might still take forever (if it inflates too much), but it
-  ## should be at least feasible to join these results..
+  ## together. 
 
   ## So now I just have to sort the names in order of distance.
   dbs <- names(res)[order(res)]
   ## Then convert into actual objects
   objs <- lapply(dbs, .makeReal)
+  ## Then label the objs with the names
+  names(objs) <- dbs
   ## Then return 
   objs
 }
 
-## The list of DBs "in order of shortest path"
+## Retrieves the list of DBs "in order of shortest path"
 .lookupDbsFromCols <- function(x, cols, keytype){
   ## 1st we want cols ordered so that the one that matches our keytype is FIRST
   ## Also, we must always have keytype be part of cols here
   cols <- unique(c(keytype, cols))
-  objs <- list(length(cols))
-  for(i in seq_len(length(cols))){
-    objs[i] <- .lookupDbNamesFromCols(x, cols[[i]])
-  }
-  objs <- unique(unlist(objs))
+  pkgs <- .lookupDbNamesFromCols(x, cols)
+  pkgs <- unique(pkgs)
+  names(pkgs) <- pkgs   
   ## Now use the graph to decide the path
-  .resortDbs(x, objs=objs, keytype=keytype) 
+  .resortDbs(x, pkgs=pkgs, keytype=keytype) 
 }
 ## .lookupDbsFromCols(x, cols, keytype)
 
@@ -246,12 +256,6 @@ setMethod("keys", "OrganismDb",
   ##            TranscriptDb = "GENEID")
 
 
-  ##
-##**## TODO: .addAppropriateCols() needs to use the keyFrame() data from x
-  ##
-##  I think what I want to do here is to call .getDbObjNames(), and then also
-##  call .getDbObjFKeys() to get all possibe foreign keys.  Then deduce
-##  (below) which of the foreign keys that we actually need...
 
 ## this method needs to give us a list like above (where names are the types,
 ## and the values are the keys)
@@ -266,7 +270,10 @@ setMethod("keys", "OrganismDb",
 }
 
 
-##
+## TODO: upgrade .addAppropriateCols() so that it pays attention to the graph.
+## IOW, the cols asked for should not just be all of them but only the ones
+## that are needed based on the initial values of cols that was passed into
+## select.
 
 ## this will return the cols, with appropriate things appended.
 .addAppropriateCols <- function(x, db, cols){
@@ -274,27 +281,6 @@ setMethod("keys", "OrganismDb",
   ## Now add the fkeys to the cols that go with the db
   cols <- c(cols, fkeys[names(fkeys) %in% db])
   unique(cols)
-  
-##   if(db=="OrgDb" && length(dbs)==3){
-##     ## then we have to add them all
-##     cols <- c(cols,"ENTREZID","GO")
-##   }
-##   if(db=="OrgDb" && length(dbs)==2){
-##     ## Then we have to choose one to add
-##     if(any(sapply(dbs,class) %in% "GODb")){
-##       cols <- c(cols,"GO") ## not sure how to hit this one???
-##     }else{
-##       cols <- c(cols,"ENTREZID")
-##     }
-##   }
-##   ## otherwise we just add the appropriate one per class.
-##   if(db == "GODb"){
-##     cols <- c(cols,"TERM")
-##   }
-##   if(db == "TranscriptDb"){
-##     cols <- c(cols,"GENEID")
-##   }
-##   unique(cols)
 }
 
 
@@ -308,7 +294,7 @@ setMethod("keys", "OrganismDb",
   tab
 }
 
-.getSelects <- function(dbs, keys, cols, keytype, mkeys){
+.getSelects <- function(dbnames, keys, cols, keytype){
   res <- list(length(dbs))
   for(i in seq_len(length(dbs))){
     ## in addition to looping over the dbs, the appropriate cols must be
@@ -322,9 +308,6 @@ setMethod("keys", "OrganismDb",
       if(length(dbs) > 1){ 
         colsLocal <- .addAppropriateCols(x, db, colsLocal)
       }
-      ## sel <- select(dbs[[i]], keys, colsLocal, keytype)
-      ## sel <- .dropDuplicatedgetSelectsCols(sel)
-      ## res[[i]] <- sel
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }else{ ## more than one
       mtype <- c(mtype,db)
@@ -334,12 +317,8 @@ setMethod("keys", "OrganismDb",
       if(db=="GODb"){
         keytype="GOID"
       }
-      ## keys <- keys(dbs[[i]], keytype)  ##gets ALL keys  :(
       prevKeyType <- mkeys[[paste(mtype,collapse="_")]][1]
       keys <- unique(res[[1]][[prevKeyType]])
-      ## sel <- select(dbs[[i]], keys, colsLocal, keytype)
-      ## sel <- .dropDuplicatedgetSelectsCols(sel)
-      ## res[[i]] <- sel
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }
   }
@@ -410,6 +389,10 @@ setMethod("keys", "OrganismDb",
 ## tables plus an indicator for which of the two keys 1st or 2nd table key is
 ## needed.
 
+## tbl1,tbl2 wil be actual package names like 'org.Hs.eg.db' or 'GO.db'
+## tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
+## tbl2 = "org.Hs.eg.db"
+## key = "tbl1"
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
   key <- match.arg(key)
   kf <- keyFrame(x)
@@ -418,7 +401,7 @@ setMethod("keys", "OrganismDb",
   
   
   ## Then I have to get the keys, but remember that tbl1 and tbl2 might be in
-  ## opposite order, and the order is important.
+  ## opposite order, and the order is actually important.
   
 
 }
@@ -433,8 +416,7 @@ setMethod("keys", "OrganismDb",
   ## is what the other select statements support, BUT it is more complicated
   ## here because we don't know which things the keys and cols go with at this
   ## point.  (So the check will have to happen later, after we know this
-  ## information, and for cols it may be split up...)
-  
+  ## information, and for cols it may be split up...)  
   ## if(is.null(keys)) keys <- keys(x) ## if no keys provided: use them all
   ## if(is.null(cols)) cols <- cols(x) ## if no cols provided: use them all
   ## check that the keytype matches the keys
@@ -451,23 +433,10 @@ setMethod("keys", "OrganismDb",
   
   ## Then we need to decide which separate selects to call (we have to call
   ## each required one)
-  dbs <- .lookupDbFromCols(x, cols, keytype)
+  dbs <- .lookupDbsFromCols(x, cols, keytype)
   ## next we get the data from each.
   sels <- .getSelects(dbs, keys, cols, keytype, mkeys)
   
-  ## Somewhere along the line, I need to be able to "know the relationships
-  ## between the DBs".  Right now this is the order that the fkeys are
-  ## initially in.  But it needs to be part of the Homo.sapiens object to
-  ## indicate how you get from one key to another. IOW, if there is another DB
-  ## that has to be included, that needs to be grabbed along the way
-  ## (interpolated etc.)
-  
-  ## a good strategy might be to start with what we have now, and combine that
-  ## with a list and maybe even a graph object (to indicate the
-  ## relationships), and to then use that object to determine other cols that
-  ## need to be included (where some slot like 'fkeys' contains the foreign
-  ## key columns that we need to include for each DB type).  For now a list
-  ## will work simply because the relatioship flows along a single line.
   
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(sels, mkeys)
@@ -477,10 +446,6 @@ setMethod("keys", "OrganismDb",
   ## Actually that is not quite right, what we want to do is make a blacklist
   ## of columns that were added (in fkeys) and that were NOT requested
   ## (oriCols and keytype).
-
-  ## old fkeys (till I know that I can live without them)
-  ## fkeys <- c(GODb = "TERM", OrgDb = "ENTREZID", OrgDb="GO",
-  ##            TranscriptDb = "GENEID")
 
 #  extraKeys <- unique(unlist(mkeys))
   extraKeys <- .getDbObjFKeys(x)
@@ -570,7 +535,7 @@ setMethod("select", "OrganismDb",
 
 ## library(Homo.sapiens);cols3 <- cols(Homo.sapiens)[c(10,11,37)];cols2 <- cols(Homo.sapiens)[c(7,10,11,37)];cols8 <- cols(Homo.sapiens)[c(37)];
 
-## debug(Homo.sapiens:::.lookupDbFromCols);
+## debug(Homo.sapiens:::.lookupDbsFromCols);
 ## debug(Homo.sapiens:::.mergeSelectResults);
 ## debug(Homo.sapiens:::.select);
 ## debug(Homo.sapiens:::.getSelects);

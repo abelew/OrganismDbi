@@ -52,14 +52,6 @@ test_makecolMapping <- function(){
   checkTrue("OrgDb" == names(res)[res=='ENTREZID'] )
 }
 
-## test_lookupDbsFromCols <- function(){
-##   res <- OrganismDbi:::.lookupDbsFromCols(x,"TERM")
-##   checkTrue(class(res) == "GODb")
-##   res <- OrganismDbi:::.lookupDbsFromCols(x,"TXID")
-##   checkTrue(class(res) == "TranscriptDb")
-##   res <- OrganismDbi:::.lookupDbsFromCols(x,"ENTREZID")
-##   checkTrue(class(res) == "OrgDb")  
-## }
 
 
 ## x in this method is actually not an OrganismDb object, but a list of the
@@ -70,15 +62,6 @@ test_resortDbs <- function(){
   checkTrue(class(res[[2]]) == "OrgDb") 
 }
 
-
-## test_lookupDbsFromCols <- function(){
-##   res <- OrganismDbi:::.lookupDbsFromCols(x,
-##                                           c("TXID","TERM","ENTREZID"),
-##                                           "GENEID")
-##   checkTrue(length(res)==3)
-##   checkTrue(class(res)=="list")
-##   checkTrue(class(res[[2]])=="OrgDb")
-## }
 
 
 test_addAppropriateCols <- function(){
@@ -115,10 +98,11 @@ test_addAppropriateCols <- function(){
 test_getSelects <- function(){
   cols <- c("TERM","ALIAS")
   keytype <- "GENEID"
-#  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
+  ## dbs now has names to indicate which package for each
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
   keys <- head(keys(x, keytype),n=2)
 #  mkeys <- OrganismDbi:::.mkeys()
-  res <- OrganismDbi:::.getSelects(dbs, keys, cols, keytype, mkeys)
+  res <- OrganismDbi:::.getSelects(dbnames, keys, cols, keytype)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
