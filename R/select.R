@@ -188,36 +188,26 @@ setMethod("keys", "OrganismDb",
 }
 
 
-## now uses graphs to order things better
-.resortDbs <- function(x, pkgs, keytype){
-  
-## BIG TODO #2: pkgs tells us which things are needed, but right now it's still
-## ignored.  What needs to happen instead is that I need to use these data to
-## filter out nodes that are 1) not in pkgs and 2) ALSO not on the "path" for
-## things that are in pkgs.  This should "fall out" if I just:
-## 1) Pass in only cols that actually are needed (either because they were requested or because they are needed to link the graph together) - upgrading .addAppropriateCols() should do this step for me and then
-## 2) actually use pkgs to filter in this function here.  IOW, do NOT return the whole graph, but only those nodes that are listed in pkgs.
-
-
+.getDistances <- function(x, keytype){
   ## use the shortest path algorithm to get them into the order desired.
   g <- dbGraph(x)
   startNode <- .lookupDbNameFromKeytype(x, keytype)
   sp <- dijkstra.sp(g, start=startNode)
-  res <- sp$distances
+  sp$distances
+}
 
-  ## So from HERE, I will know how many steps each thing is from my start
-  ## node...
-  ## That means that I have an ordered path to follow when connecting these
-  ## things.  So as long as I start with node 0, and then do all 1 nodes,
-  ## followed by all 2 nodes etc. I will succeed at getting everything joined
-  ## together. 
-
+## now uses graphs to order things better
+.resortDbs <- function(x, pkgs, keytype){
+  ## use the shortest path algorithm to get them into the order desired.
+  res <- .getDistances(x, keytype)
   ## So now I just have to sort the names in order of distance.
   dbs <- names(res)[order(res)]
   ## Then convert into actual objects
   objs <- lapply(dbs, .makeReal)
   ## Then label the objs with the names
   names(objs) <- dbs
+  ## Then filter out any objs that were not listed in pkgs (clip leaf nodes)
+  objs <- objs[names(objs) %in% pkgs]
   ## Then return 
   objs
 }
@@ -229,7 +219,6 @@ setMethod("keys", "OrganismDb",
   cols <- unique(c(keytype, cols))
   pkgs <- .lookupDbNamesFromCols(x, cols)
   pkgs <- unique(pkgs)
-  names(pkgs) <- pkgs   
   ## Now use the graph to decide the path
   .resortDbs(x, pkgs=pkgs, keytype=keytype) 
 }
@@ -253,6 +242,15 @@ setMethod("keys", "OrganismDb",
 
 
 
+## this will return the cols, with appropriate things appended for a single Db.
+.getExtraColsForDb <- function(x, db, cols){
+  fkeys <- .getDbObjFKeys(x)
+  ## Now add the fkeys to the cols that go with the db
+  cols <- c(cols, fkeys[names(fkeys) %in% db])
+  unique(cols)
+}
+
+
 ## BIG TODO: And if the user chooses cols from GO and Txdb (for example), I
 ## still need to join those via a dbs that they need no data from (org pkg in
 ## this example).  So in that case, certain cols need to be incluced by a
@@ -268,14 +266,26 @@ setMethod("keys", "OrganismDb",
 ## IF the cols requested are separated on the graph by too big a distance:
 ## THEN I need to get the keys from the intermediate nodes.
 
+## This one will actually get the extra cols for ALL the RELEVANT Dbs.
+.addAppropriateCols <- function(x, cols, keytype){
+  ## 1st we want to run dijkstras (factor from .resortDbs)
+  dist <- .getDistances(x, keytype)
+  
+  ## then we need to lookup the DBs we need (based on the cols alone). (
+  pkgs <- .lookupDbNamesFromCols(x, cols)
+  
+  ## Then we need to see if there are any cases where 1) a pkgs element is
+  ## separated from the keytype node by > 1 step and also 2) the node in
+  ## between is not present.  When this happens, we need to add it to pkgs.
 
-## this will return the cols, with appropriate things appended.
-.addAppropriateCols <- function(x, db, cols){
-  fkeys <- .getDbObjFKeys(x)
-  ## Now add the fkeys to the cols that go with the db
-  cols <- c(cols, fkeys[names(fkeys) %in% db])
-  unique(cols)
+
+  ## finally, for each node of pkgs, we need to grab the appropriate fkeys and
+  ## add them to cols.  One approach is to lapply on .getExtraColsForDb(
+  
+
 }
+
+
 
 
 ## also a helper to filter out cols that are duplicated after select()
