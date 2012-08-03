@@ -288,27 +288,39 @@ setMethod("keys", "OrganismDb",
   ## BE CAREFUL! the order matters for match and is reverse of %in%
   ## (iow use the long vector second)
   matchSub <- function(x, m1, m2){
-    idx <- match(m1, m2)
+    idx <- match(unlist(m1), unlist(m2))
     idx <- idx[!is.na(idx)]
     x[idx]
   }
-
+  
   ## new nodewalker will use a loop instead
-  nodeWalker <- function(g, dst, pkg, curDist){ 
+  nodeWalker <- function(g, dst, pkg, curDist,extraPkgs){ 
     ## get the edges 
     e <- edges(g) 
     enames <- names(e)
     dstNames <- names(dst)
 
+    pkgConts <- matchSub(e, pkg, enames) 
     
+    pkgDists <-  matchSub(dst, pkgConts, dstNames) 
+    pkg <- names(pkgDists)[pkgDists < curDist]    
+    curDist <- matchSub(dst, pkg, dstNames)    
+    if(curDist !=0){
+      extraPkgs <- c(extraPkgs, pkg)
+      nodeWalker(g, dst, pkg, curDist, extraPkgs)
+    }else{
+      return(extraPkgs)
+    }
   }
+
+  extraPkgs <- character()
   
   ## master loop for all pkgs
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
     if(curDist > 1){## then we need to work out how to 
-      extraPkgs <- nodeWalker(g, dst, pkg, curDist) 
+      extraPkgs <- nodeWalker(g, dst, pkg, curDist, extraPkgs) 
     }
   }
 
@@ -317,7 +329,8 @@ setMethod("keys", "OrganismDb",
   
 
 
-## older recursive nodewalker
+## older recursive nodewalker (works as long as I unlist in the helper, BUT it
+## ultimately fails because I can't get extraPkgs back out).
   
 ##   ## I need a recursive function that will walk back to the start, and will
 ##   ## add elements to extraPkgs along the way.
