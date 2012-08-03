@@ -341,29 +341,34 @@ setMethod("keys", "OrganismDb",
 
 
 .getSelects <- function(dbnames, keys, cols, keytype){
-  res <- list(length(dbs))
-  for(i in seq_len(length(dbs))){
-    ## in addition to looping over the dbs, the appropriate cols must be
+  res <- list(length(dbnames))
+  for(i in seq_len(length(dbnames))){
+    ## in addition to looping over the dbnames, the appropriate cols must be
     ## selected for EACH
-    dbtype <- as.character(class(dbs[[i]]))
-    colsLocal <- cols[cols %in% cols(dbs[[i]])]
+    dbtype <- dbnames[[i]]
+#as.character(class(dbnames[[i]]))
+    colsLocal <- cols[cols %in% cols(.makeReal(dbnames[[i]]))]
     if(i==1){
       ## mtype accumulates a history of tables that we have merged so far.
       mtype <- dbtype
-      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
+      res[[i]] <- select(.makeReal(dbnames[[i]]), keys, colsLocal, keytype)
     }else{ ## more than one
       mtype <- c(mtype,dbtype)
-      keytype <- mkeys[[paste(mtype,collapse="_")]][2] ## always the 2nd val
+      ml <- length(mtype)
+      keytype <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
+#mkeys[[paste(mtype,collapse="_")]][2] ## always the 2nd val
       ## An UGLY exception for GO.db:  (TODO: Is there a more elegant way?)
       if(dbtype=="GODb"){
         keytype="GOID"
       }
-      prevKeyType <- mkeys[[paste(mtype,collapse="_")]][1]
+      prevKeyType <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
+#mkeys[[paste(mtype,collapse="_")]][1]
       keys <- unique(res[[1]][[prevKeyType]])
-      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
+      res[[i]] <- select(.makeReal(dbnames[[i]]), keys, colsLocal, keytype)
     }
   }
-  names(res) <- sapply(dbs, class)
+  names(res) <- dbnames
+#sapply(dbnames, class)
   res
 }
 
@@ -389,8 +394,11 @@ setMethod("keys", "OrganismDb",
       res <- sels[[1]]
     }else{## There is more than one, so we must merge...
         mtype <- c(mtype,names(sels)[i])
-        xkey <- mkeys[[paste(mtype,collapse="_")]][1]
-        ykey <- mkeys[[paste(mtype,collapse="_")]][2]
+        ml <- length(mtype)
+        xkey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
+#mkeys[[paste(mtype,collapse="_")]][1]
+        ykey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
+#mkeys[[paste(mtype,collapse="_")]][2]
         res <- merge(res, sels[[i]],by.x=xkey, by.y=ykey, all=TRUE)
                                         #, suffixes = c("",""))
         res <- .dropDuplicatedMergeCols(res)

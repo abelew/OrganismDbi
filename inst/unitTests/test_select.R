@@ -125,10 +125,8 @@ test_mkeys <- function(){
 test_getSelects <- function(){
   cls <- c("TERM","ALIAS")
   keytype <- "GENEID"
-  ## dbs now has names to indicate which package for each
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,keytype)
+  dbnames <-  OrganismDbi:::.lookupDbNamesFromCols(x,c(cls,keytype))
   keys <- head(keys(x, keytype),n=2)
-#  mkeys <- OrganismDbi:::.mkeys()
   res <- OrganismDbi:::.getSelects(dbnames, keys, cls, keytype)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
@@ -138,9 +136,9 @@ test_getSelects <- function(){
   
   cls <- c("SYMBOL")
   keytype <- "OMIM"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,keytype)
+  dbnames <-  OrganismDbi:::.lookupDbNamesFromCols(x,c(cls,keytype))
   keys <- head(keys(x, keytype),n=2)
-  res <- OrganismDbi:::.getSelects(dbs, keys, cls, keytype, mkeys)  
+  res <- OrganismDbi:::.getSelects(dbnames, keys, cls, keytype, mkeys)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))
