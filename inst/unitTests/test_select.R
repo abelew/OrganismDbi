@@ -136,11 +136,11 @@ test_getSelects <- function(){
   checkTrue("TERM" %in% colnames(res[[3]]))
   
   cls <- c("SYMBOL")
-  keytype <- "OMIM"
+  kt <- "OMIM"
   cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,kt)   
-  keys <- head(keys(x, keytype),n=2)
-  res <- OrganismDbi:::.getSelects(dbs, keys, cls, keytype, mkeys)  
+  keys <- head(keys(x, kt),n=2)
+  res <- OrganismDbi:::.getSelects(dbs, keys, cls, kt)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))
