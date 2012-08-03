@@ -1,4 +1,5 @@
-importFrom("graph", ftM2graphNEL, edges)
+importFrom("graph", ftM2graphNEL)
+importMethodsFrom("graph", edges)
 importClassesFrom("graph", graphNEL)
 importFrom("RBGL", dijkstra.sp)
 exportClasses("OrganismDb")

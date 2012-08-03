@@ -283,45 +283,76 @@ setMethod("keys", "OrganismDb",
   ## then we need to lookup the DBs we need (based on the cols alone). (
   pkgs <- OrganismDbi:::.lookupDbNamesFromCols(x, cols)
 
-  ## make variable to hold intermediate packages.
-  extraPkgs <- character()
-  
-  ## I need a recursive function that will walk back to the start, and will
-  ## add elements to extraPkgs along the way.
-  nodeWalker <- function(g, dst, pkg, curDist, extraPkgs){
-    e <- edges(g)
+
+  ## helper function for matching and subsetting
+  ## BE CAREFUL! the order matters for match and is reverse of %in%
+  ## (iow use the long vector second)
+  matchSub <- function(x, m1, m2){
+    idx <- match(m1, m2)
+    idx <- idx[!is.na(idx)]
+    x[idx]
+  }
+
+  ## new nodewalker will use a loop instead
+  nodeWalker <- function(g, dst, pkg, curDist){ 
+    ## get the edges 
+    e <- edges(g) 
     enames <- names(e)
-    pkgConts <- e[enames %in% pkg]
     dstNames <- names(dst)
-    pkgDists <-  dst[dstNames %in% pkgConts]
-    pkg <- names(pkgDists)[pkgDists < curDist]    
-    curDist <- dst[dstNames %in% pkg]
-    if(curDist !=0){
-      extraPkgs <- c(extraPkgs, pkg)
-      nodeWalker(g, dst, pkg, curDist, extraPkgs)
+
+    
+  }
+  
+  ## master loop for all pkgs
+  for(i in seq_len(length(pkgs))){
+    pkg <- pkgs[i] 
+    curDist <- dst[names(dst) %in% pkg] 
+    if(curDist > 1){## then we need to work out how to 
+      extraPkgs <- nodeWalker(g, dst, pkg, curDist) 
     }
   }
 
-  ## PROBLEMS: 1) %in% does not work the same in nodeWalker as it does
-  ## elsewhere So should I use match?  2) edges is STILL not being imported
-  ## properly?  Is it a function?
   
   
-  ## Then we need to see if there are any cases where 1) a pkgs element is
-  ## separated from the keytype node by > 1 step and also 2) the node in
-  ## between is not present.  When this happens, we need to add it to pkgs.
-  ## Can do this by stepping through the pkgs.  For each pkg, ask if distance
-  ## is > 1 .  If true, walk recursively "down" a node (check if dst is less
-  ## and if it is an edge), and then check if that node is in pkgs (add it if
-  ## not), until you reach the start node.  Use edges(g) to get the next nodes
-  ## over.
-  for(i in seq_len(length(pkgs))){
-    pkg <- pkgs[i]
-    curDist <- dst[names(dst) %in% pkg]
-    if(curDist > 1){## then we need to take a walk
-      nodeWalker(g, dst, pkg, curDist, extraPkgs)
-    }
-  }
+  
+
+
+## older recursive nodewalker
+  
+##   ## I need a recursive function that will walk back to the start, and will
+##   ## add elements to extraPkgs along the way.
+##   nodeWalker <- function(g, dst, pkg, curDist, extraPkgs){
+##     e <- edges(g)
+##     enames <- names(e)
+##     pkgConts <- matchSub(e, pkg, enames) #e[enames %in% pkg] ## works
+##     dstNames <- names(dst)
+##     pkgDists <-  matchSub(dst, pkgConts, dstNames) #dst[dstNames %in% pkgConts] ## doesn't work (2nd time) but does work on an open command line...
+##     pkg <- names(pkgDists)[pkgDists < curDist]    
+##     curDist <- matchSub(dst, pkg, dstNames) #dst[dstNames %in% pkg]
+##     if(curDist !=0){
+##       extraPkgs <- c(extraPkgs, pkg)
+##       nodeWalker(g, dst, pkg, curDist, extraPkgs)
+##     }
+##   }
+
+##   ## PROBLEMS: 1) %in% does not work the same in nodeWalker as it does
+##   ## elsewhere So should I use match?  2) edges is STILL not being imported
+##   ## properly?  Is it a function?
+  
+  
+##   ## Then we need to see if there are any cases where 1) a pkgs element is
+##   ## separated from the keytype node by > 1 step and also 2) the node in
+##   ## between is not present.  When this happens, we need to add it to pkgs.
+##   ## Can do this by stepping through the pkgs.  For each pkg, ask if distance
+##   ## is > 1 .  If true, walk recursively "down" a node (check if dst is less
+##   ## and if it is an edge), and then check if that node is in pkgs (add it if
+##   ## not), until you reach the start node.  Use edges(g) to get the next nodes
+##   ## over.
+
+
+  ## Try again (this time use a loop and take advantage of the fact that I
+  ## know how far away I am.
+  
 
   ## Add extra packages to pkgs
   pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
