@@ -275,30 +275,37 @@ setMethod("keys", "OrganismDb",
 ## This one will actually get the extra cols for ALL the RELEVANT Dbs.
 .addAppropriateCols <- function(x, cols, keytype){
   ## get the graph
-  g <- dbGraph(x)
+  g <- OrganismDbi:::dbGraph(x)
   
   ## We want to run dijkstras (factor from .resortDbs)
-  dst <- .getDistances(x, keytype)
+  dst <- OrganismDbi:::.getDistances(x, keytype)
   
   ## then we need to lookup the DBs we need (based on the cols alone). (
-  pkgs <- .lookupDbNamesFromCols(x, cols)
+  pkgs <- OrganismDbi:::.lookupDbNamesFromCols(x, cols)
 
   ## make variable to hold intermediate packages.
   extraPkgs <- character()
-
+  
   ## I need a recursive function that will walk back to the start, and will
   ## add elements to extraPkgs along the way.
-  nodeWalker <- function(g, dst, pkg, curDist){
+  nodeWalker <- function(g, dst, pkg, curDist, extraPkgs){
     e <- edges(g)
-    pkgConts <- e[names(e) %in% pkg]
-    pkgDists <-  dst[names(dst) %in% pkgConts]
+    enames <- names(e)
+    pkgConts <- e[enames %in% pkg]
+    dstNames <- names(dst)
+    pkgDists <-  dst[dstNames %in% pkgConts]
     pkg <- names(pkgDists)[pkgDists < curDist]    
-    curDist <- dst[names(dst) %in% pkg]
+    curDist <- dst[dstNames %in% pkg]
     if(curDist !=0){
       extraPkgs <- c(extraPkgs, pkg)
-      nodeWalker(g, dst, pkg, curDist)
+      nodeWalker(g, dst, pkg, curDist, extraPkgs)
     }
   }
+
+  ## PROBLEMS: 1) %in% does not work the same in nodeWalker as it does
+  ## elsewhere So should I use match?  2) edges is STILL not being imported
+  ## properly?  Is it a function?
+  
   
   ## Then we need to see if there are any cases where 1) a pkgs element is
   ## separated from the keytype node by > 1 step and also 2) the node in
@@ -312,19 +319,18 @@ setMethod("keys", "OrganismDb",
     pkg <- pkgs[i]
     curDist <- dst[names(dst) %in% pkg]
     if(curDist > 1){## then we need to take a walk
-      nodeWalker(g, dst, pkg, curDist)
+      nodeWalker(g, dst, pkg, curDist, extraPkgs)
     }
   }
 
   ## Add extra packages to pkgs
-  pkgs <- unique(c(pkgs, extraPkgs))
+  pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
   
-  ## finally, for each node of pkgs, we need to grab the appropriate fkeys and
-  ## add them to cols.  One approach is to lapply on .getExtraColsForDb(
-  fkeys <- .getDbNameFKeys(x)
-  
-  
-
+  ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
+  fkeys <- .getDbNameFKeys(x) ## get all the fkeys
+  fkeys <- fkeys[names(fkeys) %in% pkgs] ## only keep for pkgs in the path!
+  ## And then add those keys to our cols
+  unique(c(cols, fkeys))
 }
 
 
