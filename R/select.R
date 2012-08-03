@@ -275,15 +275,11 @@ setMethod("keys", "OrganismDb",
 ## This one will actually get the extra cols for ALL the RELEVANT Dbs.
 .addAppropriateCols <- function(x, cols, keytype){
   ## get the graph
-  g <- OrganismDbi:::dbGraph(x)
-  
+  g <- dbGraph(x)
   ## We want to run dijkstras (factor from .resortDbs)
-  dst <- OrganismDbi:::.getDistances(x, keytype)
-  
+  dst <- .getDistances(x, keytype)
   ## then we need to lookup the DBs we need (based on the cols alone). (
-  pkgs <- OrganismDbi:::.lookupDbNamesFromCols(x, cols)
-
-
+  pkgs <- .lookupDbNamesFromCols(x, cols)
   ## helper function for matching and subsetting
   ## BE CAREFUL! the order matters for match and is reverse of %in%
   ## (iow use the long vector second)
@@ -292,8 +288,7 @@ setMethod("keys", "OrganismDb",
     idx <- idx[!is.na(idx)]
     x[idx]
   }
-  
-  ## new nodewalker will use a loop instead
+  ## nodeWalker recurses to get back to the start node
   nodeWalker <- function(g, dst, pkg, curDist,extraPkgs){ 
     ## get the edges 
     e <- edges(g) 
@@ -312,10 +307,9 @@ setMethod("keys", "OrganismDb",
       return(extraPkgs)
     }
   }
-
+  ## vector for holding nodes that are "between" start and leaf nodes.
   extraPkgs <- character()
-  
-  ## master loop for all pkgs
+  ## master loop for all leaf pkgs (leaf nodes)
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
@@ -323,53 +317,8 @@ setMethod("keys", "OrganismDb",
       extraPkgs <- nodeWalker(g, dst, pkg, curDist, extraPkgs) 
     }
   }
-
-  
-  
-  
-
-
-## older recursive nodewalker (works as long as I unlist in the helper, BUT it
-## ultimately fails because I can't get extraPkgs back out).
-  
-##   ## I need a recursive function that will walk back to the start, and will
-##   ## add elements to extraPkgs along the way.
-##   nodeWalker <- function(g, dst, pkg, curDist, extraPkgs){
-##     e <- edges(g)
-##     enames <- names(e)
-##     pkgConts <- matchSub(e, pkg, enames) #e[enames %in% pkg] ## works
-##     dstNames <- names(dst)
-##     pkgDists <-  matchSub(dst, pkgConts, dstNames) #dst[dstNames %in% pkgConts] ## doesn't work (2nd time) but does work on an open command line...
-##     pkg <- names(pkgDists)[pkgDists < curDist]    
-##     curDist <- matchSub(dst, pkg, dstNames) #dst[dstNames %in% pkg]
-##     if(curDist !=0){
-##       extraPkgs <- c(extraPkgs, pkg)
-##       nodeWalker(g, dst, pkg, curDist, extraPkgs)
-##     }
-##   }
-
-##   ## PROBLEMS: 1) %in% does not work the same in nodeWalker as it does
-##   ## elsewhere So should I use match?  2) edges is STILL not being imported
-##   ## properly?  Is it a function?
-  
-  
-##   ## Then we need to see if there are any cases where 1) a pkgs element is
-##   ## separated from the keytype node by > 1 step and also 2) the node in
-##   ## between is not present.  When this happens, we need to add it to pkgs.
-##   ## Can do this by stepping through the pkgs.  For each pkg, ask if distance
-##   ## is > 1 .  If true, walk recursively "down" a node (check if dst is less
-##   ## and if it is an edge), and then check if that node is in pkgs (add it if
-##   ## not), until you reach the start node.  Use edges(g) to get the next nodes
-##   ## over.
-
-
-  ## Try again (this time use a loop and take advantage of the fact that I
-  ## know how far away I am.
-  
-
   ## Add extra packages to pkgs
   pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
-  
   ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
   fkeys <- .getDbNameFKeys(x) ## get all the fkeys
   fkeys <- fkeys[names(fkeys) %in% pkgs] ## only keep for pkgs in the path!
@@ -389,6 +338,7 @@ setMethod("keys", "OrganismDb",
   tab <- tab[,cols]
   tab
 }
+
 
 .getSelects <- function(dbnames, keys, cols, keytype){
   res <- list(length(dbs))

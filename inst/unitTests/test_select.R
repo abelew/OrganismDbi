@@ -65,55 +65,60 @@ test_resortDbs <- function(){
 
 
 test_addAppropriateCols <- function(){
-  cols <- c("TERM","ALIAS")
-  db <- "OrgDb"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID")
-  res <- OrganismDbi:::.addAppropriateCols(db, dbs, cols)
-  checkTrue("ENTREZID" %in% res)
-  checkTrue("GO" %in% res)
+##   cls <- c("TERM","ALIAS")
+##   db <- "OrgDb"
+##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
+##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
+##   checkTrue("ENTREZID" %in% res)
+##   checkTrue("GO" %in% res)
   
-  cols <- c("ACCNUM","ALIAS")
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID")
-  res <- OrganismDbi:::.addAppropriateCols(db, dbs, cols)
-  checkTrue("ENTREZID" %in% res)
+##   cls <- c("ACCNUM","ALIAS")
+##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
+##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
+##   checkTrue("ENTREZID" %in% res)
 
-  cols <- c("GO","ALIAS")
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID")
-  res <- OrganismDbi:::.addAppropriateCols(db, dbs, cols)
-  checkTrue("ENTREZID" %in% res)
+##   cls <- c("GO","ALIAS")
+##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
+##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
+##   checkTrue("ENTREZID" %in% res)
 
-  cols <- c("OBSOLETE") ## this is a defunct ID
-  db <- "GODb"
-  ## And this should therefore throw an error
-  checkException(OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID"))
+##   cls <- c("OBSOLETE") ## this is a defunct ID
+##   db <- "GODb"
+##   ## And this should therefore throw an error
+##   checkException(OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID"))
 
-  cols <- c("CDSID","CDSCHROM")
-  db <- "TranscriptDb"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,"GENEID")
-  res <- OrganismDbi:::.addAppropriateCols(db, dbs, cols)
+##   cls <- c("CDSID","CDSCHROM")
+##   db <- "TranscriptDb"
+##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
+##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
+##   checkTrue("GENEID" %in% res)
+
+  keytype <- c("TXNAME")
+  cls <- c("GOID")
+  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
   checkTrue("GENEID" %in% res)
 }
 
 
 test_getSelects <- function(){
-  cols <- c("TERM","ALIAS")
+  cls <- c("TERM","ALIAS")
   keytype <- "GENEID"
   ## dbs now has names to indicate which package for each
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,keytype)
   keys <- head(keys(x, keytype),n=2)
 #  mkeys <- OrganismDbi:::.mkeys()
-  res <- OrganismDbi:::.getSelects(dbnames, keys, cols, keytype)
+  res <- OrganismDbi:::.getSelects(dbnames, keys, cls, keytype)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
   checkTrue("GO" %in% colnames(res[[2]]))
   checkTrue("TERM" %in% colnames(res[[3]]))
   
-  cols <- c("SYMBOL")
+  cls <- c("SYMBOL")
   keytype <- "OMIM"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,keytype)
   keys <- head(keys(x, keytype),n=2)
-  res <- OrganismDbi:::.getSelects(dbs, keys, cols, keytype, mkeys)  
+  res <- OrganismDbi:::.getSelects(dbs, keys, cls, keytype, mkeys)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))
@@ -122,12 +127,12 @@ test_getSelects <- function(){
 
 
 test_mergeSelectResults <- function(){
-  cols <- c("TERM","ALIAS")
+  cls <- c("TERM","ALIAS")
   keytype <- "GENEID"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cols,keytype)
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,keytype)
   keys <- head(keys(x, keytype),n=3)
   mkeys <- OrganismDbi:::.mkeys()
-  sels <- OrganismDbi:::.getSelects(dbs, keys, cols, keytype, mkeys)
+  sels <- OrganismDbi:::.getSelects(dbs, keys, cls, keytype, mkeys)
   
   res <- OrganismDbi:::.mergeSelectResults(sels, mkeys)
   checkTrue(dim(res)[2]==6)
@@ -140,10 +145,10 @@ test_mergeSelectResults <- function(){
 
 ## MANY more tests
 test_select <- function(){
-  cols <- c("GO","ALIAS","CHR","CHRLOC")
+  cls <- c("GO","ALIAS","CHR","CHRLOC")
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==8)
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
@@ -152,57 +157,57 @@ test_select <- function(){
   checkTrue("CHRLOCCHR" %in% colnames(res))  
   checkTrue("ALIAS" %in% colnames(res))
 
-  cols <- c("IPI", "ALIAS", "CDSSTART")
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("IPI", "ALIAS", "CDSSTART")
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==4)
   checkTrue("IPI" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ALIAS" %in% colnames(res))  
   checkTrue("CDSSTART" %in% colnames(res))
 
-  cols <- c("GOID","ENTREZID")
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("GOID","ENTREZID")
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==5)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("TERM" %in% colnames(res))  
  
-  cols <- c("ALIAS","CHR","EXONNAME") 
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("ALIAS","CHR","EXONNAME") 
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==4)
   checkTrue("ALIAS" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("EXONNAME" %in% colnames(res))  
   
-  cols <- c("ACCNUM","CDSSTART") 
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("ACCNUM","CDSSTART") 
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
 
-  cols <- c("ACCNUM", "ALIAS")
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("ACCNUM", "ALIAS")
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
   checkTrue("ALIAS" %in% colnames(res))
 
-  cols <- c("CDSSTART","CDSEND")
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("CDSSTART","CDSEND")
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
   checkTrue("CDSEND" %in% colnames(res))
 
-  cols <- c("CDSSTART")
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("CDSSTART")
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==2)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
 
-  cols <- c("ENTREZID")
-  res <- OrganismDbi:::.select(x, keys, cols, keytype)
+  cls <- c("ENTREZID")
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==1)
   checkTrue("ENTREZID" %in% colnames(res))
   
@@ -218,20 +223,20 @@ test_select <- function(){
 ## Right now there seem to be some performance issues for these.
 ## test_select__otherIDTypes <- function(){
 
-## cols <- cols(x)[c(7,12)]
+## cls <- cols(x)[c(7,12)]
 ## keys <- head(keys(x, "ALIAS"))
 ## keytype <- "ALIAS"
-## res <- OrganismDbi:::.select(x, keys, cols, keytype)
+## res <- OrganismDbi:::.select(x, keys, cls, keytype)
 
 ## debug(OrganismDbi:::.getSelects)
 ## debug(OrganismDbi:::.mergeSelectResults)
 ## debug(AnnotationDbi:::.resort)
 
 
-##   cols <- cols(x)[c(7,10,11,12)]
+##   cls <- cols(x)[c(7,10,11,12)]
 ##   keys <- head(keys(x, "ALIAS"))
 ##   keytype <- "ALIAS"
-##   res <- OrganismDbi:::.select(x, keys, cols, keytype)
+##   res <- OrganismDbi:::.select(x, keys, cls, keytype)
 
 ##   checkTrue(dim(res)[2]==11)
 ##   checkTrue(class(res)=="data.frame")
