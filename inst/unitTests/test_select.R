@@ -124,10 +124,11 @@ test_mkeys <- function(){
 
 test_getSelects <- function(){
   cls <- c("TERM","ALIAS")
-  keytype <- "GENEID"
-  dbnames <-  OrganismDbi:::.lookupDbNamesFromCols(x,c(cls,keytype))
-  keys <- head(keys(x, keytype),n=2)
-  res <- OrganismDbi:::.getSelects(dbnames, keys, cls, keytype)
+  kt <- "GENEID"
+  cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,kt)  
+  keys <- head(keys(x, kt),n=2)
+  res <- OrganismDbi:::.getSelects(dbs, keys, cls, kt)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
@@ -136,9 +137,10 @@ test_getSelects <- function(){
   
   cls <- c("SYMBOL")
   keytype <- "OMIM"
-  dbnames <-  OrganismDbi:::.lookupDbNamesFromCols(x,c(cls,keytype))
+  cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,kt)   
   keys <- head(keys(x, keytype),n=2)
-  res <- OrganismDbi:::.getSelects(dbnames, keys, cls, keytype, mkeys)  
+  res <- OrganismDbi:::.getSelects(dbs, keys, cls, keytype, mkeys)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))

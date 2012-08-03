@@ -220,7 +220,7 @@ setMethod("keys", "OrganismDb",
   pkgs <- .lookupDbNamesFromCols(x, cols)
   pkgs <- unique(pkgs)
   ## Now use the graph to decide the path
-  .resortDbs(x, pkgs=pkgs, keytype=keytype) 
+  .resortDbs(x, pkgs=pkgs, keytype=keytype)
 }
 ## .lookupDbsFromCols(x, cols, keytype)
 
@@ -340,18 +340,18 @@ setMethod("keys", "OrganismDb",
 }
 
 
-.getSelects <- function(dbnames, keys, cols, keytype){
-  res <- list(length(dbnames))
-  for(i in seq_len(length(dbnames))){
-    ## in addition to looping over the dbnames, the appropriate cols must be
+.getSelects <- function(dbs, keys, cols, keytype){
+  res <- list(length(dbs))
+  for(i in seq_len(length(dbs))){
+    ## in addition to looping over the dbs, the appropriate cols must be
     ## selected for EACH
-    dbtype <- dbnames[[i]]
-#as.character(class(dbnames[[i]]))
-    colsLocal <- cols[cols %in% cols(.makeReal(dbnames[[i]]))]
+    dbtype <- names(dbs)[[i]]
+#as.character(class(dbs[[i]]))
+    colsLocal <- cols[cols %in% cols(dbs[[i]])]
     if(i==1){
       ## mtype accumulates a history of tables that we have merged so far.
       mtype <- dbtype
-      res[[i]] <- select(.makeReal(dbnames[[i]]), keys, colsLocal, keytype)
+      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }else{ ## more than one
       mtype <- c(mtype,dbtype)
       ml <- length(mtype)
@@ -364,11 +364,11 @@ setMethod("keys", "OrganismDb",
       prevKeyType <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
 #mkeys[[paste(mtype,collapse="_")]][1]
       keys <- unique(res[[1]][[prevKeyType]])
-      res[[i]] <- select(.makeReal(dbnames[[i]]), keys, colsLocal, keytype)
+      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }
   }
-  names(res) <- dbnames
-#sapply(dbnames, class)
+  names(res) <- dbs
+#sapply(dbs, class)
   res
 }
 
@@ -469,9 +469,9 @@ setMethod("keys", "OrganismDb",
   ## ktKeys = keys(x, keytype=keytype)
   ## if(!(any(ktKeys %in% keys))){
   ##   stop("keys must be of the same keytype as the actual keytype")
-  ## }
+  ## }x
 
-  mkeys <- .mkeys()
+  #mkeys <- .mkeys()
   
   ## Preserve original cols (we will be adding some to get our results along
   ## the way 
