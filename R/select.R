@@ -367,7 +367,7 @@ setMethod("keys", "OrganismDb",
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }
   }
-  names(res) <- dbs
+  names(res) <- names(dbs)
 #sapply(dbs, class)
   res
 }
@@ -385,7 +385,7 @@ setMethod("keys", "OrganismDb",
 
 
 ## This merges things based on the key relationships from mkeys
-.mergeSelectResults <- function(sels, mkeys){
+.mergeSelectResults <- function(x, sels){
   for(i in seq_len(length(sels))){
     if(i==1){
       ## mtype starts with table i, and just accumulates a history of tables

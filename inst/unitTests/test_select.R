@@ -150,19 +150,21 @@ test_getSelects <- function(){
 
 test_mergeSelectResults <- function(){
   cls <- c("TERM","ALIAS")
-  keytype <- "GENEID"
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,keytype)
-  keys <- head(keys(x, keytype),n=3)
-  mkeys <- OrganismDbi:::.mkeys()
-  sels <- OrganismDbi:::.getSelects(dbs, keys, cls, keytype, mkeys)
-  
-  res <- OrganismDbi:::.mergeSelectResults(sels, mkeys)
+  kt <- "GENEID"
+  cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,kt)  
+  keys <- head(keys(x, kt),n=3)
+  sels <- OrganismDbi:::.getSelects(dbs, keys, cls, kt)
+
+  res <- OrganismDbi:::.mergeSelectResults(x, sels)
   checkTrue(dim(res)[2]==6)
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("GENEID" %in% colnames(res))
   checkTrue("ALIAS" %in% colnames(res))  
 }
+
+## Investigate: why does the above query have so many NA rows for the gene related data???
 
 
 ## MANY more tests
