@@ -82,21 +82,43 @@ test_addAppropriateCols <- function(){
 ##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
 ##   checkTrue("ENTREZID" %in% res)
 
-##   cls <- c("OBSOLETE") ## this is a defunct ID
-##   db <- "GODb"
-##   ## And this should therefore throw an error
-##   checkException(OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID"))
-
 ##   cls <- c("CDSID","CDSCHROM")
 ##   db <- "TranscriptDb"
 ##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
 ##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
 ##   checkTrue("GENEID" %in% res)
 
+  keytype <- c("ENTREZID")
+  cls <- c("OBSOLETE") ## this is a defunct ID
+  ## And this should therefore throw an error
+  checkException(OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID"))
+
   keytype <- c("TXNAME")
   cls <- c("GOID")
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
   checkTrue("GENEID" %in% res)
+
+  keytype <- c("ENTREZID")
+  cls <- c("GOID")
+  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
+  checkTrue("ENTREZID" %in% res)
+  
+}
+
+test_mkeys <- function(){
+  tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
+  tbl2 = "org.Hs.eg.db"
+  res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl1")
+  checkTrue("GENEID"==res)
+  res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl2")
+  checkTrue("ENTREZID"==res)
+
+  tbl1 = "GO.db"
+  tbl2 = "org.Hs.eg.db"
+  res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl1")
+  checkTrue("GOID"==res)
+  res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl2")
+  checkTrue("GO"==res)
 }
 
 

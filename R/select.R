@@ -257,12 +257,12 @@ setMethod("keys", "OrganismDb",
 ## }
 
 
-## BIG TODO: And if the user chooses cols from GO and Txdb (for example), I
+## If the user chooses cols from GO and Txdb (for example), I
 ## still need to join those via a dbs that they need no data from (org pkg in
 ## this example).  So in that case, certain cols need to be incluced by a
 ## graph-aware .addAppropriateCols() function.
 
-## Upgrade .addAppropriateCols() so that it pays attention to the graph.
+## I have upgraded .addAppropriateCols() so that it pays attention to the graph.
 ## IOW, the cols asked for should not just be all of them but only the ones
 ## that are needed based on the initial values of cols that was passed into
 ## select.
@@ -399,32 +399,9 @@ setMethod("keys", "OrganismDb",
   res
 }
 
- 
-## BIG TODO #3: fix this up to use the results of  the keyFrame() data from x.
- 
-## This just defines what the mkeys are.  This is hard coded, but a better
-## implementation would derive these from something like the relationships in
-## a graph.
-## .mkeys <- function(){
-##   ## mkeys are the keys you need to use to merge things together...
-##   ## I also need to keep track of which keys are needed to merge things.
-##   ## mkeys is just how we are mapping this.  A graph would be more efficient.
-##   list(
-##     OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
-##     GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"),
-##     OrgDb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
-##     TranscriptDb_OrgDb = c(TranscriptDb = "GENEID",OrgDb = "ENTREZID"),
-## ## no TranscriptDb_GODb should ever happen - that case should always be a
-## ## triple join and should never occur in that order...
-## ##    TranscriptDb_GODb = c(TranscriptDb = "GENEID",GODb = "GO"),
-##     ## triple joins define the relationship between the 1st and last table.
-##     OrgDb_GODb_TranscriptDb = c(OrgDb = "ENTREZID", TranscriptDb = "GENEID"),
-##     GODb_OrgDb_TranscriptDb = c(TranscriptDb = "GENEID", OrgDb = "ENTREZID"),
-##     TranscriptDb_OrgDb_GODb = c(OrgDb = "GO", GODb = "GOID"),
-##     TranscriptDb_GODb_OrgDb = c(GODb = "GOID", OrgDb = "GO"))
-## }
 
-## new plan for .mkeys will return appropriate value "on the fly" based on the
+
+## .mkeys will return appropriate value "on the fly" based on the
 ## contents of keyFrame().  It will take at least three arguments: the two
 ## tables plus an indicator for which of the two keys 1st or 2nd table key is
 ## needed.
@@ -435,15 +412,36 @@ setMethod("keys", "OrganismDb",
 ## key = "tbl1"
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
   key <- match.arg(key)
-  kf <- keyFrame(x)
+  kf <- OrganismDbi:::keyFrame(x)
+  ## process for a double match of tbl1 and tbl2 (in any order)
+  ## note: (we should ALWAYS have one when this function is called)
+  parseCol <- function(piece, str){
+    grepl(str, piece)
+  }
   
-  ## 1st I must extract the row where tbl1 AND tbl2 are in cols 1 and 2.
-  
-  
-  ## Then I have to get the keys, but remember that tbl1 and tbl2 might be in
-  ## opposite order, and the order is actually important.
-  
+  res <- apply(kf[,1:2], MARGIN=1, FUN=parseCol, tbl1)
+  res2 <- apply(kf[,1:2], MARGIN=1, FUN=parseCol, tbl2)
+  res <- res | res2 
+  resRowIdx <- res[,1] & res[,2]
+  matchRow <- kf[resRowIdx,]
+  if(dim(matchRow)[1]<1){stop("No relationship found for ",tbl1," and ",tbl2)}
 
+  ## now the tricky part is that in returning the keys I have to get the
+  ## correct keys back to the user...  And this is based on whether tbl1 was
+  ## one thing or another.
+  if(key=="tbl1"){
+    if(grepl(tbl1,matchRow$xDbs)){
+      return(as.character(matchRow$xKeys))
+    }else{ ## then its reversed of the order in the row...
+      return(as.character(matchRow$yKeys))
+    }
+  }else if(key=="tbl2"){
+    if(grepl(tbl2,matchRow$yDbs)){
+      return(as.character(matchRow$yKeys))
+    }else{ ## and the reverse case
+      return(as.character(matchRow$xKeys))
+    }
+  }
 }
 
 .select <- function(x, keys, cols, keytype){
