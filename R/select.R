@@ -479,14 +479,14 @@ setMethod("keys", "OrganismDb",
   
   ## 1st add any missing foreign key cols (based on what our graph looks like,
   ## and also based on what was asked for)
-  cols <- .addAppropriateCols()
+  cols <- .addAppropriateCols(x, cols, keytype)
   ## Now we only need to get the nodes that *have* those columns.
   dbs <- .lookupDbsFromCols(x, cols, keytype)
   
   ## next we get the data from each.
-  sels <- .getSelects(dbs, keys, cols, keytype, mkeys)
+  sels <- .getSelects(dbs, keys, cols, keytype)
   ## Then we need to merge them together using the foreign keys
-  res <- .mergeSelectResults(sels, mkeys)
+  res <- .mergeSelectResults(x, sels)
   
   
   ## Then we need to filter out all columns that we didn't ask for.  
