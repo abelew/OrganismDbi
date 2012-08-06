@@ -52,14 +52,23 @@ test_makecolMapping <- function(){
 }
 
 
-
-## TODO: failing test
-## x in this method is actually not an OrganismDb object, but a list of the
-## AnnotationDb objects...
 test_resortDbs <- function(){
-  xlist <- list(x@GODb, x@TranscriptDb, x@OrgDb)
-  res <- OrganismDbi:::.resortDbs(xlist)
-  checkTrue(class(res[[2]]) == "OrgDb") 
+  cls <- c("GOID","PATH")
+  pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(x, cls))
+  keytype <- "ENTREZID"
+  res <- OrganismDbi:::.resortDbs(x, pkgs, keytype)
+  checkTrue(length(res) == 2)
+  checkTrue(names(res)[1] == "org.Hs.eg.db") ## shuold always start here
+  checkTrue(names(res)[2] == "GO.db") ## should always go here
+
+  cls <- c("GOID","PATH", "TXNAME")
+  pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(x, cls))
+  keytype <- "TXNAME"
+  res <- OrganismDbi:::.resortDbs(x, pkgs, keytype)
+  checkTrue(length(res) == 3)
+  checkTrue(names(res)[1] == "TxDb.Hsapiens.UCSC.hg19.knownGene")
+  checkTrue(names(res)[2] == "org.Hs.eg.db") 
+  checkTrue(names(res)[3] == "GO.db")  
 }
 
 
