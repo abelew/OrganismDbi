@@ -420,7 +420,7 @@ setMethod("keys", "OrganismDb",
 ## key = "tbl1"
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
   key <- match.arg(key)
-  kf <- OrganismDbi:::keyFrame(x)
+  kf <- keyFrame(x)
   ## process for a double match of tbl1 and tbl2 (in any order)
   ## note: (we should ALWAYS have one when this function is called)
   parseCol <- function(piece, str){

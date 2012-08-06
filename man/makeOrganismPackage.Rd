@@ -76,7 +76,7 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
 
 % ## set up the data.frame with the relevant relationships:
 % xDbs <- c("GO.db","org.Rn.eg.db")
-% yDbs <- c("org.Hs.eg.db","TxDb.Rnorvegicus.UCSC.rn4.ensGene")
+% yDbs <- c("org.Rn.eg.db","TxDb.Rnorvegicus.UCSC.rn4.ensGene")
 % xKeys <- c("GOID","ENSEMBL")
 % yKeys <- c("GO","GENEID")
 % gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
@@ -90,4 +90,5 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
 %   author = "Bioconductor Core Team",
 %   destDir = ".",
 %   license = "Artistic-2.0")
+
 
