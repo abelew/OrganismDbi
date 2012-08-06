@@ -166,3 +166,4 @@ OrganismDb <- function(dbType, graphData){
 
 ## 2) You cannot have more than one example of each object type.  So you cannot have two org packages (for example).
 
+## 3) You cannot have cycles in the graph.  Or maybe you can, but it is a bad idea because it can generate unpredictable results when the algorithm for walking along the tree nodes is used to interpolate nodes.  IOW, whenever the algorithm has to traverse a cycle the route it takes will be consistent, but may not be the route that the user intended).

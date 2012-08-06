@@ -15,9 +15,9 @@ test_keytypes <- function(){
 
 test_makekeytypeMapping <- function(){
   res <- OrganismDbi:::.makekeytypeMapping(x)
-  checkTrue("GODb" == names(res)[res=='GOID'] )
-  checkTrue("TranscriptDb" == names(res)[res=='TXID'] )
-  checkTrue("OrgDb" == names(res)[res=='ENTREZID'] )
+  checkTrue("GO.db" == names(res)[res=='GOID'] )
+  checkTrue("TxDb.Hsapiens.UCSC.hg19.knownGene" == names(res)[res=='TXID'] )
+  checkTrue("org.Hs.eg.db" == names(res)[res=='ENTREZID'] )
 }
 
 test_lookupDbFromKeytype <- function(){
@@ -44,16 +44,16 @@ test_lookupDbFromKeytype <- function(){
 }
 
 
-
 test_makecolMapping <- function(){
   res <- OrganismDbi:::.makecolMapping(x)
-  checkTrue("GODb" == names(res)[res=='TERM'] )
-  checkTrue("TranscriptDb" == names(res)[res=='TXID'] )
-  checkTrue("OrgDb" == names(res)[res=='ENTREZID'] )
+  checkTrue("GO.db" == names(res)[res=='TERM'] )
+  checkTrue("TxDb.Hsapiens.UCSC.hg19.knownGene" == names(res)[res=='TXID'] )
+  checkTrue("org.Hs.eg.db" == names(res)[res=='ENTREZID'] )
 }
 
 
 
+## TODO: failing test
 ## x in this method is actually not an OrganismDb object, but a list of the
 ## AnnotationDb objects...
 test_resortDbs <- function(){
@@ -164,6 +164,7 @@ test_mergeSelectResults <- function(){
   checkTrue("ALIAS" %in% colnames(res))  
 }
 
+
 ## Investigate: why does the above query have so many NA rows for the gene related data???
 
 
@@ -183,6 +184,8 @@ test_select <- function(){
 
   cls <- c("IPI", "ALIAS", "CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
+  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
+  ## But ALSO: why did we even "get" GO columns?
   checkTrue(dim(res)[2]==4)
   checkTrue("IPI" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
@@ -191,20 +194,22 @@ test_select <- function(){
 
   cls <- c("GOID","ENTREZID")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  checkTrue(dim(res)[2]==5)
+  checkTrue(dim(res)[2]==4)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("TERM" %in% colnames(res))  
  
-  cls <- c("ALIAS","CHR","EXONNAME") 
-  res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  checkTrue(dim(res)[2]==4)
+  cls <- c("ALIAS","CHR","EXONNAME")
+  ## TODO: there are no values returned for "EXONNAME" here...
+  res <- OrganismDbi:::.select(x, keys, cls, keytype) 
+  checkTrue(dim(res)[2]==4) 
   checkTrue("ALIAS" %in% colnames(res)) 
-  checkTrue("ENTREZID" %in% colnames(res))
-  checkTrue("EXONNAME" %in% colnames(res))  
+  checkTrue("ENTREZID" %in% colnames(res)) 
+  checkTrue("EXONNAME" %in% colnames(res)) 
   
   cls <- c("ACCNUM","CDSSTART") 
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
+  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
@@ -212,6 +217,7 @@ test_select <- function(){
 
   cls <- c("ACCNUM", "ALIAS")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
+  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
@@ -219,6 +225,7 @@ test_select <- function(){
 
   cls <- c("CDSSTART","CDSEND")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
+  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
@@ -226,6 +233,7 @@ test_select <- function(){
 
   cls <- c("CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
+  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==2)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
@@ -237,6 +245,92 @@ test_select <- function(){
   
 }
 
+
+## TODO: failing tests. Make this work for Rat:
+require("Rattus.norvegicus")
+r <- Rattus.norvegicus
+
+test_rattus <- function(){
+  cls <- c("GO","ALIAS","CHR")
+  k <- head(keys(r, "ENTREZID"))
+  keytype <- "ENTREZID"
+  res <- OrganismDbi:::.select(r, k, cls, keytype)
+
+  cls <- c("GO","ALIAS","CHR","TXNAME")
+  res <- OrganismDbi:::.select(r, k, cls, keytype)
+
+  cls <- c("CHR","TXNAME")
+  res <- OrganismDbi:::.select(r, k, cls, keytype)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## OLDE Stuff follows:
 
 ## TODO: I may want to change what I am passing to reqCols when calling
 ## AnnotationDbi:::.resort().  This may be a better place than elsewhere to
