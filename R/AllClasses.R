@@ -44,10 +44,7 @@ OrganismDb <-
 
 ## A generalized constructor (in the style of loadDb).
 
-
-## helpers
-## TODO: modify this so that it inits all the members of graph
-
+## helpers to get all supporting libs loaded
 .initPkg <- function(pkg){
   if (missing(pkg)){
     stop(paste(pkg,"is strictly required, please make sure you have installed it"))
@@ -56,10 +53,7 @@ OrganismDb <-
   }
 }
 
-
-
-## Constructor helper (guts) OR 
-## function version of constructor 
+## Constructor 
 OrganismDb <- function(dbType, graphData){
     ## make graphData into a graphNEL
     gd <- as.matrix(graphData)
@@ -70,20 +64,7 @@ OrganismDb <- function(dbType, graphData){
     lapply(pkgs, .initPkg)
     ## Then make the object.
 
-    ## TODO: getClassDef() presumes that a package exists that defines
-    ## this already (so you can't just make one on the fly this way)
-    ## If possible I think I would like to make it so that I can just generate
-    ## an object here without requiring that a package exist ahead of time...
-    obj <- getClassDef(dbType, where=getNamespace(dbType))
-    
-    ## BUT I cannot (for example) do this:
-    ## obj <- setClass(dbType, contains="OrganismDb")
-    ## assign(dbType, obj)
-    ## Because the environment is sealed once the package is loaded, so by the
-    ## time I am defining this, it's too late...  The only way around this is
-    ## probably to use reference classes, but those had other problems.  For
-    ## now, this is proably sufficient.
-    new(obj, keys=graphData, graph=graph)
+    new("OrganismDb", keys=graphData, graph=graph)
 }
 
 

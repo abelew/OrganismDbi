@@ -140,7 +140,7 @@ test_mkeys <- function(){
   checkTrue("GO"==res)
 }
 
-
+## weird "x" bug: solve by using that trick that Martin showed me before (for running R CMD check the way that check actually runs it.
 test_getSelects <- function(){
   cls <- c("TERM", "ALIAS")
   kt <- "GENEID"
