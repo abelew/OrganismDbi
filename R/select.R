@@ -274,14 +274,17 @@ setMethod("keys", "OrganismDb",
 
 
 ## helper to get only the linked keys.
-.dropUnlinkedKeys <- function(x, fkeys, pkgs){
+.dropUnlinkedKeys <- function(x, fkeys, pkgs, dsts){
   ## run through the sorted final pkgs list, and label each fkey as supported
   ## or not.
   newFkeys <- character()
-  for(i in seq_len(length(pkgs)-1)){ ## Or one test per edge
-    key1 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl1")
-    key2 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl2")
-    newFkeys <- c(newFkeys,key1,key2)
+  for(i in seq_len(length(pkgs)-1)){  ## Or one test per edge
+    ## if distance from keytype is unequal: collect keys from this edge.
+    if(dsts[[pkgs[i]]]!=dsts[[pkgs[i+1]]]){ 
+      key1 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl1")
+      key2 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl2")
+      newFkeys <- c(newFkeys,key1,key2)
+    }
   }
   unique(newFkeys)
 }
@@ -341,7 +344,7 @@ setMethod("keys", "OrganismDb",
   ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
   fkeys <- .getDbNameFKeys(x) ## 1st get ALL the fkeys
   ## Then I need to drop keys that point to pkgs that are NOT in the path.
-  fkeys <- .dropUnlinkedKeys(x, fkeys, sortedPkgs)
+  fkeys <- .dropUnlinkedKeys(x, fkeys, sortedPkgs, pkgSubDsts)
   ## And then add those keys to our cols
   unique(c(keytype, cols, fkeys))
 }
