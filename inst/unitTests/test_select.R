@@ -84,44 +84,38 @@ test_resortDbs <- function(){
 
 
 test_addAppropriateCols <- function(){
-##   cls <- c("TERM","ALIAS")
-##   db <- "OrgDb"
-##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
-##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
-##   checkTrue("ENTREZID" %in% res)
-##   checkTrue("GO" %in% res)
-  
-##   cls <- c("ACCNUM","ALIAS")
-##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
-##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
-##   checkTrue("ENTREZID" %in% res)
-
-##   cls <- c("GO","ALIAS")
-##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
-##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
-##   checkTrue("ENTREZID" %in% res)
-
-##   cls <- c("CDSID","CDSCHROM")
-##   db <- "TranscriptDb"
-##   dbs <-  OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID")
-##   res <- OrganismDbi:::.addAppropriateCols(db, dbs, cls)
-##   checkTrue("GENEID" %in% res)
-
   keytype <- c("ENTREZID")
   cls <- c("OBSOLETE") ## this is a defunct ID
   ## And this should therefore throw an error
-  checkException(OrganismDbi:::.lookupDbsFromCols(x,cls,"GENEID"))
+  checkException(OrganismDbi:::.addAppropriateCols(x,cls,"GENEID"))
 
+  ## This method needs to be able to interpolate between nodes.
+  ## So this should work out OK:
   keytype <- c("TXNAME")
   cls <- c("GOID")
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
+  checkTrue("TXNAME" %in% res)
+  checkTrue("GOID" %in% res)
+  checkTrue("GO" %in% res)
   checkTrue("GENEID" %in% res)
+  checkTrue("ENTREZID" %in% res)
 
+  ## But this should always work:
   keytype <- c("ENTREZID")
   cls <- c("GOID")
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
+  checkTrue("GO" %in% res)
+  checkTrue("GOID" %in% res)
   checkTrue("ENTREZID" %in% res)
   
+  ## And so should this:
+  keytype <- c("TXNAME")
+  cls <- c("GO")
+  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
+  checkTrue("GO" %in% res)
+  checkTrue("GENEID" %in% res)
+  checkTrue("ENTREZID" %in% res)
+  checkTrue("TXNAME" %in% res)
 }
 
 test_mkeys <- function(){
@@ -216,7 +210,6 @@ test_select <- function(){
   checkTrue(dim(res)[2]==4)
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
-  checkTrue("TERM" %in% colnames(res))  
  
   cls <- c("ALIAS","CHR","EXONNAME")
   ## TODO: there are no values returned for "EXONNAME" here...

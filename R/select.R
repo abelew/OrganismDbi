@@ -272,6 +272,8 @@ setMethod("keys", "OrganismDb",
 ## IF the cols requested are separated on the graph by too big a distance:
 ## THEN I need to get the keys from the intermediate nodes.
 
+
+## helper to get only the linked keys.
 .dropUnlinkedKeys <- function(x, fkeys, pkgs){
   ## run through the sorted final pkgs list, and label each fkey as supported
   ## or not.
@@ -284,7 +286,8 @@ setMethod("keys", "OrganismDb",
   unique(newFkeys)
 }
 
-## This one will actually get the extra cols for ALL the RELEVANT Dbs.
+## This one will actually get the extra cols (foreign keys) for ALL the
+## RELEVANT Dbs and then add that information to the keytype and cols.
 .addAppropriateCols <- function(x, cols, keytype){
   ## get the graph
   g <- dbGraph(x)
@@ -329,14 +332,18 @@ setMethod("keys", "OrganismDb",
       extraPkgs <- nodeWalker(g, dst, pkg, curDist, extraPkgs) 
     }
   }
-  ## Add extra packages to pkgs
+  ## Now combine together all the different packages 
   pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
+  ## And then order the pkgs so that they are sorted from keytype to leaves
+  pkgSubDsts <- dst[match(pkgs, names(dst))]
+  sortedPkgs <- pkgs[order(pkgSubDsts)]
+  
   ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
-  fkeys <- .getDbNameFKeys(x) ## get ALL the fkeys
+  fkeys <- .getDbNameFKeys(x) ## 1st get ALL the fkeys
   ## Then I need to drop keys that point to pkgs that are NOT in the path.
-  fkeys <- .dropUnlinkedKeys(x, fkeys, pkgs)
+  fkeys <- .dropUnlinkedKeys(x, fkeys, sortedPkgs)
   ## And then add those keys to our cols
-  unique(c(cols, fkeys))
+  unique(c(keytype, cols, fkeys))
 }
 
 
@@ -477,7 +484,7 @@ setMethod("keys", "OrganismDb",
   ## if(!(any(ktKeys %in% keys))){
   ##   stop("keys must be of the same keytype as the actual keytype")
   ## }x
-
+  
   #mkeys <- .mkeys()
   
   ## Preserve original cols (we will be adding some to get our results along
