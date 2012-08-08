@@ -1,19 +1,56 @@
 ## script to test my package code generator
 require(OrganismDbi)
-## makeOrganismPackage(pkgname = "Mus.musculus",
-##                                 OrgPkg = "org.Mm.eg.db",
-##                                 TxDbPkg = "TxDb.Mmusculus.UCSC.mm9.knownGene",
-##                                 version = "1.0.0",
-##                                 maintainer = "me,<me@someplace.org>",
-##                                 author = "me",
-##                                 destDir = ".",
-##                                 license = "Artistic-2.0")
+version = "1.0.0"
+
+## for human
+xDbs <- c("GO.db","org.Hs.eg.db")
+yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
+xKeys <- c("GOID","ENTREZID")
+yKeys <- c("GO","GENEID")
+gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
 
 makeOrganismPackage(pkgname = "Homo.sapiens",
-                                OrgPkg = "org.Hs.eg.db",
-                                TxDbPkg = "TxDb.Hsapiens.UCSC.hg19.knownGene",
-                                version = "1.0.0",
-                                maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
-                                author = "Bioconductor Core Team",
-                                destDir = ".",
-                                license = "Artistic-2.0")
+                    graphData = gd,
+                    organism = "Homo sapiens",
+                    version = version,
+                    maintainer =
+              "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
+                    author = "Bioconductor Core Team",
+                    destDir = ".",
+                    license = "Artistic-2.0")
+
+
+## for mouse
+xDbs <- c("GO.db","org.Mm.eg.db")
+yDbs <- c("org.Mm.eg.db","TxDb.Mmusculus.UCSC.hg19.knownGene")
+xKeys <- c("GOID","ENTREZID")
+yKeys <- c("GO","GENEID")
+gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+
+makeOrganismPackage(pkgname = "Mus.musculus",
+                    graphData = gd,
+                    organism = "Mus musculus",
+                    version = version,
+                    maintainer =
+              "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
+                    author = "Bioconductor Core Team",
+                    destDir = ".",
+                    license = "Artistic-2.0")
+
+
+## for rat
+xDbs <- c("GO.db","org.Rn.eg.db")
+yDbs <- c("org.Rn.eg.db","TxDb.Rnorvegicus.UCSC.rn4.ensGene")
+xKeys <- c("GOID","ENSEMBL")
+yKeys <- c("GO","GENEID")
+gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+
+makeOrganismPackage(pkgname = "Rattus.norvegicus",
+                    graphData = gd,
+                    organism = "Rattus norvegicus",
+                    version = "1.0.0",
+                    maintainer =
+              "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
+                    author = "Bioconductor Core Team",
+                    destDir = ".",
+                    license = "Artistic-2.0")

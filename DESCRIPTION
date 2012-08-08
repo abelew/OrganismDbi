@@ -3,8 +3,8 @@ Title: Software to enable the smooth interfacing of different database packages.
 Description: The package enables a simple unified interface to several
 	     annotation packages each of which has it's own schema by taking
 	     advantage of the fact that each of these packages implements a 
-	     select method.  
-Version: 0.0.9
+	     select methods.
+Version: 0.99.10
 Author: Marc Carlson, Herve Pages, Martin Morgan, Valerie Obenchain
 Maintainer: Biocore Data Team <maintainer@bioconductor.org>
 Depends: R (>= 2.14.0), methods, AnnotationDbi (>= 1.16.10), GenomicFeatures
@@ -16,7 +16,4 @@ Collate: AllClasses.R
 	 createOrganismPackage.R
 	 test_OrganismDbi_package.R
 License: Artistic-2.0
-organism: Homo sapiens
-species: Homo sapiens
-biocViews: AnnotationData, Homo_sapiens
-
+biocViews: AnnotationData, Infrastructure
