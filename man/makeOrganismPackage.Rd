@@ -7,7 +7,7 @@
   Making OrganismDb packages from annotation packages.
 }
 \description{
- \code{makeAnnotationOrganismDb} is a method that generates a package
+ \code{makeOrganismPackage} is a method that generates a package
   that will load an appropriate \code{annotationOrganismDb} object that
   will in turn point to existing annotation packages.
 }
@@ -50,7 +50,7 @@ makeOrganismPackage (pkgname,
   by the \code{annotationOrganismDb} object.
 }
 
-\value{A special package to load an \link{AnnotationOrganismDb} object.}
+\value{A special package to load an \link{OrganismDb} object.}
 
 \author{
   M. Carlson
