@@ -100,7 +100,6 @@ test_addAppropriateCols <- function(){
   checkTrue("GENEID" %in% res)
   checkTrue("ENTREZID" %in% res)
 
-  ## But this should always work:
   keytype <- c("ENTREZID")
   cls <- c("GOID")
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
@@ -108,7 +107,6 @@ test_addAppropriateCols <- function(){
   checkTrue("GOID" %in% res)
   checkTrue("ENTREZID" %in% res)
   
-  ## And so should this:
   keytype <- c("TXNAME")
   cls <- c("GO")
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
@@ -141,7 +139,7 @@ test_getSelects <- function(){
   cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)  
   keys <- head(keys(x, kt), n=2)
-  res <- OrganismDbi:::.getSelects(dbs, keys, cls, kt)
+  res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
@@ -153,7 +151,7 @@ test_getSelects <- function(){
   cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)   
   keys <- head(keys(x, kt), n=2)
-  res <- OrganismDbi:::.getSelects(dbs, keys, cls, kt)  
+  res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))
@@ -166,7 +164,7 @@ test_mergeSelectResults <- function(){
   cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)  
   keys <- head(keys(x, kt), n=3)
-  sels <- OrganismDbi:::.getSelects(dbs, keys, cls, kt)
+  sels <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
 
   res <- OrganismDbi:::.mergeSelectResults(x, sels)
   checkTrue(dim(res)[2]==6)
@@ -176,6 +174,7 @@ test_mergeSelectResults <- function(){
   checkTrue("ALIAS" %in% colnames(res))  
 }
 ## TODO: Investigate why the above query has so many NA rows for the gene related data???
+
 
 ## MANY more tests
 test_select <- function(){
@@ -193,12 +192,6 @@ test_select <- function(){
 
   cls <- c("IPI", "ALIAS", "CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
-  ## But more importantly: why did we even "get" these GO columns?
-  ## I think that the problem is because I am adding cols based ONLY on which
-  ## nodes are included, and I need to drop them based on which edges are
-  ## present.
-  
   checkTrue(dim(res)[2]==4)
   checkTrue("IPI" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
@@ -212,7 +205,6 @@ test_select <- function(){
   checkTrue("ENTREZID" %in% colnames(res))
  
   cls <- c("ALIAS","CHR","EXONNAME")
-  ## TODO: there are no values returned for "EXONNAME" here...
   res <- OrganismDbi:::.select(x, keys, cls, keytype) 
   checkTrue(dim(res)[2]==4) 
   checkTrue("ALIAS" %in% colnames(res)) 
@@ -221,7 +213,6 @@ test_select <- function(){
   
   cls <- c("ACCNUM","CDSSTART") 
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
@@ -229,7 +220,6 @@ test_select <- function(){
 
   cls <- c("ACCNUM", "ALIAS")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
@@ -237,7 +227,6 @@ test_select <- function(){
 
   cls <- c("CDSSTART","CDSEND")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
@@ -245,7 +234,6 @@ test_select <- function(){
 
   cls <- c("CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  ## TODO: filter bug.  I need to remove extra cols introduced by GO...
   checkTrue(dim(res)[2]==2)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
