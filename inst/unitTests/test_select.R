@@ -205,7 +205,7 @@ test_select <- function(){
   ## nodes are included, and I need to drop them based on which edges are
   ## present.
   
-#  checkTrue(dim(res)[2]==4)
+  checkTrue(dim(res)[2]==4)
   checkTrue("IPI" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ALIAS" %in% colnames(res))  
@@ -220,7 +220,7 @@ test_select <- function(){
  
   cls <- c("ALIAS","CHR","EXONNAME")
   ## TODO: there are no values returned for "EXONNAME" here...
-#  res <- OrganismDbi:::.select(x, keys, cls, keytype) 
+  res <- OrganismDbi:::.select(x, keys, cls, keytype) 
   checkTrue(dim(res)[2]==4) 
   checkTrue("ALIAS" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res)) 
@@ -229,7 +229,7 @@ test_select <- function(){
   cls <- c("ACCNUM","CDSSTART") 
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   ## TODO: filter bug.  I need to remove extra cols introduced by GO...
-#  checkTrue(dim(res)[2]==3)
+  checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
@@ -237,7 +237,7 @@ test_select <- function(){
   cls <- c("ACCNUM", "ALIAS")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   ## TODO: filter bug.  I need to remove extra cols introduced by GO...
-#  checkTrue(dim(res)[2]==3)
+  checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("ACCNUM" %in% colnames(res))
   checkTrue("ALIAS" %in% colnames(res))
@@ -245,7 +245,7 @@ test_select <- function(){
   cls <- c("CDSSTART","CDSEND")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   ## TODO: filter bug.  I need to remove extra cols introduced by GO...
-#  checkTrue(dim(res)[2]==3)
+  checkTrue(dim(res)[2]==3)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
   checkTrue("CDSEND" %in% colnames(res))
@@ -253,7 +253,7 @@ test_select <- function(){
   cls <- c("CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   ## TODO: filter bug.  I need to remove extra cols introduced by GO...
-#  checkTrue(dim(res)[2]==2)
+  checkTrue(dim(res)[2]==2)
   checkTrue("ENTREZID" %in% colnames(res))
   checkTrue("CDSSTART" %in% colnames(res))
 

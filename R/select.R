@@ -272,6 +272,18 @@ setMethod("keys", "OrganismDb",
 ## IF the cols requested are separated on the graph by too big a distance:
 ## THEN I need to get the keys from the intermediate nodes.
 
+.dropUnlinkedKeys <- function(x, fkeys, pkgs){
+  ## run through the sorted final pkgs list, and label each fkey as supported
+  ## or not.
+  newFkeys <- character()
+  for(i in seq_len(length(pkgs)-1)){ ## Or one test per edge
+    key1 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl1")
+    key2 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl2")
+    newFkeys <- c(newFkeys,key1,key2)
+  }
+  unique(newFkeys)
+}
+
 ## This one will actually get the extra cols for ALL the RELEVANT Dbs.
 .addAppropriateCols <- function(x, cols, keytype){
   ## get the graph
@@ -320,8 +332,9 @@ setMethod("keys", "OrganismDb",
   ## Add extra packages to pkgs
   pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
   ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
-  fkeys <- .getDbNameFKeys(x) ## get all the fkeys
-  fkeys <- fkeys[names(fkeys) %in% pkgs] ## only keep for pkgs in the path!
+  fkeys <- .getDbNameFKeys(x) ## get ALL the fkeys
+  ## Then I need to drop keys that point to pkgs that are NOT in the path.
+  fkeys <- .dropUnlinkedKeys(x, fkeys, pkgs)
   ## And then add those keys to our cols
   unique(c(cols, fkeys))
 }
@@ -346,7 +359,6 @@ setMethod("keys", "OrganismDb",
     ## in addition to looping over the dbs, the appropriate cols must be
     ## selected for EACH
     dbtype <- names(dbs)[[i]]
-#as.character(class(dbs[[i]]))
     colsLocal <- cols[cols %in% cols(dbs[[i]])]
     if(i==1){
       ## mtype accumulates a history of tables that we have merged so far.
@@ -356,19 +368,16 @@ setMethod("keys", "OrganismDb",
       mtype <- c(mtype,dbtype)
       ml <- length(mtype)
       keytype <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
-#mkeys[[paste(mtype,collapse="_")]][2] ## always the 2nd val
       ## An UGLY exception for GO.db:  (TODO: Is there a more elegant way?)
       if(dbtype=="GODb"){
         keytype="GOID"
       }
       prevKeyType <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
-#mkeys[[paste(mtype,collapse="_")]][1]
       keys <- unique(res[[1]][[prevKeyType]])
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
     }
   }
   names(res) <- names(dbs)
-#sapply(dbs, class)
   res
 }
 
