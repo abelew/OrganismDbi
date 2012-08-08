@@ -200,7 +200,11 @@ test_select <- function(){
   cls <- c("IPI", "ALIAS", "CDSSTART")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   ## TODO: filter bug.  I need to remove extra cols introduced by GO...
-  ## But ALSO: why did we even "get" GO columns?
+  ## But more importantly: why did we even "get" these GO columns?
+  ## I think that the problem is because I am adding cols based ONLY on which
+  ## nodes are included, and I need to drop them based on which edges are
+  ## present.
+  
 #  checkTrue(dim(res)[2]==4)
   checkTrue("IPI" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
@@ -278,12 +282,31 @@ test_rattus <- function(){
   checkTrue("CHR" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
 
-  ## TODO: solve why this doesn't work! 
-##   cls <- c("GO","ALIAS","CHR","TXNAME") 
-##   res <- OrganismDbi:::.select(r, k, cls, keytype) 
+  cls <- c("GO","ALIAS","CHR","TXNAME") 
+  res <- OrganismDbi:::.select(r, k, cls, keytype) 
 
-##   cls <- c("CHR","TXNAME") 
-##   res <- OrganismDbi:::.select(r, k, cls, keytype) 
+  cls <- c("CHR","TXNAME") 
+  res <- OrganismDbi:::.select(r, k, cls, keytype) 
+
+  ## now test different key
+  k = head(keys(r, keytype="ENSEMBL"))
+  keytype="ENSEMBL"
+  cls <- c("GO","ALIAS","CHR","TXNAME") 
+  res <- OrganismDbi:::.select(r, k, cls, keytype) 
+
+  ## now test key that starts us from TxDb
+  k = head(keys(r, keytype="TXNAME"))
+  keytype="TXNAME"
+  cls <- c("GO","ALIAS","CHR") 
+  res <- OrganismDbi:::.select(r, k, cls, keytype) 
+
+
+  ## now test key that starts us from Go
+  ## Bug: row of NAs for entire 1st line!
+  k = head(keys(r, keytype="GOID"))
+  keytype="GOID"
+  cls <- c("GOID","ALIAS","CHR") 
+  res <- OrganismDbi:::.select(r, k, cls, keytype) 
   
 } 
 
@@ -292,114 +315,8 @@ test_rattus <- function(){
 
 
 
-## TODO: Why does this sometimes fail?
-## Error in keyFrame(x) :
-## error in evaluating the argument 'x' in selecting a method for function 'keyFrame': Error: object 'x' not found
-## k = head(keys(x, keytype="ENTREZID"))
-## select(x, cols=c("TXNAME"),keys=k,keytype="ENTREZID")
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## OLDE Stuff follows:
-
-## TODO: I may want to change what I am passing to reqCols when calling
-## AnnotationDbi:::.resort().  This may be a better place than elsewhere to
-## clean up the columns.  But it may not be a good way to get rid of
-## duplicated columns...
-
-## TODO: add more tests from other kinds of IDs
-## Right now there seem to be some performance issues for these.
-## test_select__otherIDTypes <- function(){
-
-## cls <- cols(x)[c(7,12)]
-## keys <- head(keys(x, "ALIAS"))
-## keytype <- "ALIAS"
-## res <- OrganismDbi:::.select(x, keys, cls, keytype)
-
-## debug(OrganismDbi:::.getSelects)
-## debug(OrganismDbi:::.mergeSelectResults)
-## debug(AnnotationDbi:::.resort)
-
-
-##   cls <- cols(x)[c(7,10,11,12)]
-##   keys <- head(keys(x, "ALIAS"))
-##   keytype <- "ALIAS"
-##   res <- OrganismDbi:::.select(x, keys, cls, keytype)
-
-##   checkTrue(dim(res)[2]==11)
-##   checkTrue(class(res)=="data.frame")
-##   checkTrue("GO" %in% colnames(res)) 
-##   checkTrue("ENTREZID" %in% colnames(res))
-##   checkTrue("ACCNUM" %in% colnames(res))  
-##   checkTrue("ALIAS" %in% colnames(res))
- 
-## }
-
-
-
-
-
-
-
-
-
-## library(OrganismDbi); OrganismDbi:::.test()
 
