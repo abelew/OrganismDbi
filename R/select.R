@@ -340,7 +340,7 @@ setMethod("keys", "OrganismDb",
 }
 
 
-.getSelects <- function(dbs, keys, cols, keytype){
+.getSelects <- function(x, dbs, keys, cols, keytype){
   res <- list(length(dbs))
   for(i in seq_len(length(dbs))){
     ## in addition to looping over the dbs, the appropriate cols must be
@@ -396,11 +396,8 @@ setMethod("keys", "OrganismDb",
         mtype <- c(mtype,names(sels)[i])
         ml <- length(mtype)
         xkey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
-#mkeys[[paste(mtype,collapse="_")]][1]
         ykey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
-#mkeys[[paste(mtype,collapse="_")]][2]
         res <- merge(res, sels[[i]],by.x=xkey, by.y=ykey, all=TRUE)
-                                        #, suffixes = c("",""))
         res <- .dropDuplicatedMergeCols(res)
       }
   }
@@ -418,17 +415,18 @@ setMethod("keys", "OrganismDb",
 ## tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
 ## tbl2 = "org.Hs.eg.db"
 ## key = "tbl1"
+.parseCol <- function(piece, str){
+  grepl(str, piece)
+}
+
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
   key <- match.arg(key)
   kf <- keyFrame(x)
   ## process for a double match of tbl1 and tbl2 (in any order)
   ## note: (we should ALWAYS have one when this function is called)
-  parseCol <- function(piece, str){
-    grepl(str, piece)
-  }
   
-  res <- apply(kf[,1:2], MARGIN=1, FUN=parseCol, tbl1)
-  res2 <- apply(kf[,1:2], MARGIN=1, FUN=parseCol, tbl2)
+  res <- apply(kf[,1:2], MARGIN=1, FUN=.parseCol, tbl1)
+  res2 <- apply(kf[,1:2], MARGIN=1, FUN=.parseCol, tbl2)
   res <- res | res2 
   resRowIdx <- res[,1] & res[,2]
   matchRow <- kf[resRowIdx,]
@@ -484,7 +482,7 @@ setMethod("keys", "OrganismDb",
   dbs <- .lookupDbsFromCols(x, cols, keytype)
   
   ## next we get the data from each.
-  sels <- .getSelects(dbs, keys, cols, keytype)
+  sels <- .getSelects(x, dbs, keys, cols, keytype)
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(x, sels)
   

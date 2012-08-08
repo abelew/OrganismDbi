@@ -265,6 +265,7 @@ test_select <- function(){
 require("Rattus.norvegicus") 
 r <- Rattus.norvegicus 
 
+
 test_rattus <- function(){ 
   cls <- c("GO","ALIAS","CHR") 
   k <- head(keys(r, "ENTREZID")) 
@@ -291,7 +292,11 @@ test_rattus <- function(){
 
 
 
-
+## TODO: Why does this sometimes fail?
+## Error in keyFrame(x) :
+## error in evaluating the argument 'x' in selecting a method for function 'keyFrame': Error: object 'x' not found
+## k = head(keys(x, keytype="ENTREZID"))
+## select(x, cols=c("TXNAME"),keys=k,keytype="ENTREZID")
 
 
 
