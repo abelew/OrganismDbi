@@ -132,7 +132,7 @@ test_mkeys <- function(){
   checkTrue("GO"==res)
 }
 
-## weird "x" bug: solve by using that trick that Martin showed me before (for running R CMD check the way that check actually runs it.
+
 test_getSelects <- function(){
   cls <- c("TERM", "ALIAS")
   kt <- "GENEID"
@@ -265,30 +265,56 @@ test_rattus <- function(){
 
   cls <- c("GO","ALIAS","CHR","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
+  checkTrue(dim(res)[2]==7) 
+  checkTrue("ENTREZID" %in% colnames(res)) 
+  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res)) 
+  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXNAME" %in% colnames(res)) 
 
   cls <- c("CHR","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
+  checkTrue(dim(res)[2]==3) 
+  checkTrue("ENTREZID" %in% colnames(res)) 
+  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXNAME" %in% colnames(res)) 
 
-  ## now test different key
+  ## now test different keytype
   k = head(keys(r, keytype="ENSEMBL"))
   keytype="ENSEMBL"
   cls <- c("GO","ALIAS","CHR","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
+  checkTrue(dim(res)[2]==7) 
+  checkTrue("ENSEMBL" %in% colnames(res)) 
+  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("ONTOLOGY" %in% colnames(res)) 
+  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res)) 
+  checkTrue("TXNAME" %in% colnames(res)) 
 
   ## now test key that starts us from TxDb
   k = head(keys(r, keytype="TXNAME"))
   keytype="TXNAME"
   cls <- c("GO","ALIAS","CHR") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
-
+  checkTrue(dim(res)[2]==6) 
+  checkTrue("TXNAME" %in% colnames(res)) 
+  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("EVIDENCE" %in% colnames(res)) 
+  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res)) 
 
   ## now test key that starts us from Go
-  ## Bug: row of NAs for entire 1st line!
+  ## TODO: bug??? row of NAs for entire 1st line...
   k = head(keys(r, keytype="GOID"))
   keytype="GOID"
   cls <- c("GOID","ALIAS","CHR") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
-  
+  checkTrue(dim(res)[2]==5) 
+  checkTrue("GOID" %in% colnames(res)) 
+  checkTrue("ONTOLOGY" %in% colnames(res)) 
+  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res)) 
 } 
 
 
