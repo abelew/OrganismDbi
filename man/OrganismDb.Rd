@@ -1,19 +1,19 @@
-\name{AnnotationOrganismDb-class}
+\name{OrganismDb-class}
 
-\alias{AnnotationOrganismDb-class}
-\alias{class:AnnotationOrganismDb}
-\alias{AnnotationOrganismDb}
+\alias{OrganismDb-class}
+\alias{class:OrganismDb}
+\alias{OrganismDb}
 
 % select and select related methods
-\alias{cols,AnnotationOrganismDb-method}
-\alias{keytypes,AnnotationOrganismDb-method}
-\alias{keys,AnnotationOrganismDb-method}
-\alias{select,AnnotationOrganismDb-method}
+\alias{cols,OrganismDb-method}
+\alias{keytypes,OrganismDb-method}
+\alias{keys,OrganismDb-method}
+\alias{select,OrganismDb-method}
 
-\title{AnnotationOrganismDb objects}
+\title{OrganismDb objects}
 
 \description{
-  The AnnotationOrganismDb class is a container for storing knowledge
+  The OrganismDb class is a container for storing knowledge
   about existing Annotation packages and the relationships between these
   resources.  The purpose of this object and it's associated methods is
   to provide a means by which users can conveniently query for data from
@@ -21,13 +21,13 @@
   familiar interface.
 
   The supporting methods \code{select}, \code{cols} and \code{keys} are
-  used together to extract data from an \code{AnnotationOrganismDb}
+  used together to extract data from an \code{OrganismDb}
   object in a manner that should be consistent with how these are used
   on the supporting annotation resources.
 }
 
 \section{Methods}{
-  In the code snippets below, \code{x} is a AnnotationOrganismDb object. For the
+  In the code snippets below, \code{x} is a OrganismDb object. For the
   metadata and show methods, there is also support for FeatureDb objects.
 
   \describe{
@@ -38,7 +38,7 @@
     }
     \item{}{
       \code{keys(x, keytype)}:
-      returns keys for the database contained in the \code{AnnotationOrganismDb}
+      returns keys for the database contained in the \code{OrganismDb}
       object .  By default it will return the "TXNAME" keys for the database,
       but if used with the \code{keytype} argument, it will return the keys
       from that keytype.
@@ -46,7 +46,7 @@
     \item{}{
       \code{cols(x)}:
       shows which kinds of data can be returned for the
-      \code{AnnotationOrganismDb} object.
+      \code{OrganismDb} object.
     }
     \item{}{
       \code{select(x, keys, cols, keytype)}:
@@ -65,7 +65,7 @@
 }
 
 \examples{
-## load a package that creates an AnnotationOrganismDb
+## load a package that creates an OrganismDb
 library(Homo.sapiens)
 ls(2)
 ## then the methods can be used on this object.

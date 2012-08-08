@@ -4,7 +4,7 @@
 
 
 \title{
-  Making AnnotationOrganismDb packages from annotation packages.
+  Making OrganismDb packages from annotation packages.
 }
 \description{
  \code{makeAnnotationOrganismDb} is a method that generates a package
@@ -13,8 +13,8 @@
 }
 \usage{
 makeOrganismPackage (pkgname,
-                     OrgPkg,
-                     TxDbPkg,
+                     graphData,
+                     organism,
                      version,
                      maintainer,
                      author,
@@ -25,8 +25,15 @@ makeOrganismPackage (pkgname,
   \item{pkgname}{What is the desired package name.  Traditionally, this
   should be the genus and species separated by a ".".  So as an example,
   "Homo.sapiens" would be the package name for human}
-  \item{OrgPkg}{The name of an existing or generated organism package}
-  \item{TxDbPkg}{The name of an existing or generated TranscriptDb package}
+  \item{graphData}{A data frame with 4 colums and an unspecified
+  number of rows.  Each row of this data.frame represents one pair of
+  packages and how they relate to each other.  The 1st two columns of a row
+  represent the two packages, and the last two columns are the cols that
+  can connect results from these two packages as foreign keys.  All
+  foreign keys must be values that can be returned by the cols method
+  for each package in question, and obviously they also must be the same
+  kind of identifier as well.}
+  \item{organism}{The name of the organism this package represents}
   \item{version}{What is the version number for this package?}
   \item{maintainer}{Who is the package maintainer? (must include email to be 
     valid)}
@@ -50,10 +57,11 @@ makeOrganismPackage (pkgname,
 }
 
 \seealso{
-  \code{\link{AnnotationOrganismDb}}
+  \code{\link{OrganismDb}}
 }
 
 \examples{
+\dontrun{
 ## set up the data.frame with the relevant relationships:
 xDbs <- c("GO.db","org.Hs.eg.db")
 yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
@@ -70,6 +78,7 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
   author = "Bioconductor Core Team",
   destDir = ".",
   license = "Artistic-2.0")
+}
 }
 
 
