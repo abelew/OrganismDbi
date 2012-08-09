@@ -3,10 +3,10 @@ require(OrganismDbi)
 version = "1.0.0"
 
 ## for human
-xDbs <- c("GO.db","org.Hs.eg.db")
-yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
-xKeys <- c("GOID","ENTREZID")
-yKeys <- c("GO","GENEID")
+xDbs <- c("GO.db","org.Hs.eg.db","org.Hs.eg.db")
+yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene","hom.Hs.inp.db")
+xKeys <- c("GOID","ENTREZID","ENSEMBLPROT")
+yKeys <- c("GO","GENEID","HOMO_SAPIENS")
 gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
 
 makeOrganismPackage(pkgname = "Homo.sapiens",
@@ -20,10 +20,11 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
                     license = "Artistic-2.0")
 
 
+
 ## for mouse
 xDbs <- c("GO.db","org.Mm.eg.db")
-yDbs <- c("org.Mm.eg.db","TxDb.Mmusculus.UCSC.hg19.knownGene")
-xKeys <- c("GOID","ENTREZID")
+yDbs <- c("org.Mm.eg.db","TxDb.Mmusculus.UCSC.mm10.ensGene")
+xKeys <- c("GOID","ENSEMBL")
 yKeys <- c("GO","GENEID")
 gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
 

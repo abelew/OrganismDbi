@@ -1,16 +1,5 @@
 ## This will just hold code for the initial implementation of select and friends
 
-## Some helpers for retrieval of data.
-
-## 1st some getters
-setGeneric("keyFrame", function(x) standardGeneric("keyFrame"))
-setMethod("keyFrame", "OrganismDb",
-    function(x){x@keys}
-)
-setGeneric("dbGraph", function(x) standardGeneric("dbGraph"))
-setMethod("dbGraph", "OrganismDb",
-    function(x){x@graph}
-)
 
 
 ## Then some helpers to process some of these results a bit
@@ -24,6 +13,11 @@ setMethod("dbGraph", "OrganismDb",
   objs <- lapply(dbs, .makeReal)
   names(objs) <- dbs
   objs
+}
+
+## helper to convert text strings (Db pkgs names) into real objects
+.makeReal <- function(x){
+  eval(parse(text=x))
 }
 
 
@@ -414,15 +408,16 @@ setMethod("keys", "OrganismDb",
 }
 
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
+  if(length(tbl1) >1 || length(tbl2)>1) stop(".mkeys can only process one pair of tables at at time")
   key <- match.arg(key)
   kf <- keyFrame(x)
   ## process for a double match of tbl1 and tbl2 (in any order)
   ## note: (we should ALWAYS have one when this function is called)
   
-  res <- apply(kf[,1:2], MARGIN=1, FUN=.parseCol, tbl1)
-  res2 <- apply(kf[,1:2], MARGIN=1, FUN=.parseCol, tbl2)
-  res <- res | res2 
-  resRowIdx <- res[,1] & res[,2]
+  res <- apply(kf[,1:2], MARGIN=2, FUN=.parseCol, tbl1)
+  res2 <- apply(kf[,1:2], MARGIN=2, FUN=.parseCol, tbl2)
+  fin <- res | res2 
+  resRowIdx <- fin[,1] & fin[,2]
   matchRow <- kf[resRowIdx,]
   if(dim(matchRow)[1]<1){stop("No relationship found for ",tbl1," and ",tbl2)}
 
@@ -430,13 +425,15 @@ setMethod("keys", "OrganismDb",
   ## correct keys back to the user...  And this is based on whether tbl1 was
   ## one thing or another.
   if(key=="tbl1"){
+    if(length(matchRow$xDbs) >1)stop("mkeys has failed to limit choices")
     if(grepl(tbl1,matchRow$xDbs)){
       return(as.character(matchRow$xKeys))
     }else{ ## then its reversed of the order in the row...
       return(as.character(matchRow$yKeys))
     }
   }else if(key=="tbl2"){
-    if(grepl(tbl2,matchRow$yDbs)){
+    if(length(matchRow$yDbs) >1)stop("mkeys has failed to limit choices")
+    if(grepl(tbl2,matchRow$yDbs)){ 
       return(as.character(matchRow$yKeys))
     }else{ ## and the reverse case
       return(as.character(matchRow$xKeys))

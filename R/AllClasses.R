@@ -44,10 +44,6 @@ OrganismDb <-
 
 ## A generalized constructor (in the style of loadDb).
 
-## helper to convert text strings into objects
-.makeReal <- function(x){
-  eval(parse(text=x))
-}
 
 ## helpers to get all supporting libs loaded
 .initPkg <- function(pkg){
@@ -56,14 +52,6 @@ OrganismDb <-
   }else{
     require(pkg, character.only = TRUE)
   }
-}
-
-## early sanity checks for graphData
-.testGraphData <- function(graphData){
-  if(dim(graphData)[2] !=4){stop("graphData must contain exactly 4 columns.")}
-  ## enforce colnames of graphData to always be uniform.
-  colnames(graphData) <- c("xDbs","yDbs","xKeys","yKeys")
-  graphData
 }
 
 ## helper for extracting pkgs and cols as a vector
@@ -75,24 +63,9 @@ OrganismDb <-
   res
 }
 
-## test keys for graphData (do this after making sure that pkgs are present)
-.testKeys <- function(fkeys){
-  pkgs <- unlist(lapply(names(fkeys), .makeReal))
-  res <- logical(length(pkgs))
-  for(i in seq_len(length(pkgs))){
-    res[i] <- fkeys[i] %in% cols(pkgs[[i]]) 
-  }  
-  if(!all(res)){
-    stop("some of the foreign keys supplied are not present in their associated databases.")
-  }
-}
-
 
 ## Constructor 
-OrganismDb <- function(dbType, graphData){
-  ## Check the graphData object
-  graphData <- .testGraphData(graphData)
-    
+OrganismDb <- function(dbType, graphData){    
   ## make graphData into a graphNEL
   gd <- as.matrix(graphData)    
   graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
@@ -101,10 +74,6 @@ OrganismDb <- function(dbType, graphData){
   pkgs <- unique(names(.extractPkgsAndCols(gd)))
   lapply(pkgs, .initPkg)
 
-  ## Check that the fkeys are really cols for the graphData
-  fkeys <- .extractPkgsAndCols(gd)
-  .testKeys(fkeys)
-  
   ## Then make the object.
   new("OrganismDb", keys=graphData, graph=graph)
 }
@@ -168,12 +137,29 @@ OrganismDb <- function(dbType, graphData){
 
 
 
+## Some getter methods to access the slots
+setGeneric("keyFrame", function(x) standardGeneric("keyFrame"))
+setMethod("keyFrame", "OrganismDb",
+    function(x){x@keys}
+)
+
+setGeneric("dbGraph", function(x) standardGeneric("dbGraph"))
+setMethod("dbGraph", "OrganismDb",
+    function(x){x@graph}
+)
 
 
 
-### TODO:
-## 1) Fix the show method (here or in select.R, call .getDbObjs and show those.
-## 2) 
+## Show method
+setMethod("show", "OrganismDb",
+    function(object)
+    {
+        cat("OrganismDb object:\n")
+        cat(keyFrame(object))
+    }
+)
+
+
 
 
 

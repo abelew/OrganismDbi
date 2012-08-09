@@ -9,6 +9,27 @@
   res
 }
 
+## early sanity checks for graphData
+.testGraphData <- function(graphData){
+  if(dim(graphData)[2] !=4){stop("graphData must contain exactly 4 columns.")}
+  ## enforce colnames of graphData to always be uniform.
+  colnames(graphData) <- c("xDbs","yDbs","xKeys","yKeys")
+  graphData
+}
+
+## test keys for graphData 
+.testKeys <- function(fkeys){
+  pkgs <- unlist(lapply(names(fkeys), .makeReal))
+  res <- logical(length(pkgs))
+  for(i in seq_len(length(pkgs))){
+    res[i] <- fkeys[i] %in% cols(pkgs[[i]]) 
+  }  
+  if(!all(res)){
+    stop("some of the foreign keys supplied are not present in their associated databases.")
+  }
+}
+
+
 makeOrganismPackage <- function(pkgname,
                                 graphData,
                                 organism,
@@ -38,6 +59,15 @@ makeOrganismPackage <- function(pkgname,
     PKGNAME=pkgname,
     DEPENDENCIES=deps
    )
+   ## Check the graphData object and rename if needed
+   graphData <- .testGraphData(graphData)
+   ## Try to call require on all the supporting packages.
+   pkgs <- unique(names(.extractPkgsAndCols(gd)))
+   lapply(pkgs, .initPkg)
+   ## Also check that the fkeys are really cols for the graphData
+   fkeys <- .extractPkgsAndCols(gd)
+   .testKeys(fkeys)
+   
    ## Should never have duplicates
    if (any(duplicated(names(symvals)))) {
        str(symvals)

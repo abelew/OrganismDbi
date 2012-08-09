@@ -1,22 +1,24 @@
 \name{@PKGNAME@}
 \docType{data}
 \alias{@PKGNAME@}
-\title{Probe sequence for microarrays of type .}
-\description{This data object was automatically created by the @AUTHOR@.}
-\usage{data(@PKGNAME@)}
-\format{A data frame with rows and columns, as follows.
-  \tabular{lll}{
-    sequence \tab character \tab probe sequence \cr
-    x  \tab integer  \tab x-coordinate on the array \cr
-    y  \tab integer  \tab y-coordinate on the array \cr
-    Probe.Set.Name      \tab character \tab Affymetrix Probe Set Name \cr
-    Probe.Interrogation.Position \tab integer \tab Probe Interrogation Position \cr
-    Target.Strandedness \tab factor \tab Target Strandedness\cr
-}}
-
-
+\title{Annotation package that collates together several annotation resources.}
+\description{This data object was automatically created by the @AUTHOR@. It
+  represents a collection of annotation packages that can be use as a
+  single object named @PKGNAME@.  This object can be used with the
+  standard four accessor method for all AnnotationDbi objects.  Namely:
+  \code{cols}, \code{keytype}, \code{keys} and \code{select}.}
+\usage{library(@PKGNAME@)}
 \keyword{datasets}
 \examples{
   @PKGNAME@
-  as.data.frame(@PKGNAME@[1:3,])
+  cls <- cols(@PKGNAME@)
+  cls
+  cls <- cls[c(1,19,45)]
+  kts <- keytypes(@PKGNAME@)
+  kt <- kts[2]
+  kts
+  ks <- head(keys(@PKGNAME@, keytype=kts[2]))
+  ks
+  res <- select(@PKGNAME@, keys=ks, cols=cls, keytype=kt)
+  head(res)
 }

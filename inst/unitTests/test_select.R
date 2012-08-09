@@ -96,7 +96,7 @@ test_addAppropriateCols <- function(){
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
   checkTrue("TXNAME" %in% res)
   checkTrue("GOID" %in% res)
-  checkTrue("GO" %in% res)
+  checkTrue("GO" %in% res) ## no longer true?  Why not???
   checkTrue("GENEID" %in% res)
   checkTrue("ENTREZID" %in% res)
 
@@ -242,6 +242,14 @@ test_select <- function(){
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==1)
   checkTrue("ENTREZID" %in% colnames(res))
+
+##   ## DEBUG why the following does not work??
+##   cls = c("GOID" ,  "SYMBOL", "TXNAME")
+##   res <- select(Homo.sapiens, keys, cls, keytype)
+
+##   ## same exact bug comes up when I try to use a homology package
+##   cls = c("ALIAS", "ORYZA_SATIVA")
+##   res <- select(Homo.sapiens, keys, cls, keytype)
   
 }
 
@@ -314,7 +322,18 @@ test_rattus <- function(){
   checkTrue("GOID" %in% colnames(res)) 
   checkTrue("ONTOLOGY" %in% colnames(res)) 
   checkTrue("CHR" %in% colnames(res)) 
-  checkTrue("ALIAS" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res))
+
+
+##   ## Also I see the bug here:
+##   ## what happens when we use a key from the middle?
+##   ## Our algorithm will walk 
+##   k = keys=head(keys(r,keytype="ENTREZID"))
+##   cls = c("GOID","SYMBOL","TXNAME")
+##   keytype = "ENTREZID"
+##   res <- OrganismDbi:::.select(r, k, cls, keytype)
+  
+  
 } 
 
 
