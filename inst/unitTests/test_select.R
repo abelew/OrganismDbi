@@ -70,15 +70,6 @@ test_resortDbs <- function(){
   checkTrue(names(res)[2] == "org.Hs.eg.db") 
   checkTrue(names(res)[3] == "GO.db")
 
-
-  ## TODO: I should NOT get human org packages listed when I do this:
-##   cls <- c("GOID","PATH", "TXNAME")
-##   pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(r, cls))
-##   pkgs
-##   ## there is a problem already...
-##   keytype <- "ENTREZID"
-##   res <- OrganismDbi:::.resortDbs(r, pkgs, keytype)
-  
 }
 
 
@@ -243,9 +234,13 @@ test_select <- function(){
   checkTrue(dim(res)[2]==1)
   checkTrue("ENTREZID" %in% colnames(res))
 
-##   ## DEBUG why the following does not work??
-##   cls = c("GOID" ,  "SYMBOL", "TXNAME")
-##   res <- select(Homo.sapiens, keys, cls, keytype)
+
+  
+  ## DEBUG why the following does not work??
+  keys <- head(keys(x, "ENTREZID"))
+  keytype <- "ENTREZID"
+  cls = c("GOID" ,  "SYMBOL", "TXNAME")
+  res <- select(Homo.sapiens, keys, cls, keytype)
 
 ##   ## same exact bug comes up when I try to use a homology package
 ##   cls = c("ALIAS", "ORYZA_SATIVA")

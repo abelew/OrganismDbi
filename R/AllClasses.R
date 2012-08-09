@@ -148,14 +148,31 @@ setMethod("dbGraph", "OrganismDb",
     function(x){x@graph}
 )
 
+## Then some helpers to process some of these results a bit
+.getDbObjNames <- function(x){
+  gd <- as.matrix(keyFrame(x))
+  unique(c(gd[,1],gd[,2]))
+}
+
+.getDbObjs <- function(x){
+  dbs <- .getDbObjNames(x)
+  objs <- lapply(dbs, .makeReal)
+  names(objs) <- dbs
+  objs
+}
 
 
-## Show method
+## Show method (I am not really sure what to put here)
 setMethod("show", "OrganismDb",
     function(object)
     {
-        cat("OrganismDb object:\n")
-        cat(keyFrame(object))
+        #cat("OrganismDb object:\n")
+        cat("The OrganismDb object is a composite object made by aggregating the following annotation resources together:\n")
+        objs <- .getDbObjNames(object)
+        show(objs)
+        cat("These annotation resources are related to each other as indicated by the following table:\n")
+        kf <- keyFrame(object)
+        show(kf)
     }
 )
 
