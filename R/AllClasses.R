@@ -44,6 +44,11 @@ OrganismDb <-
 
 ## A generalized constructor (in the style of loadDb).
 
+## helper to convert text strings into objects
+.makeReal <- function(x){
+  eval(parse(text=x))
+}
+
 ## helpers to get all supporting libs loaded
 .initPkg <- function(pkg){
   if (missing(pkg)){
@@ -53,18 +58,55 @@ OrganismDb <-
   }
 }
 
+## early sanity checks for graphData
+.testGraphData <- function(graphData){
+  if(dim(graphData)[2] !=4){stop("graphData must contain exactly 4 columns.")}
+  ## enforce colnames of graphData to always be uniform.
+  colnames(graphData) <- c("xDbs","yDbs","xKeys","yKeys")
+  graphData
+}
+
+## helper for extracting pkgs and cols as a vector
+.extractPkgsAndCols <- function(gd){
+  gd <- as.matrix(gd)
+  res <- c(gd[,3],gd[,4])
+  pkgs <-  c(gd[,1],gd[,2])
+  names(res) <- pkgs 
+  res
+}
+
+## test keys for graphData (do this after making sure that pkgs are present)
+.testKeys <- function(fkeys){
+  pkgs <- unlist(lapply(names(fkeys), .makeReal))
+  res <- logical(length(pkgs))
+  for(i in seq_len(length(pkgs))){
+    res[i] <- fkeys[i] %in% cols(pkgs[[i]]) 
+  }  
+  if(!all(res)){
+    stop("some of the foreign keys supplied are not present in their associated databases.")
+  }
+}
+
+
 ## Constructor 
 OrganismDb <- function(dbType, graphData){
-    ## make graphData into a graphNEL
-    gd <- as.matrix(graphData)
-    graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
+  ## Check the graphData object
+  graphData <- .testGraphData(graphData)
     
-    ## We should try to call require on all the supporting packages.
-    pkgs <- unique(c(gd[,1],gd[,2]))
-    lapply(pkgs, .initPkg)
-    ## Then make the object.
+  ## make graphData into a graphNEL
+  gd <- as.matrix(graphData)    
+  graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
+  
+  ## We should try to call require on all the supporting packages.
+  pkgs <- unique(names(.extractPkgsAndCols(gd)))
+  lapply(pkgs, .initPkg)
 
-    new("OrganismDb", keys=graphData, graph=graph)
+  ## Check that the fkeys are really cols for the graphData
+  fkeys <- .extractPkgsAndCols(gd)
+  .testKeys(fkeys)
+  
+  ## Then make the object.
+  new("OrganismDb", keys=graphData, graph=graph)
 }
 
 

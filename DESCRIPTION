@@ -9,8 +9,7 @@ Author: Marc Carlson, Herve Pages, Martin Morgan, Valerie Obenchain
 Maintainer: Biocore Data Team <maintainer@bioconductor.org>
 Depends: R (>= 2.14.0), methods, AnnotationDbi (>= 1.16.10), GenomicFeatures
 Imports: BiocGenerics, graph, RBGL
-Suggests: Homo.sapiens, RUnit, GO.db, org.Hs.eg.db, 
-	  TxDb.Hsapiens.UCSC.hg19.knownGene
+Suggests: Homo.sapiens, Rattus.norvegicus, RUnit
 Collate: AllClasses.R
 	 select.R
 	 createOrganismPackage.R

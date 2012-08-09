@@ -12,10 +12,6 @@ setMethod("dbGraph", "OrganismDb",
     function(x){x@graph}
 )
 
-## helper to convert text strings into objects
-.makeReal <- function(x){
-  eval(parse(text=x))
-}
 
 ## Then some helpers to process some of these results a bit
 .getDbObjNames <- function(x){
@@ -229,32 +225,11 @@ setMethod("keys", "OrganismDb",
 
 ## This method just gets me the pkg names as names and vals are fkeys
 .getDbNameFKeys <- function(x){
-  gd <- as.matrix(keyFrame(x))
+  gd <- keyFrame(x)
   ## now give all the keys as a vector, but named by their databases.
-  res <- c(gd[,3],gd[,4])
-  pkgs <-  c(gd[,1],gd[,2])
-  names(res) <- pkgs 
-  res
+  .extractPkgsAndCols(gd)
 }
 
-## ## this method gives us a vector where names are the types,
-## ## and the values are the keys
-## .getDbObjFKeys <- function(x){
-##   res <- .getDbNameFKeys(x) 
-##   objs <- lapply(names(res), .makeReal)
-##   names(res) <- lapply(objs, class)
-##   res
-## }
-
-
-
-## this will return the cols, with appropriate things appended for a single Db.
-## .getExtraColsForDb <- function(x, db, cols){
-##   fkeys <- .getDbObjFKeys(x)
-##   ## Now add the fkeys to the cols that go with the db
-##   cols <- c(cols, fkeys[names(fkeys) %in% db])
-##   unique(cols)
-## }
 
 
 ## If the user chooses cols from GO and Txdb (for example), I
@@ -475,20 +450,6 @@ setMethod("keys", "OrganismDb",
     res <- data.frame(keys=keys)
     colnames(res) <- cols
     return(res) }
-  ## TODO: investigate setting default keys and cols arguments to NULL.  This
-  ## is what the other select statements support, BUT it is more complicated
-  ## here because we don't know which things the keys and cols go with at this
-  ## point.  (So the check will have to happen later, after we know this
-  ## information, and for cols it may be split up...)  
-  ## if(is.null(keys)) keys <- keys(x) ## if no keys provided: use them all
-  ## if(is.null(cols)) cols <- cols(x) ## if no cols provided: use them all
-  ## check that the keytype matches the keys
-  ## ktKeys = keys(x, keytype=keytype)
-  ## if(!(any(ktKeys %in% keys))){
-  ##   stop("keys must be of the same keytype as the actual keytype")
-  ## }x
-  
-  #mkeys <- .mkeys()
   
   ## Preserve original cols (we will be adding some to get our results along
   ## the way 
@@ -505,13 +466,11 @@ setMethod("keys", "OrganismDb",
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(x, sels)
   
-  
   ## Then we need to filter out all columns that we didn't ask for.  
   ## Actually that is not quite right, what we want to do is make a blacklist
   ## of columns that were added (in fkeys) and that were NOT requested
   ## (oriCols and keytype).
 
-#  extraKeys <- unique(unlist(mkeys))
   extraKeys <- .getDbNameFKeys(x)
   blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
   ## if they asked for one of the GO items, then GO is not blacklisted
@@ -524,12 +483,7 @@ setMethod("keys", "OrganismDb",
   if(dim(res)[1]>0){
     res <- AnnotationDbi:::.resort(tab=res, keys=keys, jointype=keytype,
                                    reqCols=colnames(res))
-    ## TODO: reqCols is kind of being faked here.  What we really want is to
-    ## better clean up colnames(res) and to pass in a SHORTER list here.  Then
-    ## the shorter list will act as a filter to "clean up" the columns by
-    ## getting rid of unwanted columns. at least one kind of kruft that ends
-    ## up in here is cols that are duplicated like: Ontology.x, Ontology.y
-    ## etc.
+
   }
   unique(res)
 }
@@ -542,341 +496,6 @@ setMethod("select", "OrganismDb",
           .select(x, keys, cols, keytype)
         }
 )
-
-
-## debug(Homo.sapiens:::.select)
-
-
-## planned usage:
-## These all work now:
-## library(Homo.sapiens);  cols <- cols(Homo.sapiens)[c(7,10,11,12)]; keys <- head(keys(org.Hs.eg.db, "ENTREZID")); keytype <- "ENTREZID"; res <- select(Homo.sapiens, keys, cols, keytype); head(res); dim(res)
-
-## This 1st example should give me: [1] 51518    11
-##(for the dim)
-
-
-
-## cols2 <- cols(Homo.sapiens)[c(7,10,11,37)]; res2 <- select(Homo.sapiens, keys, cols2, keytype); head(res2)
-
-
-
-## cols5 <- cols(Homo.sapiens)[c(7,8)]; res5 <- select(Homo.sapiens, keys, cols5, keytype); head(res5)
-
-
-
-## cols3 <- cols(Homo.sapiens)[c(10,11,37)]; res3 <- select(Homo.sapiens, keys, cols3, keytype); head(res3)
-
-## cols4 <- cols(Homo.sapiens)[c(10,11,12)]; res4 <- select(Homo.sapiens, keys, cols4, keytype); head(res4)
-
-
-
-##########################
-## Weird finTab issues??? - Resolved with AnnotationDbi patch
-
-## cols6 <- cols(Homo.sapiens)[c(37,38)]; res6 <- select(Homo.sapiens, keys, cols6, keytype); head(res6)
-
-## library(Homo.sapiens); keys <- head(keys(org.Hs.eg.db, "ENTREZID")); keytype <- "ENTREZID"; cols8 <- cols(Homo.sapiens)[c(37)]; res8 <- select(Homo.sapiens, keys, cols8, keytype); head(res8)
-
-
-##########################
-## BLERGH!  These issues are caused by this bug here (patch is avail)
-## select(org.Hs.eg.db, keys= head(keys(org.Hs.eg.db, "ENTREZID")), cols = "ENTREZID", keytype="ENTREZID")
-
-
-
-## This is the same situation as I patched above in AnnotationDbi, but now
-## occuring in the meta-select I have created in the local .select
-
-## cols7 <- cols(Homo.sapiens)[c(10)]; res7 <- select(Homo.sapiens, keys, cols7, keytype); head(res7)
-
-
-
-
-
-
-###################################################################
-## TODO: more testing starting from other types of IDs!
-
-## library(Homo.sapiens);cols3 <- cols(Homo.sapiens)[c(10,11,37)];cols2 <- cols(Homo.sapiens)[c(7,10,11,37)];cols8 <- cols(Homo.sapiens)[c(37)];
-
-## debug(Homo.sapiens:::.lookupDbsFromCols);
-## debug(Homo.sapiens:::.mergeSelectResults);
-## debug(Homo.sapiens:::.select);
-## debug(Homo.sapiens:::.getSelects);
-## debug(Homo.sapiens:::.addAppropriateCols);
-
-## strange bug: GOID should be keytype, but only GO actually works...
-## foo = head(keys(GO.db))
-## this fails:
-## res9 <- select(Homo.sapiens, keys=foo, cols=cols8, keytype="GOID"); head(res9)
-
-## this also bombs:
-## res9 <- select(Homo.sapiens, keys=foo, cols=cols3, keytype="GOID"); head(res9)
-
-
-## But this works? - oops not since I added the GODb exception above to .getSelects...  Damn, that's confusing...
-## res10 <- select(Homo.sapiens, keys=foo, cols=cols8, keytype="GO"); head(res10)
-## And so does this? Wait, no.  It doesn't really work either...
-## res11 <- select(Homo.sapiens, keys=foo, cols=cols3, keytype="GO"); head(res11)
-
-
-
-
-## What about starting with a key from TxDb???
-## 
-
-## works
-## keys = head(keys(Homo.sapiens, "CDSID")); res12 <- select(Homo.sapiens, keys=keys, cols=cols8, keytype="CDSID"); head(res12)
-
-
-## But this one doesn't finish in a timely fashion?  (seems to now be an
-## efficiency thing)
-## keys = head(keys(Homo.sapiens, "TXID")); res13 <- select(Homo.sapiens, keys=keys, cols=cols3, keytype="TXID"); head(res13)
-
-
-
-
-
-## keys = head(keys(Homo.sapiens, "TXID")); res14 <- select(Homo.sapiens, keys=keys, cols=cols2, keytype="TXID"); head(res14)
-
-## This most recent one is an interesting bug, we are dropping all the results
-## simply because we couldn't connect all the way through.  
-
-
-
-
-## Here is what seems to be bombing on these last two:
-## system.time(foo <- select(org.Hs.eg.db,keys=keys(org.Hs.eg.db,keytype="ENTREZID"), cols=c("ENTREZID","ACCNUM","GO"), keytype="ENTREZID"))
-
-## so after cols improvements I am trying: 
-## foo <- select(org.Hs.eg.db, keys=keys(org.Hs.eg.db,keytype="ENTREZID"), cols=c("ENTREZID","ACCNUM"), keytype="ENTREZID")
-## And this is still WAY too slow.  In fact, I really need to speed that up in AnnotationDbi...  But in the meantime lets implement solution 2 here.
-
-
-## proposed efficiencies:
-## I should be able to help things by NOT getting all of the keys?
-## length(keys)==42106 is a LOT of keys. (and that is indeed ALL of them)
-## I should also be able to save some time by being more selective
-## about the cols (don't get GO unless I really must).
-
-### for both? of these things, I should be able to do something smart
-### based only on knowing whether or not I am processing an OrgDb
-### (ie. whether or not this node as more than one edge) and also based
-### on whether or not I have another select to process after this one
-### (if not, then we don't need to get another table).
-
-## MAJOR TODO: selectively drop fkeys based on how many selects we will
-## need...  There is just no reason to retrieve GO IDs if we don't need them
-## (for example)
-
-
-## SOLUTION 1:
-## Actually I think I can do better criteria.  I know I need a GO ID "added"
-## only IF 1) there is a GODb in the chain somewhere 2) the chain is longer
-## than 1 AND 3) we are on the OrgDb node.  The flip side to this would be the
-## case where I only want to add the ENTREZID link, which would happen in the
-## complementary situation.  A more general solution is to see that 1) we are
-## on an OrgDb node, 2) this is not the 1st link (if it is we don't need to
-## add anything), 3) what is the length of dbs (later this would be outdegree
-## to current node) and then 4) if it is 2, then we need to choose which one
-## using the mkeys (helper function)
-## DONE
-
-
-
-## Deciding about row-key filtering is much harder.  It means that I
-## have to start passing in the keys from .select, and then I have to
-## consider repercussions intelligently.  But I think I can do it
-## simply because I think that I basically always want an inner join
-## here between the selects.  That is, I start with some key in some
-## table, and I want to return all the things from the other tables
-## that can be matched (inner join).  This is the best I can do.
-
-## SOLUTION 2:
-## So I start with the keys in the 1st table (it will be the 1st table
-## because I have sorted them).  And then I just use mkeys to get the
-## key types (for the previous table) and use that info to get the
-## column from the sels[[i-1]][[prevKeyType]].  And THOSE are my new
-## keys...
-## DONE
-
-
-## ALSO: I have a problem with things that were NOT in the original query
-## ending up in the result.  See res8, and notice how I get Evidence, and
-## Ontology included in the results even though I did succeed at filtering out
-## "GO".  I have a finite list of exceptions like this that can end up in the
-## results without having been in the initial "cols" argument.  I probably
-## need a special helper method to scrub these exceptions out whenever "GO" is
-## no longer present in the colnames etc.  This isn't my favorite solution,
-## but it would probably work very well most of the time since all of my
-## exceptions are coming from Org Packages and will be known about in advance.
-
-## Solution 3:
-## write a post-process filter-helper to remove these when appropriate.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## ANOTHER external bug.  Crikey!
-
-## debug(Homo.sapiens:::.getSelects)
-## There may be a problem with
-## txdb= TxDb.Hsapiens.UCSC.hg19.knownGene; foo = select(txdb, keys=keys(txdb,keytype="GENEID"), cols=c("CDSSTART", "GENEID"),keytype="GENEID"); head(foo); head(foo)
-## txdb= TxDb.Hsapiens.UCSC.hg19.knownGene; foo = select(txdb, keys=keys(txdb,keytype="GENEID"), cols=c("TXSTART", "GENEID"),keytype="GENEID"); head(foo); head(foo)
-
-
-## BUT:
-## library(TxDb.Hsapiens.UCSC.hg19.knownGene); x <- txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene;
-## cols = c("GENEID","TXID","TXSTART"); keys = head(keys(x, "GENEID")); foo = select(x, keys, cols = cols, keytype="GENEID");head(foo)
-
-## SO THIS is the problem!  (using a lot of keys in a TXDB select() call is apparently unforgivably slow...
-##  foo = select(x, keys(x, "GENEID"), cols = cols, keytype="GENEID");head(foo)
-
-
-
-
-
-
-## TODO #1: bug is impeding progress because select() for GO.db is not giving us
-## what we want.
-
-## test code
-## head(toTable(GOTERM))
-## head(select(GO.db, keys = head(keys(GO.db)), cols="TERM"))
-## BPPARENTS ??? WTH did that come from???
-## Adding in more stuff still leaves us with the bizarre rename event...
-## colnames(select(GO.db, keys = head(keys(GO.db)), cols=c("TERM","SYNONYM")))
-## debug(AnnotationDbi:::.select)
-
-## trouble seems to be coming from here:
-## debug(AnnotationDbi:::.renameColumnsWithRepectForExtras)
-
-## digging a bit deeper,
-## debug(AnnotationDbi:::.getAllColAbbrs)
-## debug(AnnotationDbi:::.makeColAbbrs)
-## These methods seem to do what they are supposed to.
-## AnnotationDbi:::.getAllColAbbrs(GO.db)
-## But it seems I have a logical error.  I cannot use the redundant short
-## column names to map back (accurately) to the table abbreviations when they
-## are keys used to join across multiple tables...
-
-## For the AnnotationDbi implementation, there is a general problem when I
-## have multiple join columns that are used in different mappings...
-## For the general mappings: accession can take us to REFSEQ *OR* to ACCNUM,
-## and ipi_id can take us to PFAM *OR* PROSITE. These I could almost live
-## with, but the really killer one is GO.db, where almost EVERYTHING has go_id
-## mapped, and the one you get (the 1st one) is BPPARENTS, which produces that
-## WTH momemt from earlier...
-
-## To fix it, I really just need to make some exceptions.  If the column ID is
-## go_id, is should return "TERM", and if it is accession or ipi_id, we
-## probably need to make a smarter choice about how we are getting our cols
-## back out.
-## May have to look in the value for cols to get the right decision???
-## So for PFAM, and PROSITE, or REFSEQ and ACCNUM this sort of column sub as
-## the last step in .renameColumnsWithRepectForExtras() is a clean solution.
-## Still testing for GO though...
-
-
-## colnames(select(GO.db, keys = head(keys(GO.db)), cols=c("TERM")))
-## debug(AnnotationDbi:::.renameColumnsWithRepectForExtras)
-
-## colnames(select(org.Hs.eg.db, keys = head(keys(org.Hs.eg.db)), cols=c("REFSEQ", "ACCNUM")))
-
-## colnames(select(org.Hs.eg.db, keys = head(keys(org.Hs.eg.db)), cols=c("REFSEQ", "ACCNUM", "GO")))
-
-## x = GO.db
-## AnnotationDbi:::.renameColumnsWithRepectForExtras(x, toTable(GOTERM))
-## This too is now FIXED.
-
-
-## FOR GO, I ALSO have another bug too (asking for multiple things results in
-## ambiguous merge() calls). Example:
-## colnames(select(GO.db, keys = head(keys(GO.db)), cols=c("TERM","CCPARENTS")))
-## This bug may relate to the fact that calling toTable() on some GO Bimaps
-## returns more than one column with the same exact name...  EXAMPLE
-## colnames(toTable(GOCCPARENTS))
-## colnames(toTable(GOPBPARENTS))
-## colnames(toTable(GOTERM))
-## To fix these kinds of situations, I need to do a pre-filter to remove the
-## unwanted go_id columns (they show up after you say toTable - not sure why).
-## Once such redundant columns are removed (sometime before we try to merge
-## them) we should be able to do a swap like above, but to just replace go_id
-## with "GOID" - FIXED (this part at least).
-
-
-
-
-
-################################################################################
-## HUGE TODO: Write a generic way to track which foreign keys are needed to
-## stitch indiv. selects together and use that for the merge above.
-## One idea is to use graphs objects
-
-
-## Another huge problem is GO.  Right now we have 'GOID' for GO.db and 'GO' as
-## a keytype for org and chip pkgs.  That is ugly, and we can't change that
-## without namespacing the cols and keytypes for both groups.  Because then if
-## you want to use GO IDs and get from an org package to a transcriptDB
-## package it might be confused with using a GO ID and starting from the GO.db
-## package.  (a different path)
-
-
-## THREE constraints for graphs that we could use to sort out the joins on:
-## 1) Must be acyclic
-## 2) Only can have one edge between any two nodes
-##    (where the edge represents a relationship between foreign keys).
-## 3) There must be a unique (namespaces?) way of naming IDs that connect nodes
-##    (ie. GOID and GO)
-
-
-
-## as an input I think I will ask for just a data.frame (from the user).
-## Then internally I can call ftM2graphNEL().  That way users won't have to
-## call new() to make a graphNEL
-## the three collumns can be DB1, DB2, and key to use for merging.
-## Paul recommends that I use graphNELs (I can use internally)
-## graphNEL
-
-## Paul also recommends that use 
-## RBGL for a shortest path algorithm.  dijkstra.sp() ?
 
 
 
