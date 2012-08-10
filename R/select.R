@@ -2,18 +2,6 @@
 
 
 
-## Then some helpers to process some of these results a bit
-.getDbObjNames <- function(x){
-  gd <- as.matrix(keyFrame(x))
-  unique(c(gd[,1],gd[,2]))
-}
-
-.getDbObjs <- function(x){
-  dbs <- .getDbObjNames(x)
-  objs <- lapply(dbs, .makeReal)
-  names(objs) <- dbs
-  objs
-}
 
 ## helper to convert text strings (Db pkgs names) into real objects
 .makeReal <- function(x){
@@ -242,21 +230,25 @@ setMethod("keys", "OrganismDb",
 ## THEN I need to get the keys from the intermediate nodes.
 
 
-## helper to get only the linked keys.
-.dropUnlinkedKeys <- function(x, fkeys, pkgs, dsts){
-  ## run through the sorted final pkgs list, and label each fkey as supported
-  ## or not.
-  newFkeys <- character()
-  for(i in seq_len(length(pkgs)-1)){  ## Or one test per edge
-    ## if distance from keytype is unequal: collect keys from this edge.
-    if(dsts[[pkgs[i]]]!=dsts[[pkgs[i+1]]]){ 
-      key1 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl1")
-      key2 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl2")
-      newFkeys <- c(newFkeys,key1,key2)
-    }
-  }
-  unique(newFkeys)
-}
+## ## helper to get only the linked keys.
+## .dropUnlinkedKeys <- function(x, fkeys, pkgs, dsts, grph){
+##   ## run through the sorted final pkgs list, and label each fkey as supported
+##   ## or not.
+##   newFkeys <- character()
+## ## new strategy: start with dsts == 0, and also pass the graph down here
+## ## OR maybe this is getting out of hand and I should have just grabbed these keys BEFORE when I was "nodewalking"...
+  
+ 
+## ##   for(i in seq_len(length(pkgs)-1)){  ## Or one test per edge
+## ##     ## if distance from keytype is unequal: collect keys from this edge.
+## ##     if(dsts[[pkgs[i]]]!=dsts[[pkgs[i+1]]]){ 
+## ##       key1 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl1")
+## ##       key2 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl2")
+## ##       newFkeys <- c(newFkeys,key1,key2)
+## ##     }
+## ##   }
+##   unique(newFkeys)
+## }
 
 ## This one will actually get the extra cols (foreign keys) for ALL the
 ## RELEVANT Dbs and then add that information to the keytype and cols.
@@ -276,7 +268,8 @@ setMethod("keys", "OrganismDb",
     x[idx]
   }
   ## nodeWalker recurses to get back to the start node
-  nodeWalker <- function(g, dst, pkg, curDist,extraPkgs){ 
+  nodeWalker <- function(g, dst, pkg, curDist, extraKeys){ 
+    prevPkg <- pkg
     ## get the edges 
     e <- edges(g) 
     enames <- names(e)
@@ -284,38 +277,50 @@ setMethod("keys", "OrganismDb",
 
     pkgConts <- matchSub(e, pkg, enames) 
     
-    pkgDists <-  matchSub(dst, pkgConts, dstNames) 
+    pkgDists <-  matchSub(dst, pkgConts, dstNames)
     pkg <- names(pkgDists)[pkgDists < curDist]    
     curDist <- matchSub(dst, pkg, dstNames)    
     if(curDist !=0){
-      extraPkgs <- c(extraPkgs, pkg)
-      nodeWalker(g, dst, pkg, curDist, extraPkgs)
+      ## extraPkgs <- c(extraPkgs, pkg)
+      extraKeys <- c(extraKeys, .mkeys(prevPkg, pkg, key="both"))
+      nodeWalker(g, dst, pkg, curDist, extraKeys)
     }else{
-      return(extraPkgs)
+      return(extraKeys)
     }
   }
   ## vector for holding nodes that are "between" start and leaf nodes.
-  extraPkgs <- character()
+  extraKeys <- character()
+  rootNode <- names(dst)[dst==0]
   ## master loop for all leaf pkgs (leaf nodes)
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
-    if(curDist > 1){## then we need to work out how to 
-      extraPkgs <- nodeWalker(g, dst, pkg, curDist, extraPkgs) 
+    if(curDist > 1){## then we need to work out how to get there
+      extraKeys <- nodeWalker(g, dst, pkg, curDist, extraKeys) 
+    }else if(curDist == 1){
+      extraKeys <- c(extraKeys, .mkeys(x, pkg, rootNode, key="both"))
     }
   }
-  ## Now combine together all the different packages 
-  pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
-  ## And then order the pkgs so that they are sorted from keytype to leaves
-  pkgSubDsts <- dst[match(pkgs, names(dst))]
-  sortedPkgs <- pkgs[order(pkgSubDsts)]
+
+  ## then put the extrKeys together with the other things we need
+   fkeys <-unique(c(keytype, cols, extraKeys))
   
-  ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
-  fkeys <- .getDbNameFKeys(x) ## 1st get ALL the fkeys
-  ## Then I need to drop keys that point to pkgs that are NOT in the path.
-  fkeys <- .dropUnlinkedKeys(x, fkeys, sortedPkgs, pkgSubDsts)
+  ## Now combine together all the different packages 
+##   pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
+    
+##   ## And then recover the distances from each package
+##   pkgSubDsts <- dst[match(pkgs, names(dst))]
+##   ## partially I can sort the packages (but this alone is not enough)
+##   sortedPkgs <- pkgs[order(pkgSubDsts)]
+  
+##   ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
+##   fkeys <- .getDbNameFKeys(x) ## 1st get ALL the fkeys
+##   ## Then I need to drop keys that point to pkgs that are NOT in the path.
+##   fkeys <- .dropUnlinkedKeys(x, fkeys, sortedPkgs, pkgSubDsts, g)
   ## And then add those keys to our cols
-  unique(c(keytype, cols, fkeys))
+##   unique(c(keytype, cols, fkeys))
+
+    fkeys
 }
 
 
@@ -407,7 +412,7 @@ setMethod("keys", "OrganismDb",
   grepl(str, piece)
 }
 
-.mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2")){
+.mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2", "both")){
   if(length(tbl1) >1 || length(tbl2)>1) stop(".mkeys can only process one pair of tables at at time")
   key <- match.arg(key)
   kf <- keyFrame(x)
@@ -424,20 +429,21 @@ setMethod("keys", "OrganismDb",
   ## now the tricky part is that in returning the keys I have to get the
   ## correct keys back to the user...  And this is based on whether tbl1 was
   ## one thing or another.
+  if(length(matchRow$xDbs) >1)stop("mkeys has failed to limit choices to 1.")
   if(key=="tbl1"){
-    if(length(matchRow$xDbs) >1)stop("mkeys has failed to limit choices")
     if(grepl(tbl1,matchRow$xDbs)){
       return(as.character(matchRow$xKeys))
     }else{ ## then its reversed of the order in the row...
       return(as.character(matchRow$yKeys))
     }
   }else if(key=="tbl2"){
-    if(length(matchRow$yDbs) >1)stop("mkeys has failed to limit choices")
     if(grepl(tbl2,matchRow$yDbs)){ 
       return(as.character(matchRow$yKeys))
     }else{ ## and the reverse case
       return(as.character(matchRow$xKeys))
     }
+  }else if(key=="both"){    
+    return(c(as.character(matchRow$xKeys),as.character(matchRow$yKeys)))
   }
 }
 

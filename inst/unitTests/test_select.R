@@ -105,6 +105,19 @@ test_addAppropriateCols <- function(){
   checkTrue("GENEID" %in% res)
   checkTrue("ENTREZID" %in% res)
   checkTrue("TXNAME" %in% res)
+
+
+  ## Here is a case that captures the bug I found earlier...
+  ## 
+  keytype <- c("ENTREZID")
+  cls = c("GOID","SYMBOL","TXNAME")
+  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
+  checkTrue("GO" %in% res)
+  checkTrue("GENEID" %in% res) ## This is missing
+  checkTrue("GOID" %in% res)
+  checkTrue("SYMBOL" %in% res)
+  checkTrue("ENTREZID" %in% res)
+  checkTrue("TXNAME" %in% res)  
 }
 
 test_mkeys <- function(){
@@ -121,6 +134,11 @@ test_mkeys <- function(){
   checkTrue("GOID"==res)
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl2")
   checkTrue("GO"==res)
+
+  tbl1 = "GO.db"
+  tbl2 = "org.Hs.eg.db"
+  res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="both")
+  checkEquals(res, c("GOID","GO"))
 }
 
 
