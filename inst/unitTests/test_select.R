@@ -3,6 +3,9 @@
 ## Will base testing on humans for now
 require("Homo.sapiens")
 x <- Homo.sapiens
+## Also need to test a species with other keys to join DBs
+require("Rattus.norvegicus") 
+r <- Rattus.norvegicus 
 require("RUnit")
 
 
@@ -267,9 +270,6 @@ test_select <- function(){
 }
 
 
-## TODO: write tests for the rat! 
-require("Rattus.norvegicus") 
-r <- Rattus.norvegicus 
 
 
 test_rattus <- function(){ 
