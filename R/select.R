@@ -250,6 +250,35 @@ setMethod("keys", "OrganismDb",
 ##   unique(newFkeys)
 ## }
 
+
+.matchSub <- function(x, m1, m2){
+    idx <- match(unlist(m1), unlist(m2))
+    idx <- idx[!is.na(idx)]
+    x[idx]
+}
+## nodeWalker recurses to get back to the start node
+.nodeWalker <- function(g, dst, pkg, curDist, extraKeys){ 
+  prevPkg <- pkg
+  ## get the edges 
+  e <- edges(g) 
+  enames <- names(e)
+  dstNames <- names(dst)
+  
+  pkgConts <- .matchSub(e, pkg, enames) 
+  
+  pkgDists <-  .matchSub(dst, pkgConts, dstNames)
+  pkg <- names(pkgDists)[pkgDists < curDist]    
+  curDist <- .matchSub(dst, pkg, dstNames)    
+  if(curDist !=0){
+    ## extraPkgs <- c(extraPkgs, pkg)
+    extraKeys <- c(extraKeys, .mkeys(prevPkg, pkg, key="both"))
+    .nodeWalker(g, dst, pkg, curDist, extraKeys)
+  }else{
+    return(extraKeys)
+  }
+}
+
+
 ## This one will actually get the extra cols (foreign keys) for ALL the
 ## RELEVANT Dbs and then add that information to the keytype and cols.
 .addAppropriateCols <- function(x, cols, keytype){
@@ -262,32 +291,6 @@ setMethod("keys", "OrganismDb",
   ## helper function for matching and subsetting
   ## BE CAREFUL! the order matters for match and is reverse of %in%
   ## (iow use the long vector second)
-  matchSub <- function(x, m1, m2){
-    idx <- match(unlist(m1), unlist(m2))
-    idx <- idx[!is.na(idx)]
-    x[idx]
-  }
-  ## nodeWalker recurses to get back to the start node
-  nodeWalker <- function(g, dst, pkg, curDist, extraKeys){ 
-    prevPkg <- pkg
-    ## get the edges 
-    e <- edges(g) 
-    enames <- names(e)
-    dstNames <- names(dst)
-
-    pkgConts <- matchSub(e, pkg, enames) 
-    
-    pkgDists <-  matchSub(dst, pkgConts, dstNames)
-    pkg <- names(pkgDists)[pkgDists < curDist]    
-    curDist <- matchSub(dst, pkg, dstNames)    
-    if(curDist !=0){
-      ## extraPkgs <- c(extraPkgs, pkg)
-      extraKeys <- c(extraKeys, .mkeys(prevPkg, pkg, key="both"))
-      nodeWalker(g, dst, pkg, curDist, extraKeys)
-    }else{
-      return(extraKeys)
-    }
-  }
   ## vector for holding nodes that are "between" start and leaf nodes.
   extraKeys <- character()
   rootNode <- names(dst)[dst==0]
@@ -296,7 +299,7 @@ setMethod("keys", "OrganismDb",
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
     if(curDist > 1){## then we need to work out how to get there
-      extraKeys <- nodeWalker(g, dst, pkg, curDist, extraKeys) 
+      extraKeys <- .nodeWalker(g, dst, pkg, curDist, extraKeys) 
     }else if(curDist == 1){
       extraKeys <- c(extraKeys, .mkeys(x, pkg, rootNode, key="both"))
     }
