@@ -87,9 +87,9 @@ test_addAppropriateCols <- function(){
   res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
   checkTrue("TXNAME" %in% res)
   checkTrue("GOID" %in% res)
-  checkTrue("GO" %in% res) ## no longer true?  Why not???
-  checkTrue("GENEID" %in% res)
-  checkTrue("ENTREZID" %in% res)
+  checkTrue("GO" %in% res) 
+  checkTrue("GENEID" %in% res) ## now this is no longer true?  Why not???
+  checkTrue("ENTREZID" %in% res)## Also this one???
 
   keytype <- c("ENTREZID")
   cls <- c("GOID")

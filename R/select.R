@@ -271,7 +271,7 @@ setMethod("keys", "OrganismDb",
   curDist <- .matchSub(dst, pkg, dstNames)    
   if(curDist !=0){
     ## extraPkgs <- c(extraPkgs, pkg)
-    extraKeys <- c(extraKeys, .mkeys(prevPkg, pkg, key="both"))
+    extraKeys <- c(extraKeys, .mkeys(x, prevPkg, pkg, key="both"))
     .nodeWalker(g, dst, pkg, curDist, extraKeys)
   }else{
     return(extraKeys)
