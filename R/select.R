@@ -251,6 +251,7 @@ setMethod("keys", "OrganismDb",
 ## }
 
 
+## helper function for matching and subsetting
 .matchSub <- function(x, m1, m2){
     idx <- match(unlist(m1), unlist(m2))
     idx <- idx[!is.na(idx)]
@@ -274,6 +275,7 @@ setMethod("keys", "OrganismDb",
     extraKeys <- c(extraKeys, .mkeys(x, prevPkg, pkg, key="both"))
     .nodeWalker(g, dst, pkg, curDist, extraKeys)
   }else{
+    extraKeys <- c(extraKeys, .mkeys(x, prevPkg, pkg, key="both"))
     return(extraKeys)
   }
 }
@@ -288,41 +290,17 @@ setMethod("keys", "OrganismDb",
   dst <- .getDistances(x, keytype)
   ## then we need to lookup the DBs we need (based on the cols alone). (
   pkgs <- .lookupDbNamesFromCols(x, cols)
-  ## helper function for matching and subsetting
-  ## BE CAREFUL! the order matters for match and is reverse of %in%
-  ## (iow use the long vector second)
-  ## vector for holding nodes that are "between" start and leaf nodes.
   extraKeys <- character()
-  rootNode <- names(dst)[dst==0]
   ## master loop for all leaf pkgs (leaf nodes)
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
-    if(curDist > 1){## then we need to work out how to get there
+    if(curDist > 0){## then we are not there yet...
       extraKeys <- .nodeWalker(g, dst, pkg, curDist, extraKeys) 
-    }else if(curDist == 1){
-      extraKeys <- c(extraKeys, .mkeys(x, pkg, rootNode, key="both"))
     }
   }
-
   ## then put the extrKeys together with the other things we need
    fkeys <-unique(c(keytype, cols, extraKeys))
-  
-  ## Now combine together all the different packages 
-##   pkgs <- unique(c(.lookupDbNameFromKeytype(x, keytype), pkgs, extraPkgs))
-    
-##   ## And then recover the distances from each package
-##   pkgSubDsts <- dst[match(pkgs, names(dst))]
-##   ## partially I can sort the packages (but this alone is not enough)
-##   sortedPkgs <- pkgs[order(pkgSubDsts)]
-  
-##   ## finally, for each node of pkgs, we need to grab the appropriate fkeys...
-##   fkeys <- .getDbNameFKeys(x) ## 1st get ALL the fkeys
-##   ## Then I need to drop keys that point to pkgs that are NOT in the path.
-##   fkeys <- .dropUnlinkedKeys(x, fkeys, sortedPkgs, pkgSubDsts, g)
-  ## And then add those keys to our cols
-##   unique(c(keytype, cols, fkeys))
-
     fkeys
 }
 
