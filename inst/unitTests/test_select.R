@@ -3,9 +3,6 @@
 ## Will base testing on humans for now
 require("Homo.sapiens")
 x <- Homo.sapiens
-## Also need to test a species with other keys to join DBs
-require("Rattus.norvegicus") 
-r <- Rattus.norvegicus 
 require("RUnit")
 
 
@@ -77,51 +74,49 @@ test_resortDbs <- function(){
 
 
 
-test_addAppropriateCols <- function(){
+test_getForeignEdgeKeys <- function(){
   keytype <- c("ENTREZID")
   cls <- c("OBSOLETE") ## this is a defunct ID
   ## And this should therefore throw an error
-  checkException(OrganismDbi:::.addAppropriateCols(x,cls,"GENEID"))
+  checkException(OrganismDbi:::.getForeignEdgeKeys(x,cls,"GENEID"))
 
   ## This method needs to be able to interpolate between nodes.
   ## So this should work out OK:
   keytype <- c("TXNAME")
   cls <- c("GOID")
-  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
-  checkTrue("TXNAME" %in% res)
-  checkTrue("GOID" %in% res)
-  checkTrue("GO" %in% res) 
-  checkTrue("GENEID" %in% res) ## now this is no longer true?  Why not???
-  checkTrue("ENTREZID" %in% res)## Also this one???
+  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+#  checkTrue("TXNAME" %in% unlist(res))
+  checkTrue("GOID" %in% unlist(res))
+  checkTrue("GO" %in% unlist(res)) 
+  checkTrue("GENEID" %in% unlist(res)) 
+  checkTrue("ENTREZID" %in% unlist(res))
 
   keytype <- c("ENTREZID")
   cls <- c("GOID")
-  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
-  checkTrue("GO" %in% res)
-  checkTrue("GOID" %in% res)
-  checkTrue("ENTREZID" %in% res)
+  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+  checkTrue("GO" %in% unlist(res))
+  checkTrue("GOID" %in% unlist(res))
+#  checkTrue("ENTREZID" %in% unlist(res))
   
   keytype <- c("TXNAME")
   cls <- c("GO")
-  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
-  checkTrue("GO" %in% res)
-  checkTrue("GENEID" %in% res)
-  checkTrue("ENTREZID" %in% res)
-  checkTrue("TXNAME" %in% res)
+  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+#  checkTrue("GO" %in% unlist(res))
+  checkTrue("GENEID" %in% unlist(res))
+  checkTrue("ENTREZID" %in% unlist(res))
+#  checkTrue("TXNAME" %in% unlist(res))
 
-
-  ## Here is a case that captures the bug I found earlier...
-  ## 
+  ## Here is a case for when the start node is in the middle of the graph 
   keytype <- c("ENTREZID")
   cls = c("GOID","SYMBOL","TXNAME")
-  res <- OrganismDbi:::.addAppropriateCols(x, cls, keytype)
-  checkTrue("GO" %in% res)
-  checkTrue("GENEID" %in% res) ## This is missing
-  checkTrue("GOID" %in% res)
-  checkTrue("SYMBOL" %in% res)
-  checkTrue("ENTREZID" %in% res)
-  checkTrue("TXNAME" %in% res)  
-}
+  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+  checkTrue("GO" %in% unlist(res)) 
+  checkTrue("GENEID" %in% unlist(res)) ## This is missing 
+  checkTrue("GOID" %in% unlist(res)) 
+#  checkTrue("SYMBOL" %in% unlist(res)) 
+  checkTrue("ENTREZID" %in% unlist(res)) 
+#  checkTrue("TXNAME" %in% unlist(res))  
+} 
 
 test_mkeys <- function(){
   tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
@@ -148,7 +143,7 @@ test_mkeys <- function(){
 test_getSelects <- function(){
   cls <- c("TERM", "ALIAS")
   kt <- "GENEID"
-  cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
+  cls <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)  
   keys <- head(keys(x, kt), n=2)
   res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
@@ -160,7 +155,7 @@ test_getSelects <- function(){
   
   cls <- c("SYMBOL")
   kt <- "OMIM"
-  cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
+  cls <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)   
   keys <- head(keys(x, kt), n=2)
   res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)  
@@ -173,7 +168,7 @@ test_getSelects <- function(){
 test_mergeSelectResults <- function(){
   cls <- c("TERM", "ALIAS")
   kt <- "GENEID"
-  cls <- OrganismDbi:::.addAppropriateCols(x, cls, kt)
+  cls <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)  
   keys <- head(keys(x, kt), n=3)
   sels <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
@@ -202,14 +197,15 @@ test_select <- function(){
   checkTrue("CHRLOCCHR" %in% colnames(res))  
   checkTrue("ALIAS" %in% colnames(res))
 
-  cls <- c("IPI", "ALIAS", "CDSSTART")
-  res <- OrganismDbi:::.select(x, keys, cls, keytype)
-  checkTrue(dim(res)[2]==4)
+  cls <- c("IPI", "ALIAS", "CDSSTART") 
+  res <- OrganismDbi:::.select(x, keys, cls, keytype) 
+  checkTrue(dim(res)[2]==4) 
   checkTrue("IPI" %in% colnames(res)) 
-  checkTrue("ENTREZID" %in% colnames(res))
-  checkTrue("ALIAS" %in% colnames(res))  
-  checkTrue("CDSSTART" %in% colnames(res))
+  checkTrue("ENTREZID" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res)) 
+  checkTrue("CDSSTART" %in% colnames(res)) 
 
+  ## bugged because I have to change the way I sort these things so that they always start with the keytype dbs...
   cls <- c("GOID","ENTREZID")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==4)
@@ -257,7 +253,19 @@ test_select <- function(){
 
 
   
-  ## DEBUG why the following does not work??
+  ## Why do the following cases not work?
+  ## Because .getSelects also (and maybe even mergeSelectResults) need to walk
+  ## along the graph intelligently (and not just based on distances).
+  ## In this case, two nodes were equal distance from the central node, so
+  ## just sorting them based on distance will not put them into the correct
+  ## order for processing.  I need to preserve the order from my initial walk
+  ## (which happened when I added appropriate cols to gather the foreign
+  ## keys).  And I need to follow that ordering in these other methods.
+  ## OR I could generalize the.nodeWalker code even more to take 3 walks
+  ## OR maybe I still don't need to be calling .mkeys like this?
+  ## OR maybe I just need to be a tiny bit smarter about what I pass into
+  ## these other two methods (so that the keys are grouped into edges)
+  
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
   cls = c("GOID" ,  "SYMBOL", "TXNAME")
@@ -270,6 +278,9 @@ test_select <- function(){
 }
 
 
+## Also need to test a species with other keys to join DBs
+require("Rattus.norvegicus") 
+r <- Rattus.norvegicus 
 
 
 test_rattus <- function(){ 

@@ -121,28 +121,7 @@ setMethod("keys", "OrganismDb",
 
 
 
-
-
-
-
-
-
-
-
-
-## For select then, I will need to also look up repeats for both cols and
-## keytypes.  For keys, I want them uniqued together, but for cols I will need
-## to fully qualify them when they are returned (TODO: changes to cols).  That
-## means that users have to indicate which one they want with a fully
-## qualified name when they call select.  Alternatively, they could just get
-## "both" back...  Right NOW: I am still lucky (even for cols) in terms of
-## name clashes.
-
-## FOR NOW: we don't have any name clashes, so we will proceed as if there
-## never will be any (when we get one, we can start to name-mangle etc.)
-
-
-## So select will work by just knowing how to merge together the results from
+## Select will work by just knowing how to merge together the results from
 ## the separate select() calls.  I will need know know who can be joined with
 ## who for this (and how).  That info should be stored in the
 ## OrganismDb when it is created.  
@@ -174,33 +153,51 @@ setMethod("keys", "OrganismDb",
   sp$distances
 }
 
-## now uses graphs to order things better
-.resortDbs <- function(x, pkgs, keytype){
-  ## use the shortest path algorithm to get them into the order desired.
-  res <- .getDistances(x, keytype)
-  ## So now I just have to sort the names in order of distance.
-  dbs <- names(res)[order(res)]
-  ## Then convert into actual objects
-  objs <- lapply(dbs, .makeReal)
-  ## Then label the objs with the names
-  names(objs) <- dbs
-  ## Then filter out any objs that were not listed in pkgs (clip leaf nodes)
-  objs <- objs[names(objs) %in% pkgs]
-  ## Then return 
-  objs
-}
+## ## now uses graphs to order things better
+## .resortDbs <- function(x, pkgs, keytype){
+##   ## use the shortest path algorithm to get them into the order desired.
+##   res <- .getDistances(x, keytype)
+##   ## So now I just have to sort the names in order of distance.
+##   dbs <- names(res)[order(res)]
+##   ## Then convert into actual objects
+##   objs <- lapply(dbs, .makeReal)
+##   ## Then label the objs with the names
+##   names(objs) <- dbs
+##   ## Then filter out any objs that were not listed in pkgs (clip leaf nodes)
+##   objs <- objs[names(objs) %in% pkgs]
+##   ## Then return 
+##   objs
+## }
 
-## Retrieves the list of DBs "in order of shortest path"
-.lookupDbsFromCols <- function(x, cols, keytype){
-  ## 1st we want cols ordered so that the one that matches our keytype is FIRST
-  ## Also, we must always have keytype be part of cols here
-  cols <- unique(c(keytype, cols))
-  pkgs <- .lookupDbNamesFromCols(x, cols)
-  pkgs <- unique(pkgs)
-  ## Now use the graph to decide the path
-  .resortDbs(x, pkgs=pkgs, keytype=keytype)
-}
+## older version
+## ## Retrieves the list of DBs "in order of shortest path"
+## .lookupDbsFromCols <- function(x, cols, keytype){
+##   ## 1st we want cols ordered so that the one that matches our keytype is FIRST
+##   ## Also, we must always have keytype be part of cols here
+##   cols <- unique(c(keytype, cols))
+##   pkgs <- .lookupDbNamesFromCols(x, cols)
+##   pkgs <- unique(pkgs)
+##   ## Now use the graph to decide the path
+##   .resortDbs(x, pkgs=pkgs, keytype=keytype)
+## }
 ## .lookupDbsFromCols(x, cols, keytype)
+
+
+## newer version just uses names of DBs from fkeys
+## Retrieves the list of DBs "in order of shortest path"
+.lookupDbsFromFkeys <- function(x, fkeys, keytype){
+  if(length(fkeys)==0){
+    pkgs <- .lookupDbNameFromKeytype(x, keytype)
+  }else{
+    pkgs <- .lookupDbNamesFromCols(x, unlist(fkeys))
+  }
+  pkgs <- unique(pkgs)
+  dbs <- lapply(pkgs, .makeReal)
+  names(dbs) <- pkgs
+  dbs
+}
+## .lookupDbsFromFkeys(x, fkeys)
+
 
 ## library(Homo.sapiens); x= Homo.sapiens; cols=c("GOID","ENTREZID","TXNAME"); keytype="ENTREZID"; 
 
@@ -217,39 +214,12 @@ setMethod("keys", "OrganismDb",
 ## If the user chooses cols from GO and Txdb (for example), I
 ## still need to join those via a dbs that they need no data from (org pkg in
 ## this example).  So in that case, certain cols need to be incluced by a
-## graph-aware .addAppropriateCols() function.
+## graph-aware .getForeignEdgeKeys() function.
 
-## I have upgraded .addAppropriateCols() so that it pays attention to the graph.
+## I have upgraded .getForeignEdgeKeys() so that it pays attention to the graph.
 ## IOW, the cols asked for should not just be all of them but only the ones
 ## that are needed based on the initial values of cols that was passed into
 ## select.
-
-## SO: Instead of just returning ALL the fkey columns I need to implement the
-## following rule:
-## IF the cols requested are separated on the graph by too big a distance:
-## THEN I need to get the keys from the intermediate nodes.
-
-
-## ## helper to get only the linked keys.
-## .dropUnlinkedKeys <- function(x, fkeys, pkgs, dsts, grph){
-##   ## run through the sorted final pkgs list, and label each fkey as supported
-##   ## or not.
-##   newFkeys <- character()
-## ## new strategy: start with dsts == 0, and also pass the graph down here
-## ## OR maybe this is getting out of hand and I should have just grabbed these keys BEFORE when I was "nodewalking"...
-  
- 
-## ##   for(i in seq_len(length(pkgs)-1)){  ## Or one test per edge
-## ##     ## if distance from keytype is unequal: collect keys from this edge.
-## ##     if(dsts[[pkgs[i]]]!=dsts[[pkgs[i+1]]]){ 
-## ##       key1 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl1")
-## ##       key2 <- .mkeys(x, pkgs[i],pkgs[i+1], key = "tbl2")
-## ##       newFkeys <- c(newFkeys,key1,key2)
-## ##     }
-## ##   }
-##   unique(newFkeys)
-## }
-
 
 ## helper function for matching and subsetting
 .matchSub <- function(x, m1, m2){
@@ -257,6 +227,7 @@ setMethod("keys", "OrganismDb",
     idx <- idx[!is.na(idx)]
     x[idx]
 }
+
 ## nodeWalker recurses to get back to the start node
 .nodeWalker <- function(g, dst, pkg, curDist, extraKeys){ 
   prevPkg <- pkg
@@ -271,26 +242,24 @@ setMethod("keys", "OrganismDb",
   pkg <- names(pkgDists)[pkgDists < curDist]    
   curDist <- .matchSub(dst, pkg, dstNames)    
   if(curDist !=0){
-    ## extraPkgs <- c(extraPkgs, pkg)
-    extraKeys <- c(extraKeys, .mkeys(x, prevPkg, pkg, key="both"))
+    extraKeys[[length(extraKeys)+1]] <- .mkeys(x, prevPkg, pkg, key="both")
     .nodeWalker(g, dst, pkg, curDist, extraKeys)
   }else{
-    extraKeys <- c(extraKeys, .mkeys(x, prevPkg, pkg, key="both"))
+    extraKeys[[length(extraKeys)+1]] <- .mkeys(x, prevPkg, pkg, key="both")
     return(extraKeys)
   }
 }
 
-
 ## This one will actually get the extra cols (foreign keys) for ALL the
 ## RELEVANT Dbs and then add that information to the keytype and cols.
-.addAppropriateCols <- function(x, cols, keytype){
+.getForeignEdgeKeys <- function(x, cols, keytype){
   ## get the graph
   g <- dbGraph(x)
-  ## We want to run dijkstras (factor from .resortDbs)
+  ## We want to run dijkstras 
   dst <- .getDistances(x, keytype)
   ## then we need to lookup the DBs we need (based on the cols alone). (
   pkgs <- .lookupDbNamesFromCols(x, cols)
-  extraKeys <- character()
+  extraKeys <- list()
   ## master loop for all leaf pkgs (leaf nodes)
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
@@ -300,7 +269,7 @@ setMethod("keys", "OrganismDb",
     }
   }
   ## then put the extrKeys together with the other things we need
-   fkeys <-unique(c(keytype, cols, extraKeys))
+   fkeys <-unique(extraKeys)
     fkeys
 }
 
@@ -318,7 +287,13 @@ setMethod("keys", "OrganismDb",
 }
 
 
-.getSelects <- function(x, dbs, keys, cols, keytype){
+## I NEED to start with the keytype...  Otherwise I don't get to take
+## advantage of the efficiency from pulling only the keys I actually need into
+## R...
+
+## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
+## Also, fkeys was in order of the chromosome walk.
+.getSelects <- function(x, dbs, keys, fkeys, cols, keytype){
   res <- list(length(dbs))
   for(i in seq_len(length(dbs))){
     ## in addition to looping over the dbs, the appropriate cols must be
@@ -326,32 +301,34 @@ setMethod("keys", "OrganismDb",
     dbtype <- names(dbs)[[i]]
     colsLocal <- cols[cols %in% cols(dbs[[i]])]
     if(i==1){
-      ## mtype accumulates a history of tables that we have merged so far.
-      mtype <- dbtype
-      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
+      ## prev records the db that we last used
+      prev <- dbtype
+      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
+      names(res)[[i]] <- dbtype 
     }else{ ## more than one
-      mtype <- c(mtype,dbtype)
-      ml <- length(mtype)
-      keytype <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
-      ## An UGLY exception for GO.db:  (TODO: Is there a more elegant way?)
-      if(dbtype=="GODb"){
-        keytype="GOID"
-      }
-      prevKeyType <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
-      keys <- unique(res[[1]][[prevKeyType]])
-      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype)
-    }
-  }
+#       kt <- .mkeys(x, prev, dbtype, key="tbl2")
+       kt <- fkeys[[i-1]][dbtype]
+       ## An UGLY exception for GO.db:  (TODO: DO I still need this???)
+       if(dbtype=="GODb"){
+         keytype="GOID"
+       }
+#       prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
+       prevKeyType <- fkeys[[i-1]][prev]
+        keys <- unique(res[[prev]][[prevKeyType]])
+       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=kt)
+       names(res)[[i]] <- dbtype
+     } 
+  } 
   names(res) <- names(dbs)
   res
-}
+} 
 
 ##.dropDuplicatedMergeCols helper just takes advantage of the fact that my
 ##dupicates columns will always have the form a.x, a.y etc. and will drop the
 ##.y columns and then keep the .x ones.
 .dropDuplicatedMergeCols <- function(tab){
   cols <- colnames(tab)  
-  cols <- cols[!grepl(".y", cols)]  
+  cols <- cols[!grepl(".y", cols)]
   tab <- tab[,cols]
   colnames(tab) <- gsub(".x","",colnames(tab))
   tab
@@ -413,19 +390,21 @@ setMethod("keys", "OrganismDb",
   if(length(matchRow$xDbs) >1)stop("mkeys has failed to limit choices to 1.")
   if(key=="tbl1"){
     if(grepl(tbl1,matchRow$xDbs)){
-      return(as.character(matchRow$xKeys))
+      ans <- as.character(matchRow$xKeys)
     }else{ ## then its reversed of the order in the row...
-      return(as.character(matchRow$yKeys))
+      ans <- as.character(matchRow$yKeys)
     }
   }else if(key=="tbl2"){
     if(grepl(tbl2,matchRow$yDbs)){ 
-      return(as.character(matchRow$yKeys))
+      ans <- as.character(matchRow$yKeys)
     }else{ ## and the reverse case
-      return(as.character(matchRow$xKeys))
+      ans <- as.character(matchRow$xKeys)
     }
   }else if(key=="both"){    
-    return(c(as.character(matchRow$xKeys),as.character(matchRow$yKeys)))
+    ans <- c(as.character(matchRow$xKeys),as.character(matchRow$yKeys))
+    names(ans) <- c(as.character(matchRow$xDbs),as.character(matchRow$yDbs))
   }
+  ans
 }
 
 .select <- function(x, keys, cols, keytype){
@@ -441,12 +420,19 @@ setMethod("keys", "OrganismDb",
   
   ## 1st add any missing foreign key cols (based on what our graph looks like,
   ## and also based on what was asked for)
-  cols <- .addAppropriateCols(x, cols, keytype)
+  fkeys <- .getForeignEdgeKeys(x, cols, keytype)
+  
+  ## Then I need to add back the keytype and cols into cols???
+  cols <- unique(c(keytype, cols, unlist(fkeys)))
+  
   ## Now we only need to get the nodes that *have* those columns.
-  dbs <- .lookupDbsFromCols(x, cols, keytype)
+  ## TODO: is this really even helpful?  Or am I better off just getting this
+  ## info from .getForeignEdgeKeys???  I suspect the latter is true.
+  dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)
+  
   
   ## next we get the data from each.
-  sels <- .getSelects(x, dbs, keys, cols, keytype)
+  sels <- .getSelects(x, dbs, keys, fkeys,  cols, keytype)
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(x, sels)
   
