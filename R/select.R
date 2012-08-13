@@ -223,13 +223,13 @@ setMethod("keys", "OrganismDb",
 
 ## helper function for matching and subsetting
 .matchSub <- function(x, m1, m2){
-    idx <- match(unlist(m1), unlist(m2))
-    idx <- idx[!is.na(idx)]
-    x[idx]
+  idx <- match(unlist(m1), unlist(m2))
+  idx <- idx[!is.na(idx)]
+  x[idx]
 }
 
 ## nodeWalker recurses to get back to the start node
-.nodeWalker <- function(g, dst, pkg, curDist, extraKeys){ 
+.nodeWalker <- function(g, dst, pkg, curDist, extraKeys=list()){ 
   prevPkg <- pkg
   ## get the edges 
   e <- edges(g) 
@@ -242,10 +242,10 @@ setMethod("keys", "OrganismDb",
   pkg <- names(pkgDists)[pkgDists < curDist]    
   curDist <- .matchSub(dst, pkg, dstNames)    
   if(curDist !=0){
-    extraKeys[[length(extraKeys)+1]] <- .mkeys(x, prevPkg, pkg, key="both")
-    .nodeWalker(g, dst, pkg, curDist, extraKeys)
+    extraKeys[[length(extraKeys)+1]] <- rev(.mkeys(x, prevPkg, pkg, key="both"))
+    .nodeWalker(g, dst, pkg, curDist, extraKeys=extraKeys)
   }else{
-    extraKeys[[length(extraKeys)+1]] <- .mkeys(x, prevPkg, pkg, key="both")
+    extraKeys[[length(extraKeys)+1]] <- rev(.mkeys(x, prevPkg, pkg, key="both"))
     return(extraKeys)
   }
 }
@@ -259,18 +259,18 @@ setMethod("keys", "OrganismDb",
   dst <- .getDistances(x, keytype)
   ## then we need to lookup the DBs we need (based on the cols alone). (
   pkgs <- .lookupDbNamesFromCols(x, cols)
-  extraKeys <- list()
+  fKeys <- list()
   ## master loop for all leaf pkgs (leaf nodes)
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
     if(curDist > 0){## then we are not there yet...
-      extraKeys <- .nodeWalker(g, dst, pkg, curDist, extraKeys) 
+      fKeys <- c(fKeys,
+                 rev(.nodeWalker(g, dst, pkg, curDist))) 
     }
   }
   ## then put the extrKeys together with the other things we need
-   fkeys <-unique(extraKeys)
-    fkeys
+  unique(fKeys)
 }
 
 
@@ -400,9 +400,13 @@ setMethod("keys", "OrganismDb",
     }else{ ## and the reverse case
       ans <- as.character(matchRow$xKeys)
     }
-  }else if(key=="both"){    
+  }else if(key=="both"){
     ans <- c(as.character(matchRow$xKeys),as.character(matchRow$yKeys))
     names(ans) <- c(as.character(matchRow$xDbs),as.character(matchRow$yDbs))
+    ## When we say "both" we still want keys returned in same order as
+    ## original packages.  IOW, if tbl1 goes with key 1, then we should list
+    ## key 1 1st in the result...
+    ans <- ans[match(c(tbl1,tbl2),names(ans))]
   }
   ans
 }
