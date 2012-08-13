@@ -189,7 +189,7 @@ setMethod("keys", "OrganismDb",
   if(length(fkeys)==0){
     pkgs <- .lookupDbNameFromKeytype(x, keytype)
   }else{
-    pkgs <- .lookupDbNamesFromCols(x, unlist(fkeys))
+    pkgs <- .lookupDbNamesFromCols(x, fkeys)
   }
   pkgs <- unique(pkgs)
   dbs <- lapply(pkgs, .makeReal)
@@ -270,7 +270,8 @@ setMethod("keys", "OrganismDb",
     }
   }
   ## then put the extrKeys together with the other things we need
-  unique(fKeys)
+  ## the listed form (not returned) is nice for looking at the edges formed
+  unique(unlist(fKeys))
 }
 
 
@@ -293,7 +294,7 @@ setMethod("keys", "OrganismDb",
 
 ## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
 ## Also, fkeys was in order of the chromosome walk.
-.getSelects <- function(x, dbs, keys, fkeys, cols, keytype){
+.getSelects <- function(x, dbs, keys, cols, keytype){
   res <- list(length(dbs))
   for(i in seq_len(length(dbs))){
     ## in addition to looping over the dbs, the appropriate cols must be
@@ -306,20 +307,20 @@ setMethod("keys", "OrganismDb",
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
       names(res)[[i]] <- dbtype 
     }else{ ## more than one
-#       kt <- .mkeys(x, prev, dbtype, key="tbl2")
-       kt <- fkeys[[i-1]][dbtype]
+       kt <- .mkeys(x, prev, dbtype, key="tbl2")
+#       kt <- fkeys[[i-1]][dbtype]
        ## An UGLY exception for GO.db:  (TODO: DO I still need this???)
        if(dbtype=="GODb"){
          keytype="GOID"
        }
-#       prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
-       prevKeyType <- fkeys[[i-1]][prev]
+       prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
+#       prevKeyType <- fkeys[[i-1]][prev]
         keys <- unique(res[[prev]][[prevKeyType]])
        res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=kt)
        names(res)[[i]] <- dbtype
      } 
   } 
-  names(res) <- names(dbs)
+  names(res) <- names(dbs) 
   res
 } 
 
@@ -332,7 +333,7 @@ setMethod("keys", "OrganismDb",
   tab <- tab[,cols]
   colnames(tab) <- gsub(".x","",colnames(tab))
   tab
-}
+} 
 
 
 ## This merges things based on the key relationships from mkeys
@@ -350,10 +351,10 @@ setMethod("keys", "OrganismDb",
         ykey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
         res <- merge(res, sels[[i]],by.x=xkey, by.y=ykey, all=TRUE)
         res <- .dropDuplicatedMergeCols(res)
-      }
+      } 
   }
   res
-}
+} 
 
 
 
@@ -368,7 +369,7 @@ setMethod("keys", "OrganismDb",
 ## key = "tbl1"
 .parseCol <- function(piece, str){
   grepl(str, piece)
-}
+} 
 
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2", "both")){
   if(length(tbl1) >1 || length(tbl2)>1) stop(".mkeys can only process one pair of tables at at time")
@@ -416,7 +417,8 @@ setMethod("keys", "OrganismDb",
   if(all(cols %in% keytype)  && length(cols)==1){
     res <- data.frame(keys=keys)
     colnames(res) <- cols
-    return(res) }
+    return(res)
+  }
   
   ## Preserve original cols (we will be adding some to get our results along
   ## the way 
@@ -427,16 +429,15 @@ setMethod("keys", "OrganismDb",
   fkeys <- .getForeignEdgeKeys(x, cols, keytype)
   
   ## Then I need to add back the keytype and cols into cols???
-  cols <- unique(c(keytype, cols, unlist(fkeys)))
+  cols <- unique(c(keytype, cols, fkeys))
   
   ## Now we only need to get the nodes that *have* those columns.
   ## TODO: is this really even helpful?  Or am I better off just getting this
   ## info from .getForeignEdgeKeys???  I suspect the latter is true.
-  dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)
-  
+  dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)  
   
   ## next we get the data from each.
-  sels <- .getSelects(x, dbs, keys, fkeys,  cols, keytype)
+  sels <- .getSelects(x, dbs, keys, cols, keytype)
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(x, sels)
   

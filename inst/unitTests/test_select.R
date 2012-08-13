@@ -70,7 +70,7 @@ test_resortDbs <- function(){
   checkTrue(names(res)[2] == "org.Hs.eg.db") 
   checkTrue(names(res)[3] == "GO.db")
 
-}
+} 
 
 
 
@@ -80,36 +80,42 @@ test_getForeignEdgeKeys <- function(){
   ## And this should therefore throw an error
   checkException(OrganismDbi:::.getForeignEdgeKeys(x,cls,"GENEID"))
 
+  ## What if there is only DBS required?
+  keytype <- c("TXNAME")
+  cls <- c("TXID")
+  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+  checkTrue(length(res) == 0) ## Should give me an empty list (IOW no edges)
+  
   ## This method needs to be able to interpolate between nodes.
   ## So this should work out OK:
   keytype <- c("TXNAME")
   cls <- c("GOID")
   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue("GENEID" == unlist(res)[1]) 
-  checkTrue("ENTREZID" == unlist(res)[2])
-  checkTrue("GO" == unlist(res)[3]) 
-  checkTrue("GOID" == unlist(res)[4])
+  checkTrue("GENEID" == res[1]) 
+  checkTrue("ENTREZID" == res[2])
+  checkTrue("GO" == res[3]) 
+  checkTrue("GOID" == res[4])
 
   keytype <- c("ENTREZID")
   cls <- c("GOID")
   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue("GO" == unlist(res)[1])
-  checkTrue("GOID" == unlist(res)[2])
+  checkTrue("GO" == res[1])
+  checkTrue("GOID" == res[2])
   
   keytype <- c("TXNAME")
   cls <- c("GO")
   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue("GENEID" == unlist(res)[1])
-  checkTrue("ENTREZID" == unlist(res)[2])
+  checkTrue("GENEID" == res[1])
+  checkTrue("ENTREZID" == res[2])
 
   ## Here is a case for when the start node is in the middle of the graph 
   keytype <- c("ENTREZID") 
   cls = c("GOID","SYMBOL","TXNAME") 
   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype) 
-  checkTrue("GO" == unlist(res)[1]) 
-  checkTrue("GOID" == unlist(res)[2]) 
-  checkTrue("ENTREZID" == unlist(res)[3]) 
-  checkTrue("GENEID" == unlist(res)[4]) 
+  checkTrue("GO" == res[1]) 
+  checkTrue("GOID" == res[2]) 
+  checkTrue("ENTREZID" == res[3]) 
+  checkTrue("GENEID" == res[4]) 
 } 
 
 test_mkeys <- function(){
@@ -130,15 +136,17 @@ test_mkeys <- function(){
   tbl1 = "GO.db"
   tbl2 = "org.Hs.eg.db"
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="both")
-  checkEquals(res, c("GOID","GO"))
-}
+  res2 <- c("GOID","GO")
+  names(res2) <- c("GO.db","org.Hs.eg.db")
+  checkEquals(res, res2)
+} 
 
 
 test_getSelects <- function(){
   cls <- c("TERM", "ALIAS")
   kt <- "GENEID"
-  cls <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)  
+  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  ## reverse order???
   keys <- head(keys(x, kt), n=2)
   res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
   checkTrue(length(res)==3)
@@ -149,8 +157,8 @@ test_getSelects <- function(){
   
   cls <- c("SYMBOL")
   kt <- "OMIM"
-  cls <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)   
+  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromFKeys(x, fkys, kt)   
   keys <- head(keys(x, kt), n=2)
   res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)  
   checkTrue(length(res)==1)
@@ -162,8 +170,8 @@ test_getSelects <- function(){
 test_mergeSelectResults <- function(){
   cls <- c("TERM", "ALIAS")
   kt <- "GENEID"
-  cls <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromCols(x, cls, kt)  
+  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  
   keys <- head(keys(x, kt), n=3)
   sels <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
 
