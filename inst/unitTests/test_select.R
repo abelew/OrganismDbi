@@ -52,25 +52,25 @@ test_makecolMapping <- function(){
 }
 
 
-test_resortDbs <- function(){
-  cls <- c("GOID","PATH")
-  pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(x, cls))
-  keytype <- "ENTREZID"
-  res <- OrganismDbi:::.resortDbs(x, pkgs, keytype)
-  checkTrue(length(res) == 2)
-  checkTrue(names(res)[1] == "org.Hs.eg.db") ## shuold always start here
-  checkTrue(names(res)[2] == "GO.db") ## should always go here
+## test_resortDbs <- function(){
+##   cls <- c("GOID","PATH")
+##   pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(x, cls))
+##   keytype <- "ENTREZID"
+##   res <- OrganismDbi:::.resortDbs(x, pkgs, keytype)
+##   checkTrue(length(res) == 2)
+##   checkTrue(names(res)[1] == "org.Hs.eg.db") ## shuold always start here
+##   checkTrue(names(res)[2] == "GO.db") ## should always go here
 
-  cls <- c("GOID","PATH", "TXNAME")
-  pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(x, cls))
-  keytype <- "TXNAME"
-  res <- OrganismDbi:::.resortDbs(x, pkgs, keytype)
-  checkTrue(length(res) == 3)
-  checkTrue(names(res)[1] == "TxDb.Hsapiens.UCSC.hg19.knownGene")
-  checkTrue(names(res)[2] == "org.Hs.eg.db") 
-  checkTrue(names(res)[3] == "GO.db")
+##   cls <- c("GOID","PATH", "TXNAME")
+##   pkgs <- unique(OrganismDbi:::.lookupDbNamesFromCols(x, cls))
+##   keytype <- "TXNAME"
+##   res <- OrganismDbi:::.resortDbs(x, pkgs, keytype)
+##   checkTrue(length(res) == 3)
+##   checkTrue(names(res)[1] == "TxDb.Hsapiens.UCSC.hg19.knownGene")
+##   checkTrue(names(res)[2] == "org.Hs.eg.db") 
+##   checkTrue(names(res)[3] == "GO.db")
 
-} 
+## } 
 
 
 
@@ -175,7 +175,8 @@ test_mergeSelectResults <- function(){
   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  
   keys <- head(keys(x, kt), n=3)
-  sels <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
+  cols <- unique(c(kt, cls, fkys))
+  sels <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)
 
   res <- OrganismDbi:::.mergeSelectResults(x, sels)
   checkTrue(dim(res)[2]==6)
@@ -184,7 +185,6 @@ test_mergeSelectResults <- function(){
   checkTrue("GENEID" %in% colnames(res))
   checkTrue("ALIAS" %in% colnames(res))  
 }
-## TODO: Investigate why the above query has so many NA rows for the gene related data???
 
 
 ## MANY more tests
@@ -197,9 +197,9 @@ test_select <- function(){
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("EVIDENCE" %in% colnames(res)) 
-  checkTrue("ENTREZID" %in% colnames(res))
-  checkTrue("CHRLOCCHR" %in% colnames(res))  
-  checkTrue("ALIAS" %in% colnames(res))
+  checkTrue("ENTREZID" %in% colnames(res)) 
+  checkTrue("CHRLOCCHR" %in% colnames(res)) 
+  checkTrue("ALIAS" %in% colnames(res)) 
 
   cls <- c("IPI", "ALIAS", "CDSSTART") 
   res <- OrganismDbi:::.select(x, keys, cls, keytype) 
@@ -270,10 +270,10 @@ test_select <- function(){
   ## OR maybe I just need to be a tiny bit smarter about what I pass into
   ## these other two methods (so that the keys are grouped into edges)
   
-  keys <- head(keys(x, "ENTREZID"))
-  keytype <- "ENTREZID"
-  cls = c("GOID" ,  "SYMBOL", "TXNAME")
-  res <- select(Homo.sapiens, keys, cls, keytype)
+##   keys <- head(keys(x, "ENTREZID"))
+##   keytype <- "ENTREZID"
+##   cls = c("GOID" ,  "SYMBOL", "TXNAME")
+##   res <- select(Homo.sapiens, keys, cls, keytype)
 
 ##   ## same exact bug comes up when I try to use a homology package
 ##   cls = c("ALIAS", "ORYZA_SATIVA")
