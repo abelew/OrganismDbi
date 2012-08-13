@@ -134,14 +134,16 @@ setMethod("keys", "OrganismDb",
     unlist2(res)
 }
 
-.lookupDbNamesFromCols <- function(x, col){
+.lookupDbNamesFromCols <- function(x, cls){
   cols <- cols(x)
-  if(!all(col %in% cols)){
-    stop("col must be a value returned by cols(x).")
+  if(!all(cls %in% cols)){
+    stop("All values for cls must be a value returned by cols(x).")
   }
     res <- .makecolMapping(x)
     ## no duplicates so I can just return the name
-    names(res)[res %in% col]
+    res <- res[res %in% cls]
+    ## BUT, the names need to come back in same order as cls
+    names(res)[match(res,cls)]
 }
 
 
@@ -252,27 +254,27 @@ setMethod("keys", "OrganismDb",
 
 ## This one will actually get the extra cols (foreign keys) for ALL the
 ## RELEVANT Dbs and then add that information to the keytype and cols.
-.getForeignEdgeKeys <- function(x, cols, keytype){
-  ## get the graph
+.getForeignEdgeKeys <- function(x, cols, keytype){ 
+  ## get the graph 
   g <- dbGraph(x)
   ## We want to run dijkstras 
   dst <- .getDistances(x, keytype)
-  ## then we need to lookup the DBs we need (based on the cols alone). (
+  ## then we need to lookup the DBs we need (based on the cols alone). 
   pkgs <- .lookupDbNamesFromCols(x, cols)
   fKeys <- list()
-  ## master loop for all leaf pkgs (leaf nodes)
+  ## master loop for all leaf pkgs (leaf nodes) 
   for(i in seq_len(length(pkgs))){
     pkg <- pkgs[i] 
     curDist <- dst[names(dst) %in% pkg] 
-    if(curDist > 0){## then we are not there yet...
+    if(curDist > 0){## then we are not there yet... 
       fKeys <- c(fKeys,
                  rev(.nodeWalker(g, dst, pkg, curDist))) 
     }
   }
-  ## then put the extrKeys together with the other things we need
-  ## the listed form (not returned) is nice for looking at the edges formed
-  unique(unlist(fKeys))
-}
+  ## then put the extrKeys together with the other things we need 
+  ## the listed form (not returned) is nice for looking at the edges formed 
+  unique(unlist(fKeys)) 
+} 
 
 
 
