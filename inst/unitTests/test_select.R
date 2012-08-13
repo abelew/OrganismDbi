@@ -148,7 +148,8 @@ test_getSelects <- function(){
   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  ## reverse order???
   keys <- head(keys(x, kt), n=2)
-  res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)
+  cols <- unique(c(kt, cls, fkys))
+  res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
@@ -158,9 +159,10 @@ test_getSelects <- function(){
   cls <- c("SYMBOL")
   kt <- "OMIM"
   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromFKeys(x, fkys, kt)   
+  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
   keys <- head(keys(x, kt), n=2)
-  res <- OrganismDbi:::.getSelects(x, dbs, keys, cls, kt)  
+  cols <- unique(c(kt, cls, fkys))
+  res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))

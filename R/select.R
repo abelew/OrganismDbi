@@ -309,18 +309,19 @@ setMethod("keys", "OrganismDb",
       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
       names(res)[[i]] <- dbtype 
     }else{ ## more than one
-       kt <- .mkeys(x, prev, dbtype, key="tbl2")
+      prev <- names(dbs)[[i-1]]
+      kt <- .mkeys(x, prev, dbtype, key="tbl2")
 #       kt <- fkeys[[i-1]][dbtype]
-       ## An UGLY exception for GO.db:  (TODO: DO I still need this???)
-       if(dbtype=="GODb"){
-         keytype="GOID"
-       }
-       prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
+      ## An UGLY exception for GO.db:  (TODO: DO I still need this???)
+      if(dbtype=="GODb"){
+        keytype="GOID"
+      }
+      prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
 #       prevKeyType <- fkeys[[i-1]][prev]
-        keys <- unique(res[[prev]][[prevKeyType]])
-       res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=kt)
-       names(res)[[i]] <- dbtype
-     } 
+      keys <- unique(res[[prev]][[prevKeyType]])
+      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=kt)
+      names(res)[[i]] <- dbtype
+    } 
   } 
   names(res) <- names(dbs) 
   res
