@@ -167,6 +167,16 @@ test_getSelects <- function(){
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))
   checkTrue("SYMBOL" %in% colnames(res[[1]]))
+
+  cls = c("GOID" ,  "SYMBOL", "TXNAME")
+  kt <- "ENTREZID"
+  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
+  keys <- head(keys(x, "ENTREZID"))
+  cols <- unique(c(kt, cls, fkys))
+  res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)  
+  
+  
 }
 
 test_mergeSelectResults <- function(){
@@ -270,10 +280,10 @@ test_select <- function(){
   ## OR maybe I just need to be a tiny bit smarter about what I pass into
   ## these other two methods (so that the keys are grouped into edges)
   
-##   keys <- head(keys(x, "ENTREZID"))
-##   keytype <- "ENTREZID"
-##   cls = c("GOID" ,  "SYMBOL", "TXNAME")
-##   res <- select(Homo.sapiens, keys, cls, keytype)
+  keys <- head(keys(x, "ENTREZID"))
+  keytype <- "ENTREZID"
+  cls = c("GOID" ,  "SYMBOL", "TXNAME")
+  res <- select(Homo.sapiens, keys, cls, keytype)
 
 ##   ## same exact bug comes up when I try to use a homology package
 ##   cls = c("ALIAS", "ORYZA_SATIVA")
