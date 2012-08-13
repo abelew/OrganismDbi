@@ -175,7 +175,7 @@ test_getSelects <- function(){
   keys <- head(keys(x, "ENTREZID"))
   cols <- unique(c(kt, cls, fkys))
   res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)  
-  
+  ## fails not because of path issue (resolved) but because of problem with a need to reset whenever we start gathering from the root again...
   
 }
 
@@ -279,6 +279,14 @@ test_select <- function(){
   ## OR maybe I still don't need to be calling .mkeys like this?
   ## OR maybe I just need to be a tiny bit smarter about what I pass into
   ## these other two methods (so that the keys are grouped into edges)
+
+  ## So the path problem sorting problem above has been dealt with.  But now
+  ## what is remaining is just that sometimes when we are getting data via
+  ## getSelects, we are not getting the same thing in a row.  IOW, sometimes
+  ## we are starting a new walk (to leaves and from root node).  When this
+  ## happens, .getSelects() needs to know about it so that it can behave
+  ## differently.
+
   
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
