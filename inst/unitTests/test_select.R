@@ -168,14 +168,25 @@ test_getSelects <- function(){
   checkTrue("OMIM" %in% colnames(res[[1]]))
   checkTrue("SYMBOL" %in% colnames(res[[1]]))
 
+  ## Then there is this case:
   cls = c("GOID" ,  "SYMBOL", "TXNAME")
   kt <- "ENTREZID"
   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+
+  ## This shows that in fact .lookupDbNamesFromCols is not fully respecting
+  ## the order of fkys...
+  pkgs <- OrganismDbi:::.lookupDbNamesFromCols(x, fkys)
+  ## And then .lookupDbsFromFkeys is calling unique, which is something we
+  ## want it to do, but ONLY when the same thing is repeated twice IN A ROW.
+  ## So I will need to call a custom method from .lookupDbsFromFkeys()
+  
+  
   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
   keys <- head(keys(x, "ENTREZID"))
   cols <- unique(c(kt, cls, fkys))
   res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)  
-  ## fails not because of path issue (resolved) but because of problem with a need to reset whenever we start gathering from the root again...
+  ## fails not because of path issue (resolved) but because of problem with a
+  ## need to reset whenever we start gathering from the root again...
   
 }
 
@@ -285,7 +296,9 @@ test_select <- function(){
   ## getSelects, we are not getting the same thing in a row.  IOW, sometimes
   ## we are starting a new walk (to leaves and from root node).  When this
   ## happens, .getSelects() needs to know about it so that it can behave
-  ## differently.
+  ## differently.  And actually .lookupDbsFromFkeys() needs to do a bit more
+  ## work before getSelects even gets to it, since it needs to repeat the root
+  ## node (and only that node) whenever it sees that node.
 
   
   keys <- head(keys(x, "ENTREZID"))

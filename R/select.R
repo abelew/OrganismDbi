@@ -129,7 +129,7 @@ setMethod("keys", "OrganismDb",
 ## vectorized keytype->DB matching BUT ALSO: we have to sort this so
 ## that we will do select() first for the DB that we actually have a key for
 .makecolMapping <- function(x){
-    objs <- .getDbObjs(x)
+    objs <- OrganismDbi:::.getDbObjs(x)
     res <- lapply(objs, cols)
     unlist2(res)
 }
@@ -143,7 +143,7 @@ setMethod("keys", "OrganismDb",
     ## no duplicates so I can just return the name
     res <- res[res %in% cls]
     ## BUT, the names need to come back in same order as cls
-    names(res)[match(res,cls)]
+    names(res)[match(cls,res)]
 }
 
 
