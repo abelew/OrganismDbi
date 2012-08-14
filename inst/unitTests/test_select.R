@@ -295,11 +295,27 @@ test_select <- function(){
   ## what is remaining is just that sometimes when we are getting data via
   ## getSelects, we are not getting the same thing in a row.  IOW, sometimes
   ## we are starting a new walk (to leaves and from root node).  When this
-  ## happens, .getSelects() needs to know about it so that it can behave
-  ## differently.  And actually .lookupDbsFromFkeys() needs to do a bit more
-  ## work before getSelects even gets to it, since it needs to repeat the root
-  ## node (and only that node) whenever it sees that node.
+  ## happens, .getSelects() needs to somehow know about it so that it can
+  ## behave differently.
 
+
+
+  ## one idea from here is:  
+  ## So actually .lookupDbsFromFkeys() needs to NOT call unique before
+  ## getSelects gets to it, since it needs to repeat the root node (for
+  ## example) whenever it sees that node again so that later on I can use that
+  ## node to know I have started another path...  The names on this modified
+  ## vector will then become the set of pkgs to get data from.
+
+  ## For .getSelects, I will just need to track each node as they are added, so
+  ## that I can be sure not to add the same node twice.  This is OK, because
+  ## my cols statement will be general enough to ensure that I get all
+  ## relevant data (and keys) for each node the 1st time I hit it (because the
+  ## cols have been pre-computed during the walk)
+
+  ## And then for .mergeSelects, I will have one last problem where I can have
+  ## missing gaps (on account of having dropped the nodes in .getSelects
+  ## above).
   
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"

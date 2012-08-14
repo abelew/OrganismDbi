@@ -155,35 +155,6 @@ setMethod("keys", "OrganismDb",
   sp$distances
 }
 
-## ## now uses graphs to order things better
-## .resortDbs <- function(x, pkgs, keytype){
-##   ## use the shortest path algorithm to get them into the order desired.
-##   res <- .getDistances(x, keytype)
-##   ## So now I just have to sort the names in order of distance.
-##   dbs <- names(res)[order(res)]
-##   ## Then convert into actual objects
-##   objs <- lapply(dbs, .makeReal)
-##   ## Then label the objs with the names
-##   names(objs) <- dbs
-##   ## Then filter out any objs that were not listed in pkgs (clip leaf nodes)
-##   objs <- objs[names(objs) %in% pkgs]
-##   ## Then return 
-##   objs
-## }
-
-## older version
-## ## Retrieves the list of DBs "in order of shortest path"
-## .lookupDbsFromCols <- function(x, cols, keytype){
-##   ## 1st we want cols ordered so that the one that matches our keytype is FIRST
-##   ## Also, we must always have keytype be part of cols here
-##   cols <- unique(c(keytype, cols))
-##   pkgs <- .lookupDbNamesFromCols(x, cols)
-##   pkgs <- unique(pkgs)
-##   ## Now use the graph to decide the path
-##   .resortDbs(x, pkgs=pkgs, keytype=keytype)
-## }
-## .lookupDbsFromCols(x, cols, keytype)
-
 
 ## newer version just uses names of DBs from fkeys
 ## Retrieves the list of DBs "in order of shortest path"
@@ -193,7 +164,7 @@ setMethod("keys", "OrganismDb",
   }else{
     pkgs <- .lookupDbNamesFromCols(x, fkeys)
   }
-  pkgs <- unique(pkgs)
+#  pkgs <- unique(pkgs)
   dbs <- lapply(pkgs, .makeReal)
   names(dbs) <- pkgs
   dbs
