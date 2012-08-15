@@ -502,3 +502,69 @@ setMethod("select", "OrganismDb",
 
 
 
+
+
+## new plan:
+
+## library(RBGL)
+## cls = c("GOID" ,  "SYMBOL", "TXNAME")
+## kt <- "ENTREZID"
+## keys <- head(keys(x, "ENTREZID"))
+
+## allCols = lapply(nodes(gr), function(elt) cols(OrganismDbi:::.makeReal(elt)))
+## names(allCols) = nodes(gr)
+
+
+## inSubgraph = sapply(allCols,
+##   function(cols, keys) any(keys %in% cols),  union(kt, cls))
+
+## subgr = subGraph(names(inSubgraph)[inSubgraph], gr)
+## root = OrganismDbi:::.lookupDbNameFromKeytype(x, kt)
+
+## foriegnKeys = apply(strsplit(edgeNames(subgr), "~"),
+##   function(tables, x, key)
+##   OrganismDbi:::.mkeys(x, tables[[1]], tables[[2]], "both"), x)
+
+## selectCols = unique(c(kt, unlist(foriegnKeys, use.names=FALSE), cols))
+
+## needCols = lapply(allCols[nodes(subgr)],
+##   function(col, selectCols) col[col %in% selectCols], selectCols)
+
+## xx = strsplit(edgeNames(subgr, recipEdges="distinct"), "~")
+## ftDf = data.frame(
+##   from=sapply(xx, "[[", 1),
+##   to = sapply(xx, "[[", 2),
+##   stringsAsFactors=FALSE)
+
+## visitNodes = bfs(subgr, root)
+
+## selected = setNames(
+##   vector("list", length(visitNodes)),
+##   visitNodes)
+
+## ## select
+## node = visitNodes[[1]]
+## selected[[node]] =
+##   select(OrganismDbi:::.makeReal(node),
+##          keys, needCols[[node]], kt)
+
+## for (node in visitNodes[-1]) {
+##   fromNode = ftDf[ftDf$to == node, "from"]
+##   fromKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl1")
+##   fromKeys = unique(selected[[fromNode]][[fromKey]])
+##   fromKeys = fromKeys[!is.na(fromKeys)]
+##   toKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl2")
+##   selected[[node]] =
+##     select(OrganismDbi:::.makeReal(node),
+##            fromKeys, needCols[[node]], toKey)
+## }
+
+## ## merge
+## final = selected[[1]]
+## for (node in visitNodes[-1]) {
+##   fromNode = ftDf[ftDf$to == node, "from"]
+##   fromKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl1")
+##   toKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl2")
+##   final = merge(final, selected[[node]], by.x=fromKey, by.y=toKey, all=TRUE)
+## }
+
