@@ -164,7 +164,7 @@ setMethod("keys", "OrganismDb",
   }else{
     pkgs <- .lookupDbNamesFromCols(x, fkeys)
   }
-#  pkgs <- unique(pkgs)
+##  pkgs <- unique(pkgs)
   dbs <- lapply(pkgs, .makeReal)
   names(dbs) <- pkgs
   dbs
@@ -261,41 +261,100 @@ setMethod("keys", "OrganismDb",
 }
 
 
-## I NEED to start with the keytype...  Otherwise I don't get to take
+
+.splitBy1stNode <- function(dbs, fkeys){
+  res <- names(dbs)
+  names(res) <- fkeys
+  root = res[1]
+  tf <- cumsum(as.numeric(res %in% root))
+  split(res, as.factor(tf))
+}
+
+
+## I NEED to always start with the keytype...  Otherwise I don't get to take
 ## advantage of the efficiency from pulling only the keys I actually need into
 ## R...
 
-## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
-## Also, fkeys was in order of the chromosome walk.
-.getSelects <- function(x, dbs, keys, cols, keytype){
-  res <- list(length(dbs))
+    ## compute this path through the graph
+##     require(graph)
+##     gr <- dbGraph(x)
+##     sgr <- subGraph(names(dbs), gr)
+##     require(RBGL)
+##     bfp <- bfs(sgr, names(dbs)[1]) ## should yield my path
+
+
+
+.getSelect <- function(x, dbs, cols, keytype, res){
+  
   for(i in seq_len(length(dbs))){
+    dbtype <- names(dbs)[[i]]
     ## in addition to looping over the dbs, the appropriate cols must be
     ## selected for EACH
-    dbtype <- names(dbs)[[i]]
     colsLocal <- cols[cols %in% cols(dbs[[i]])]
+ 
+    ## start node is always the keytype
     if(i==1){
       ## prev records the db that we last used
       prev <- dbtype
-      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
-      names(res)[[i]] <- dbtype 
+      if(!(names(dbs)[[i]] %in% names(res))){
+         sel <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
+         res <- c(res, sel)
+#         names(res)[[i]] <- dbtype
+       }
     }else{ ## more than one
       prev <- names(dbs)[[i-1]]
       kt <- .mkeys(x, prev, dbtype, key="tbl2")
 #       kt <- fkeys[[i-1]][dbtype]
-      ## An UGLY exception for GO.db:  (TODO: DO I still need this???)
-      if(dbtype=="GODb"){
-        keytype="GOID"
-      }
       prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
 #       prevKeyType <- fkeys[[i-1]][prev]
+      ## THIS LINE RIGHT HERE needs to use actual res 
+      ## but how to do that for the 1st pass??
       keys <- unique(res[[prev]][[prevKeyType]])
-      res[[i]] <- select(dbs[[i]], keys, colsLocal, keytype=kt)
-      names(res)[[i]] <- dbtype
-    } 
-  } 
-  names(res) <- names(dbs) 
+      if(!(names(dbs)[[i]] %in% names(res))){
+        sel <- select(dbs[[i]], keys, colsLocal, keytype=kt)
+        res <- c(res, sel)
+#        names(res)[[i]] <- dbtype
+      }
+    }
+   } 
   res
+}
+
+## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
+## Also, fkeys was in order of the chromosome walk.
+.getSelects <- function(x, keys, cols, keytype){
+  ## get the dbs
+  fkeys <- OrganismDbi:::.getForeignEdgeKeys(x, cols, keytype)
+  dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)
+  ## Then split that up according to the occurance of the 1st node.
+  walks <- .splitBy1stNode(dbs, fkeys)
+  ## from this point forward cols needs to be comprehensive
+  cols <- unique(c(keytype, cols, fkeys))
+  ## results will be in a list structure
+  res <- list()
+
+  ## Then for each list element call the code below.
+  ## 1) track the nodes to avoid calling the same node twice.  Do this by
+  ## naming the list elements as I fill them and checking against that for
+  ## each node.
+  
+  ## 2) always assume for each node that we have to deduce the keys from what
+  ## was selected before using the "walk" that we are currently on.
+ 
+  ## 3) Add extra loop: For each "walk" call the following (for each of the
+  ## dbs in that walk), but making sure to not call a dbs that we have already
+  ## put into the result: "res"
+  for(i in seq_len(length(walks))){
+    walkDbNames <- walks[[i]]
+    walkDbs <- dbs[match(walkDbNames,names(dbs))]
+    ## Remove from walkDbs based on what is in res already
+##    walkDbs <- walkDbs[!(names(walkDbs) %in% names(res))] ## NOT HERE.
+    res <- c(res, .getSelect(x, walkDbs, cols, keytype, res))
+    walkDbShort <- walkDbs[!(names(walkDbs) %in% names(res))]
+    names(res) <- names(walkDbShort)
+  }
+##   names(res) <- unique(names(dbs)) ## looks scary but should be correct 
+  res 
 } 
 
 ##.dropDuplicatedMergeCols helper just takes advantage of the fact that my
@@ -400,18 +459,13 @@ setMethod("keys", "OrganismDb",
   
   ## 1st add any missing foreign key cols (based on what our graph looks like,
   ## and also based on what was asked for)
-  fkeys <- .getForeignEdgeKeys(x, cols, keytype)
+#  fkeys <- .getForeignEdgeKeys(x, cols, keytype)
   
   ## Then I need to add back the keytype and cols into cols???
-  cols <- unique(c(keytype, cols, fkeys))
-  
-  ## Now we only need to get the nodes that *have* those columns.
-  ## TODO: is this really even helpful?  Or am I better off just getting this
-  ## info from .getForeignEdgeKeys???  I suspect the latter is true.
-  dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)  
-  
+#  cols <- unique(c(keytype, cols, fkeys))
+    
   ## next we get the data from each.
-  sels <- .getSelects(x, dbs, keys, cols, keytype)
+  sels <- .getSelects(x, keys, cols, keytype)
   ## Then we need to merge them together using the foreign keys
   res <- .mergeSelectResults(x, sels)
   

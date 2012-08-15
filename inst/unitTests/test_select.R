@@ -149,7 +149,7 @@ test_getSelects <- function(){
   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  ## reverse order???
   keys <- head(keys(x, kt), n=2)
   cols <- unique(c(kt, cls, fkys))
-  res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)
+  res <- OrganismDbi:::.getSelects(x, keys, cols, kt)
   checkTrue(length(res)==3)
   checkTrue(class(res)=="list")
   checkTrue("GENEID" %in% colnames(res[[1]]))
@@ -162,29 +162,40 @@ test_getSelects <- function(){
   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
   keys <- head(keys(x, kt), n=2)
   cols <- unique(c(kt, cls, fkys))
-  res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)  
+  res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
   checkTrue(length(res)==1)
   checkTrue(class(res)=="list")
   checkTrue("OMIM" %in% colnames(res[[1]]))
   checkTrue("SYMBOL" %in% colnames(res[[1]]))
 
+
+  
   ## Then there is this case:
   cls = c("GOID" ,  "SYMBOL", "TXNAME")
   kt <- "ENTREZID"
-  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)  
+  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)
+  checkTrue(length(fkys)==length(dbs))
 
-  ## This shows that in fact .lookupDbNamesFromCols is not fully respecting
-  ## the order of fkys...
-  pkgs <- OrganismDbi:::.lookupDbNamesFromCols(x, fkys)
-  ## And then .lookupDbsFromFkeys is calling unique, which is something we
-  ## want it to do, but ONLY when the same thing is repeated twice IN A ROW.
-  ## So I will need to call a custom method from .lookupDbsFromFkeys()
+  
+  gr = OrganismDbi:::dbGraph(x)
+  require(graph)
+  sgr <- subGraph(names(dbs), gr)
+  require(RBGL)
+  bfp <- bfs(sgr, names(dbs)[1])
+  dijkstra.sp(sgr, names(dbs)[1])$distances
+
+  ## OK HERE is the new "big plan":
+  ## 1) remove unique from .lookupDbsFromFkeys() so that I get the full result
+  ## 2) split based on the 1st node (so that each walk is separate)
+ ## 3) each of these walks is a subgraph
+ ## 4) Calling bfs on any of them will allow you to easily see the relationships, but in reality that much graph stuff won't be needed. All you really need to know is that whenever you have skipped a node (IOW after you have seen root more than once), you will need to call the subgraph thingy for each unique node BEFORE you call select().
+
   
   
-  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
   keys <- head(keys(x, "ENTREZID"))
   cols <- unique(c(kt, cls, fkys))
-  res <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)  
+  res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
   ## fails not because of path issue (resolved) but because of problem with a
   ## need to reset whenever we start gathering from the root again...
   
@@ -197,7 +208,7 @@ test_mergeSelectResults <- function(){
   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  
   keys <- head(keys(x, kt), n=3)
   cols <- unique(c(kt, cls, fkys))
-  sels <- OrganismDbi:::.getSelects(x, dbs, keys, cols, kt)
+  sels <- OrganismDbi:::.getSelects(x, keys, cols, kt)
 
   res <- OrganismDbi:::.mergeSelectResults(x, sels)
   checkTrue(dim(res)[2]==6)
@@ -316,6 +327,16 @@ test_select <- function(){
   ## And then for .mergeSelects, I will have one last problem where I can have
   ## missing gaps (on account of having dropped the nodes in .getSelects
   ## above).
+
+
+  ## Another idea is to use subGraph() and bfs() to narrow the scope and then
+  ## to limit my search so that I can get just the keys that I need for each
+  ## instance.
+  ## So within .getSelects() (for example), I can just call these methods to
+  ## solve the problem where I no longer know what nodes lead up to my node of
+  ## interest (on account of them being dropped from the list).  I will also
+  ## know THAT I need to do this because I will have just dropped them.
+  
   
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
