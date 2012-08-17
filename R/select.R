@@ -507,41 +507,77 @@ setMethod("select", "OrganismDb",
 ## new plan:
 
 ## library(RBGL)
-## cls = c("GOID" ,  "SYMBOL", "TXNAME")
+## cls <- c("GOID" ,  "SYMBOL", "TXNAME")
 ## kt <- "ENTREZID"
 ## keys <- head(keys(x, "ENTREZID"))
 
-## allCols = lapply(nodes(gr), function(elt) cols(OrganismDbi:::.makeReal(elt)))
-## names(allCols) = nodes(gr)
 
+## helper for getting all cols by all nodes
+colsByNodes <- function(x){
+  gr <- OrganismDbi:::dbGraph(x)
+  allCols <- lapply(nodes(gr), function(elt) cols(OrganismDbi:::.makeReal(elt)))
+  names(allCols) <- nodes(gr)
+  allCols
+}
+## allCols <- colsByNodes(x)
 
-## inSubgraph = sapply(allCols,
-##   function(cols, keys) any(keys %in% cols),  union(kt, cls))
+## helper to get the subgraph
+getRelevantSubgraph <- function(x, cols, keys, keytype){
+  gr <- OrganismDbi:::dbGraph(x)
+  allCols <- colsByNodes(x)
+  inSubgraph = sapply(allCols,
+    function(cols, keys) any(keys %in% cols),  union(keytype, cols))
+  subgr = subGraph(names(inSubgraph)[inSubgraph], gr)
+  subgr
+}
+## subgr <- getRelevantSubgraph(x, cols=cls, keys, keytype=kt)
+  
 
-## subgr = subGraph(names(inSubgraph)[inSubgraph], gr)
+## now we will also need the root
 ## root = OrganismDbi:::.lookupDbNameFromKeytype(x, kt)
 
-## foriegnKeys = apply(strsplit(edgeNames(subgr), "~"),
-##   function(tables, x, key)
-##   OrganismDbi:::.mkeys(x, tables[[1]], tables[[2]], "both"), x)
 
-## selectCols = unique(c(kt, unlist(foriegnKeys, use.names=FALSE), cols))
+## I think this is meant to be an lapply
+getForeignKeys <- function(x, subgr){
+  fKeys = lapply(strsplit(edgeNames(subgr), "~"),
+    function(tables, x, key)
+    OrganismDbi:::.mkeys(x, tables[[1]], tables[[2]], "both"), x)
+  unlist(fKeys, use.names=FALSE)
+}
+## fKeys <- getForeignKeys(x, subgr)
 
-## needCols = lapply(allCols[nodes(subgr)],
-##   function(col, selectCols) col[col %in% selectCols], selectCols)
 
-## xx = strsplit(edgeNames(subgr, recipEdges="distinct"), "~")
-## ftDf = data.frame(
-##   from=sapply(xx, "[[", 1),
-##   to = sapply(xx, "[[", 2),
-##   stringsAsFactors=FALSE)
+## now combine all the keys together
+## selectCols = unique(c(kt, fKeys, cls))
 
+## sort the needed cols by their nodes
+getColsByNodes <- function(subgr, selectCols, allCols){
+  lapply(allCols[nodes(subgr)],
+    function(col, selectCols) col[col %in% selectCols], selectCols)
+}
+## needCols <- getColsByNodes(subgr, selectCols, allCols)
+
+## Derive the from to data.frame from the graph
+## need all combinations of edges
+getFTDF <- function(subgr){
+  xx = strsplit(edgeNames(subgr, recipEdges="distinct"), "~")
+  data.frame(
+             from=sapply(xx, "[[", 1),
+             to = sapply(xx, "[[", 2),
+             stringsAsFactors=FALSE)
+}
+## ftDf <- getFTDF(subgr)
+
+## get list of nodes to visit
 ## visitNodes = bfs(subgr, root)
 
+## set up an empty list with names that match what we want to fill...
 ## selected = setNames(
 ##   vector("list", length(visitNodes)),
 ##   visitNodes)
 
+
+## new version of .getSelects()
 ## ## select
 ## node = visitNodes[[1]]
 ## selected[[node]] =
@@ -559,6 +595,8 @@ setMethod("select", "OrganismDb",
 ##            fromKeys, needCols[[node]], toKey)
 ## }
 
+
+## new version of .mergeSelects
 ## ## merge
 ## final = selected[[1]]
 ## for (node in visitNodes[-1]) {
