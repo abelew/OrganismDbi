@@ -537,7 +537,7 @@ getColsByNodes <- function(subgr, selectCols, allCols){
 
 ## new version of .getSelects()
 ## ## select 
-.getSelects <- function(keytype,keys,needCols, visitNodes){
+.getSelects <- function(x, keytype,keys,needCols, visitNodes){
   ## set up an empty list with names that match what we want to fill...
   selected = setNames(
     vector("list", length(visitNodes)),
@@ -571,7 +571,7 @@ getColsByNodes <- function(subgr, selectCols, allCols){
 
 ## new version of .mergeSelectResults
 ## ## merge
-.mergeSelectResults <- function(selected, visitNodes){
+.mergeSelectResults <- function(x, selected, visitNodes){
   final = selected[[1]]
   otherNodes <- visitNodes[-1] 
   for (i in seq_len(length(otherNodes))) {
@@ -623,8 +623,8 @@ getColsByNodes <- function(subgr, selectCols, allCols){
   selectCols = unique(c(keytype, fKeys, cls))
   needCols <- getColsByNodes(subgr, selectCols, allCols)
   visitNodes = .bfs(subgr, root)
-  selected <- .getSelects(keytype,keys,needCols, visitNodes)
-  res <- .mergeSelectResults(selected, visitNodes)
+  selected <- .getSelects(x, keytype,keys,needCols, visitNodes)
+  res <- .mergeSelectResults(x, selected, visitNodes)
   
   ## Then we need to filter out all columns that we didn't ask for.  
   ## Actually that is not quite right, what we want to do is make a blacklist

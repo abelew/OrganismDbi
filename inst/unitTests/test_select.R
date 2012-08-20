@@ -342,9 +342,9 @@ test_select <- function(){
   cls = c("GOID" ,  "SYMBOL", "TXNAME")
   res <- select(Homo.sapiens, keys, cls, keytype)
 
-##   ## same exact bug comes up when I try to use a homology package
-##   cls = c("ALIAS", "ORYZA_SATIVA")
-##   res <- select(Homo.sapiens, keys, cls, keytype)
+  ## This bug comes up when I try to use a homology package
+  cls = c("ALIAS", "ORYZA_SATIVA")
+  res <- select(Homo.sapiens, keys, cls, keytype)
   
 }
 
@@ -366,6 +366,7 @@ test_rattus <- function(){
   checkTrue("CHR" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
 
+  ## bug
   cls <- c("GO","ALIAS","CHR","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[2]==7) 
@@ -408,7 +409,7 @@ test_rattus <- function(){
   checkTrue("ALIAS" %in% colnames(res)) 
 
   ## now test key that starts us from Go
-  ## TODO: bug??? row of NAs for entire 1st line...
+  ## TODO: bug??? Row of NAs in 1st line
   k = head(keys(r, keytype="GOID"))
   keytype="GOID"
   cls <- c("GOID","ALIAS","CHR") 
@@ -420,13 +421,11 @@ test_rattus <- function(){
   checkTrue("ALIAS" %in% colnames(res))
 
 
-##   ## Also I see the bug here:
-##   ## what happens when we use a key from the middle?
-##   ## Our algorithm will walk 
-##   k = keys=head(keys(r,keytype="ENTREZID"))
-##   cls = c("GOID","SYMBOL","TXNAME")
-##   keytype = "ENTREZID"
-##   res <- OrganismDbi:::.select(r, k, cls, keytype)
+  ## what happens when we use a key from the middle?
+  k = keys=head(keys(r,keytype="ENTREZID"))
+  cls = c("GOID","SYMBOL","TXNAME")
+  keytype = "ENTREZID"
+  res <- OrganismDbi:::.select(r, k, cls, keytype)
   
   
 } 
