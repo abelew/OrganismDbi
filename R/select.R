@@ -620,7 +620,7 @@ getColsByNodes <- function(subgr, selectCols, allCols){
   subgr <- getRelevantSubgraph(x, cols=cols, keys, keytype=keytype)
   root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
   fKeys <- getForeignKeys(x, subgr)
-  selectCols = unique(c(keytype, fKeys, cls))
+  selectCols = unique(c(keytype, fKeys, cols))
   needCols <- getColsByNodes(subgr, selectCols, allCols)
   visitNodes = .bfs(subgr, root)
   selected <- .getSelects(x, keytype,keys,needCols, visitNodes)
