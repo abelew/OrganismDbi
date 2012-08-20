@@ -284,41 +284,41 @@ setMethod("keys", "OrganismDb",
 
 
 
-.getSelect <- function(x, dbs, cols, keytype, res){
+## .getSelect <- function(x, dbs, cols, keytype, res){
   
-  for(i in seq_len(length(dbs))){
-    dbtype <- names(dbs)[[i]]
-    ## in addition to looping over the dbs, the appropriate cols must be
-    ## selected for EACH
-    colsLocal <- cols[cols %in% cols(dbs[[i]])]
+##   for(i in seq_len(length(dbs))){
+##     dbtype <- names(dbs)[[i]]
+##     ## in addition to looping over the dbs, the appropriate cols must be
+##     ## selected for EACH
+##     colsLocal <- cols[cols %in% cols(dbs[[i]])]
  
-    ## start node is always the keytype
-    if(i==1){
-      ## prev records the db that we last used
-      prev <- dbtype
-      if(!(names(dbs)[[i]] %in% names(res))){
-         sel <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
-         res <- c(res, sel)
-#         names(res)[[i]] <- dbtype
-       }
-    }else{ ## more than one
-      prev <- names(dbs)[[i-1]]
-      kt <- .mkeys(x, prev, dbtype, key="tbl2")
-#       kt <- fkeys[[i-1]][dbtype]
-      prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
-#       prevKeyType <- fkeys[[i-1]][prev]
-      ## THIS LINE RIGHT HERE needs to use actual res 
-      ## but how to do that for the 1st pass??
-      keys <- unique(res[[prev]][[prevKeyType]])
-      if(!(names(dbs)[[i]] %in% names(res))){
-        sel <- select(dbs[[i]], keys, colsLocal, keytype=kt)
-        res <- c(res, sel)
-#        names(res)[[i]] <- dbtype
-      }
-    }
-   } 
-  res
-}
+##     ## start node is always the keytype
+##     if(i==1){
+##       ## prev records the db that we last used
+##       prev <- dbtype
+##       if(!(names(dbs)[[i]] %in% names(res))){
+##          sel <- select(dbs[[i]], keys, colsLocal, keytype=keytype)
+##          res <- c(res, sel)
+## #         names(res)[[i]] <- dbtype
+##        }
+##     }else{ ## more than one
+##       prev <- names(dbs)[[i-1]]
+##       kt <- .mkeys(x, prev, dbtype, key="tbl2")
+## #       kt <- fkeys[[i-1]][dbtype]
+##       prevKeyType <- .mkeys(x, prev, dbtype, key="tbl1")
+## #       prevKeyType <- fkeys[[i-1]][prev]
+##       ## THIS LINE RIGHT HERE needs to use actual res 
+##       ## but how to do that for the 1st pass??
+##       keys <- unique(res[[prev]][[prevKeyType]])
+##       if(!(names(dbs)[[i]] %in% names(res))){
+##         sel <- select(dbs[[i]], keys, colsLocal, keytype=kt)
+##         res <- c(res, sel)
+## #        names(res)[[i]] <- dbtype
+##       }
+##     }
+##    } 
+##   res
+## }
 
 ## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
 ## Also, fkeys was in order of the chromosome walk.
@@ -506,12 +506,6 @@ setMethod("select", "OrganismDb",
 
 ## new plan:
 
-## library(RBGL)
-## cls <- c("GOID" ,  "SYMBOL", "TXNAME")
-## kt <- "ENTREZID"
-## keys <- head(keys(x, "ENTREZID"))
-
-
 ## helper for getting all cols by all nodes
 colsByNodes <- function(x){
   gr <- OrganismDbi:::dbGraph(x)
@@ -519,6 +513,10 @@ colsByNodes <- function(x){
   names(allCols) <- nodes(gr)
   allCols
 }
+## library(Homo.sapiens)
+## library(RBGL)
+## library(graph)a
+## x = Homo.sapiens
 ## allCols <- colsByNodes(x)
 
 ## helper to get the subgraph
@@ -530,6 +528,9 @@ getRelevantSubgraph <- function(x, cols, keys, keytype){
   subgr = subGraph(names(inSubgraph)[inSubgraph], gr)
   subgr
 }
+## kt <- "ENTREZID"
+## cls = c("GOID" ,  "SYMBOL", "TXNAME")
+## keys <- head(keys(x, "ENTREZID"))
 ## subgr <- getRelevantSubgraph(x, cols=cls, keys, keytype=kt)
   
 
@@ -557,43 +558,73 @@ getColsByNodes <- function(subgr, selectCols, allCols){
 }
 ## needCols <- getColsByNodes(subgr, selectCols, allCols)
 
-## Derive the from to data.frame from the graph
-## need all combinations of edges
-getFTDF <- function(subgr){
-  xx = strsplit(edgeNames(subgr, recipEdges="distinct"), "~")
-  data.frame(
-             from=sapply(xx, "[[", 1),
-             to = sapply(xx, "[[", 2),
-             stringsAsFactors=FALSE)
-}
-## ftDf <- getFTDF(subgr)
+
+## ## Derive the from to data.frame from the graph
+## ## need all combinations of edges
+## getFTDF <- function(subgr){
+##   xx = strsplit(edgeNames(subgr, recipEdges="distinct"), "~")
+##   data.frame(
+##              from=sapply(xx, "[[", 1),
+##              to = sapply(xx, "[[", 2),
+##              stringsAsFactors=FALSE)
+## }
+## ## ftDf <- getFTDF(subgr)
+
+
 
 ## get list of nodes to visit
-## visitNodes = bfs(subgr, root)
+.bfs <- function(object, node)
+    ## names are bfs order; values are 'from' nodes
+{
+    bfs <- bfs(object, node)
+    from <- sapply(edges(object)[bfs], function(table, x) {
+        x[which.max(x %in% table)]
+    }, bfs)
+    from[1] <- NA
+    from
+}
+## So our visitNodes then becomes:
+## visitNodes = .bfs(subgr, root)
 
-## set up an empty list with names that match what we want to fill...
-## selected = setNames(
-##   vector("list", length(visitNodes)),
-##   visitNodes)
+
+
+
+
+
 
 
 ## new version of .getSelects()
-## ## select
-## node = visitNodes[[1]]
-## selected[[node]] =
-##   select(OrganismDbi:::.makeReal(node),
-##          keys, needCols[[node]], kt)
-
-## for (node in visitNodes[-1]) {
-##   fromNode = ftDf[ftDf$to == node, "from"]
-##   fromKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl1")
-##   fromKeys = unique(selected[[fromNode]][[fromKey]])
-##   fromKeys = fromKeys[!is.na(fromKeys)]
-##   toKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl2")
-##   selected[[node]] =
-##     select(OrganismDbi:::.makeReal(node),
-##            fromKeys, needCols[[node]], toKey)
-## }
+## ## select 
+.getSelect <- function(kt,keys,needCols, visitNodes){
+  ## set up an empty list with names that match what we want to fill...
+  selected = setNames(
+    vector("list", length(visitNodes)),
+    names(visitNodes))
+  ## in 1st case we only need the name
+  node1 = names(visitNodes)[[1]]
+  selected[[node1]] =
+    select(OrganismDbi:::.makeReal(node1),
+           keys=keys,
+           cols=needCols[[node1]],
+           keytype=kt)
+  ## but here we need to use the name and the value of visitNodes
+  otherNodes <- visitNodes[-1] 
+  for (i in seq_len(length(otherNodes))) {
+    nodeName <- names(otherNodes)[i]
+    fromNode = otherNodes[i] 
+    fromKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl1")
+    fromKeys = unique(selected[[fromNode]][[fromKey]])
+    fromKeys = fromKeys[!is.na(fromKeys)]
+    toKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl2")
+    selected[[nodeName]] =
+      select(OrganismDbi:::.makeReal(nodeName),
+             keys=fromKeys,
+             cols=needCols[[nodeName]],
+             keytype=toKey)
+  }
+  selected
+}
+## selected <- .getSelect(kt,keys,needCols, visitNodes)
 
 
 ## new version of .mergeSelects
