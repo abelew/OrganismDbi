@@ -1,7 +1,7 @@
 importFrom("graph", ftM2graphNEL)
-importMethodsFrom("graph", edges)
+importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
+importMethodsFrom("RBGL", bfs)
 importClassesFrom("graph", graphNEL)
-importFrom("RBGL", dijkstra.sp)
 exportClasses("OrganismDb")
 exportMethods("cols",
               "keys",

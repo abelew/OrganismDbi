@@ -241,7 +241,6 @@ test_select <- function(){
   checkTrue("ALIAS" %in% colnames(res)) 
   checkTrue("CDSSTART" %in% colnames(res)) 
 
-  ## bugged because I have to change the way I sort these things so that they always start with the keytype dbs...
   cls <- c("GOID","ENTREZID")
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[2]==4)

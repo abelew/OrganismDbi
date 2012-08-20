@@ -147,13 +147,13 @@ setMethod("keys", "OrganismDb",
 }
 
 
-.getDistances <- function(x, keytype){
-  ## use the shortest path algorithm to get them into the order desired.
-  g <- dbGraph(x)
-  startNode <- .lookupDbNameFromKeytype(x, keytype)
-  sp <- dijkstra.sp(g, start=startNode)
-  sp$distances
-}
+## .getDistances <- function(x, keytype){
+##   ## use the shortest path algorithm to get them into the order desired.
+##   g <- dbGraph(x)
+##   startNode <- .lookupDbNameFromKeytype(x, keytype)
+##   sp <- dijkstra.sp(g, start=startNode)
+##   sp$distances
+## }
 
 
 ## newer version just uses names of DBs from fkeys
@@ -223,29 +223,29 @@ setMethod("keys", "OrganismDb",
   }
 }
 
-## This one will actually get the extra cols (foreign keys) for ALL the
-## RELEVANT Dbs and then add that information to the keytype and cols.
-.getForeignEdgeKeys <- function(x, cols, keytype){ 
-  ## get the graph 
-  g <- dbGraph(x)
-  ## We want to run dijkstras 
-  dst <- .getDistances(x, keytype)
-  ## then we need to lookup the DBs we need (based on the cols alone). 
-  pkgs <- .lookupDbNamesFromCols(x, cols)
-  fKeys <- list()
-  ## master loop for all leaf pkgs (leaf nodes) 
-  for(i in seq_len(length(pkgs))){
-    pkg <- pkgs[i] 
-    curDist <- dst[names(dst) %in% pkg] 
-    if(curDist > 0){## then we are not there yet... 
-      fKeys <- c(fKeys,
-                 rev(.nodeWalker(g, dst, pkg, curDist))) 
-    }
-  }
-  ## then put the extrKeys together with the other things we need 
-  ## the listed form (not returned) is nice for looking at the edges formed 
-  unique(unlist(fKeys)) 
-} 
+## ## This one will actually get the extra cols (foreign keys) for ALL the
+## ## RELEVANT Dbs and then add that information to the keytype and cols.
+## .getForeignEdgeKeys <- function(x, cols, keytype){ 
+##   ## get the graph 
+##   g <- dbGraph(x)
+##   ## We want to run dijkstras 
+##   dst <- .getDistances(x, keytype)
+##   ## then we need to lookup the DBs we need (based on the cols alone). 
+##   pkgs <- .lookupDbNamesFromCols(x, cols)
+##   fKeys <- list()
+##   ## master loop for all leaf pkgs (leaf nodes) 
+##   for(i in seq_len(length(pkgs))){
+##     pkg <- pkgs[i] 
+##     curDist <- dst[names(dst) %in% pkg] 
+##     if(curDist > 0){## then we are not there yet... 
+##       fKeys <- c(fKeys,
+##                  rev(.nodeWalker(g, dst, pkg, curDist))) 
+##     }
+##   }
+##   ## then put the extrKeys together with the other things we need 
+##   ## the listed form (not returned) is nice for looking at the edges formed 
+##   unique(unlist(fKeys)) 
+## } 
 
 
 
@@ -320,42 +320,42 @@ setMethod("keys", "OrganismDb",
 ##   res
 ## }
 
-## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
-## Also, fkeys was in order of the chromosome walk.
-.getSelects <- function(x, keys, cols, keytype){
-  ## get the dbs
-  fkeys <- OrganismDbi:::.getForeignEdgeKeys(x, cols, keytype)
-  dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)
-  ## Then split that up according to the occurance of the 1st node.
-  walks <- .splitBy1stNode(dbs, fkeys)
-  ## from this point forward cols needs to be comprehensive
-  cols <- unique(c(keytype, cols, fkeys))
-  ## results will be in a list structure
-  res <- list()
+## ## dbs and fkeys should now be in SAME ORDER (dbs were derived from fkeys)
+## ## Also, fkeys was in order of the chromosome walk.
+## .getSelects <- function(x, keys, cols, keytype){
+##   ## get the dbs
+##   fkeys <- OrganismDbi:::.getForeignEdgeKeys(x, cols, keytype)
+##   dbs <- .lookupDbsFromFkeys(x, fkeys, keytype)
+##   ## Then split that up according to the occurance of the 1st node.
+##   walks <- .splitBy1stNode(dbs, fkeys)
+##   ## from this point forward cols needs to be comprehensive
+##   cols <- unique(c(keytype, cols, fkeys))
+##   ## results will be in a list structure
+##   res <- list()
 
-  ## Then for each list element call the code below.
-  ## 1) track the nodes to avoid calling the same node twice.  Do this by
-  ## naming the list elements as I fill them and checking against that for
-  ## each node.
+##   ## Then for each list element call the code below.
+##   ## 1) track the nodes to avoid calling the same node twice.  Do this by
+##   ## naming the list elements as I fill them and checking against that for
+##   ## each node.
   
-  ## 2) always assume for each node that we have to deduce the keys from what
-  ## was selected before using the "walk" that we are currently on.
+##   ## 2) always assume for each node that we have to deduce the keys from what
+##   ## was selected before using the "walk" that we are currently on.
  
-  ## 3) Add extra loop: For each "walk" call the following (for each of the
-  ## dbs in that walk), but making sure to not call a dbs that we have already
-  ## put into the result: "res"
-  for(i in seq_len(length(walks))){
-    walkDbNames <- walks[[i]]
-    walkDbs <- dbs[match(walkDbNames,names(dbs))]
-    ## Remove from walkDbs based on what is in res already
-##    walkDbs <- walkDbs[!(names(walkDbs) %in% names(res))] ## NOT HERE.
-    res <- c(res, .getSelect(x, walkDbs, cols, keytype, res))
-    walkDbShort <- walkDbs[!(names(walkDbs) %in% names(res))]
-    names(res) <- names(walkDbShort)
-  }
-##   names(res) <- unique(names(dbs)) ## looks scary but should be correct 
-  res 
-} 
+##   ## 3) Add extra loop: For each "walk" call the following (for each of the
+##   ## dbs in that walk), but making sure to not call a dbs that we have already
+##   ## put into the result: "res"
+##   for(i in seq_len(length(walks))){
+##     walkDbNames <- walks[[i]]
+##     walkDbs <- dbs[match(walkDbNames,names(dbs))]
+##     ## Remove from walkDbs based on what is in res already
+## ##    walkDbs <- walkDbs[!(names(walkDbs) %in% names(res))] ## NOT HERE.
+##     res <- c(res, .getSelect(x, walkDbs, cols, keytype, res))
+##     walkDbShort <- walkDbs[!(names(walkDbs) %in% names(res))]
+##     names(res) <- names(walkDbShort)
+##   }
+## ##   names(res) <- unique(names(dbs)) ## looks scary but should be correct 
+##   res 
+## } 
 
 ##.dropDuplicatedMergeCols helper just takes advantage of the fact that my
 ##dupicates columns will always have the form a.x, a.y etc. and will drop the
@@ -369,25 +369,25 @@ setMethod("keys", "OrganismDb",
 } 
 
 
-## This merges things based on the key relationships from mkeys
-.mergeSelectResults <- function(x, sels){
-  for(i in seq_len(length(sels))){
-    if(i==1){
-      ## mtype starts with table i, and just accumulates a history of tables
-      ## that we have merged so far.
-      mtype <- names(sels)[i]
-      res <- sels[[1]]
-    }else{## There is more than one, so we must merge...
-        mtype <- c(mtype,names(sels)[i])
-        ml <- length(mtype)
-        xkey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
-        ykey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
-        res <- merge(res, sels[[i]],by.x=xkey, by.y=ykey, all=TRUE)
-        res <- .dropDuplicatedMergeCols(res)
-      } 
-  }
-  res
-} 
+## ## This merges things based on the key relationships from mkeys
+## .mergeSelectResults <- function(x, sels){
+##   for(i in seq_len(length(sels))){
+##     if(i==1){
+##       ## mtype starts with table i, and just accumulates a history of tables
+##       ## that we have merged so far.
+##       mtype <- names(sels)[i]
+##       res <- sels[[1]]
+##     }else{## There is more than one, so we must merge...
+##         mtype <- c(mtype,names(sels)[i])
+##         ml <- length(mtype)
+##         xkey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl1")
+##         ykey <- .mkeys(x, mtype[ml-1], mtype[ml], key="tbl2")
+##         res <- merge(res, sels[[i]],by.x=xkey, by.y=ykey, all=TRUE)
+##         res <- .dropDuplicatedMergeCols(res)
+##       } 
+##   }
+##   res
+## } 
 
 
 
@@ -445,66 +445,13 @@ setMethod("keys", "OrganismDb",
   ans
 }
 
-.select <- function(x, keys, cols, keytype){
-  ## if asked for what they have, just return that.
-  if(all(cols %in% keytype)  && length(cols)==1){
-    res <- data.frame(keys=keys)
-    colnames(res) <- cols
-    return(res)
-  }
-  
-  ## Preserve original cols (we will be adding some to get our results along
-  ## the way 
-  oriCols <- cols  
-  
-  ## 1st add any missing foreign key cols (based on what our graph looks like,
-  ## and also based on what was asked for)
-#  fkeys <- .getForeignEdgeKeys(x, cols, keytype)
-  
-  ## Then I need to add back the keytype and cols into cols???
-#  cols <- unique(c(keytype, cols, fkeys))
-    
-  ## next we get the data from each.
-  sels <- .getSelects(x, keys, cols, keytype)
-  ## Then we need to merge them together using the foreign keys
-  res <- .mergeSelectResults(x, sels)
-  
-  ## Then we need to filter out all columns that we didn't ask for.  
-  ## Actually that is not quite right, what we want to do is make a blacklist
-  ## of columns that were added (in fkeys) and that were NOT requested
-  ## (oriCols and keytype).
-
-  extraKeys <- .getDbNameFKeys(x)
-  blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
-  ## if they asked for one of the GO items, then GO is not blacklisted
-  if(any(cols(GO.db) %in% oriCols)){
-    blackList <- blackList[!(blackList %in% "GO")]
-  }
-  res <- res[,!(colnames(res) %in% blackList)]
-
-  ## Then call code to clean up, reorder the rows (and add NA rows as needed).
-  if(dim(res)[1]>0){
-    res <- AnnotationDbi:::.resort(tab=res, keys=keys, jointype=keytype,
-                                   reqCols=colnames(res))
-
-  }
-  unique(res)
-}
 
 
 
 
-setMethod("select", "OrganismDb",
-    function(x, keys, cols, keytype) {
-          .select(x, keys, cols, keytype)
-        }
-)
-
-
-
-
-
-## new plan:
+###############################################
+## NEW plan helpers:
+###############################################
 
 ## helper for getting all cols by all nodes
 colsByNodes <- function(x){
@@ -588,14 +535,9 @@ getColsByNodes <- function(subgr, selectCols, allCols){
 
 
 
-
-
-
-
-
 ## new version of .getSelects()
 ## ## select 
-.getSelect <- function(kt,keys,needCols, visitNodes){
+.getSelects <- function(keytype,keys,needCols, visitNodes){
   ## set up an empty list with names that match what we want to fill...
   selected = setNames(
     vector("list", length(visitNodes)),
@@ -606,7 +548,7 @@ getColsByNodes <- function(subgr, selectCols, allCols){
     select(OrganismDbi:::.makeReal(node1),
            keys=keys,
            cols=needCols[[node1]],
-           keytype=kt)
+           keytype=keytype)
   ## but here we need to use the name and the value of visitNodes
   otherNodes <- visitNodes[-1] 
   for (i in seq_len(length(otherNodes))) {
@@ -627,13 +569,95 @@ getColsByNodes <- function(subgr, selectCols, allCols){
 ## selected <- .getSelect(kt,keys,needCols, visitNodes)
 
 
-## new version of .mergeSelects
+## new version of .mergeSelectResults
 ## ## merge
-## final = selected[[1]]
-## for (node in visitNodes[-1]) {
-##   fromNode = ftDf[ftDf$to == node, "from"]
-##   fromKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl1")
-##   toKey = OrganismDbi:::.mkeys(x, fromNode, node, "tbl2")
-##   final = merge(final, selected[[node]], by.x=fromKey, by.y=toKey, all=TRUE)
-## }
+.mergeSelectResults <- function(selected, visitNodes){
+  final = selected[[1]]
+  otherNodes <- visitNodes[-1] 
+  for (i in seq_len(length(otherNodes))) {
+    nodeName <- names(otherNodes)[i]
+    fromNode = otherNodes[i] 
+    fromKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl1")
+    toKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl2")
+    final = merge(final, selected[[nodeName]],
+                  by.x=fromKey, by.y=toKey, all=TRUE)
+  }
+  final
+}
+## res <- .mergeSelectResults(selected, visitNodes)
+
+
+
+
+
+.select <- function(x, keys, cols, keytype){
+  ## if asked for what they have, just return that.
+  if(all(cols %in% keytype)  && length(cols)==1){
+    res <- data.frame(keys=keys)
+    colnames(res) <- cols
+    return(res)
+  }
+  
+  ## Preserve original cols (we will be adding some to get our results along
+  ## the way 
+  oriCols <- cols  
+
+  
+  ## 1st add any missing foreign key cols (based on what our graph looks like,
+  ## and also based on what was asked for)
+#  fkeys <- .getForeignEdgeKeys(x, cols, keytype)
+  
+  ## Then I need to add back the keytype and cols into cols???
+#  cols <- unique(c(keytype, cols, fkeys))
+    
+  ## next we get the data from each.
+#  sels <- .getSelects(x, keys, cols, keytype)
+  ## Then we need to merge them together using the foreign keys
+#  res <- .mergeSelectResults(x, sels)
+
+## NEW PLAN CODE used:
+  allCols <- colsByNodes(x)
+  subgr <- getRelevantSubgraph(x, cols=cols, keys, keytype=keytype)
+  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  fKeys <- getForeignKeys(x, subgr)
+  selectCols = unique(c(keytype, fKeys, cls))
+  needCols <- getColsByNodes(subgr, selectCols, allCols)
+  visitNodes = .bfs(subgr, root)
+  selected <- .getSelects(keytype,keys,needCols, visitNodes)
+  res <- .mergeSelectResults(selected, visitNodes)
+  
+  ## Then we need to filter out all columns that we didn't ask for.  
+  ## Actually that is not quite right, what we want to do is make a blacklist
+  ## of columns that were added (in fkeys) and that were NOT requested
+  ## (oriCols and keytype).
+
+  extraKeys <- .getDbNameFKeys(x)
+  blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
+  ## if they asked for one of the GO items, then GO is not blacklisted
+  if(any(cols(GO.db) %in% oriCols)){
+    blackList <- blackList[!(blackList %in% "GO")]
+  }
+  res <- res[,!(colnames(res) %in% blackList)]
+
+  ## Then call code to clean up, reorder the rows (and add NA rows as needed).
+  if(dim(res)[1]>0){
+    res <- AnnotationDbi:::.resort(tab=res, keys=keys, jointype=keytype,
+                                   reqCols=colnames(res))
+
+  }
+  unique(res)
+}
+
+
+
+
+setMethod("select", "OrganismDb",
+    function(x, keys, cols, keytype) {
+          .select(x, keys, cols, keytype)
+        }
+)
+
+
+
+
 
