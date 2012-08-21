@@ -140,22 +140,28 @@ test_getSelects <- function(){
   
 }
 
-## test_mergeSelectResults <- function(){
-##   cls <- c("TERM", "ALIAS")
-##   kt <- "GENEID"
-##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  
-##   keys <- head(keys(x, kt), n=3)
-##   cols <- unique(c(kt, cls, fkys))
-##   sels <- OrganismDbi:::.getSelects(x, keys, cols, kt)
+test_mergeSelectResults <- function(){
+  allCols <- OrganismDbi:::.colsByNodes(x)
 
-##   res <- OrganismDbi:::.mergeSelectResults(x, sels)
-##   checkTrue(dim(res)[2]==6)
-##   checkTrue(class(res)=="data.frame")
-##   checkTrue("GO" %in% colnames(res)) 
-##   checkTrue("GENEID" %in% colnames(res))
-##   checkTrue("ALIAS" %in% colnames(res))  
-## }
+  cols = c("GOID" ,  "SYMBOL", "TXNAME")
+  keytype <- "ENTREZID"
+  keys <- head(keys(x, "ENTREZID"))
+  subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
+                                              keytype=keytype)
+  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
+  selectCols = unique(c(keytype, fKeys, cols))
+  needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
+  visitNodes = OrganismDbi:::.bfs(subgr, root)
+  selected <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
+  res <- OrganismDbi:::.mergeSelectResults(x, selected, visitNodes)
+  
+  checkTrue(dim(res)[2]==6)
+  checkTrue(class(res)=="data.frame")
+  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("ENTREZID" %in% colnames(res))
+  checkTrue("TXNAME" %in% colnames(res))  
+}
 
 
 ## MANY more tests
@@ -316,7 +322,7 @@ test_rattus <- function(){
   checkTrue("ALIAS" %in% colnames(res)) 
 
   ## now test key that starts us from Go
-  ## TODO: bug??? Row of NAs in 1st line
+  ## TODO: A cleanup bug??? = Row of NAs in 1st line
   k = head(keys(r, keytype="GOID"))
   keytype="GOID"
   cls <- c("GOID","ALIAS","CHR") 
