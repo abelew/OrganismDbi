@@ -90,7 +90,7 @@ setMethod("keys", "OrganismDb",
 )
 
 
-## Usage: (so far this works, but there is something dumb happening with the method
+## Usage: 
 ## head(keys(Homo.sapiens, keytype="PMID"))
 ## the use case for GOID will present a special challenge...
 ## head(keys(Homo.sapiens, keytype="GOID"))
@@ -169,15 +169,8 @@ setMethod("keys", "OrganismDb",
 }
 
 
-
-
-
-###############################################
-## NEW plan helpers:
-###############################################
-
 ## helper for getting all cols by all nodes
-colsByNodes <- function(x){
+.colsByNodes <- function(x){
   gr <- OrganismDbi:::dbGraph(x)
   allCols <- lapply(nodes(gr), function(elt) cols(OrganismDbi:::.makeReal(elt)))
   names(allCols) <- nodes(gr)
@@ -187,12 +180,12 @@ colsByNodes <- function(x){
 ## library(RBGL)
 ## library(graph)a
 ## x = Homo.sapiens
-## allCols <- colsByNodes(x)
+## allCols <- .colsByNodes(x)
 
 ## helper to get the subgraph
-getRelevantSubgraph <- function(x, cols, keys, keytype){
+.getRelevantSubgraph <- function(x, cols, keys, keytype){
   gr <- OrganismDbi:::dbGraph(x)
-  allCols <- colsByNodes(x)
+  allCols <- .colsByNodes(x)
   inSubgraph = sapply(allCols,
     function(cols, keys) any(keys %in% cols),  union(keytype, cols))
   subgr = subGraph(names(inSubgraph)[inSubgraph], gr)
@@ -201,7 +194,7 @@ getRelevantSubgraph <- function(x, cols, keys, keytype){
 ## kt <- "ENTREZID"
 ## cls = c("GOID" ,  "SYMBOL", "TXNAME")
 ## keys <- head(keys(x, "ENTREZID"))
-## subgr <- getRelevantSubgraph(x, cols=cls, keys, keytype=kt)
+## subgr <- .getRelevantSubgraph(x, cols=cls, keys, keytype=kt)
   
 
 ## now we will also need the root
@@ -209,24 +202,24 @@ getRelevantSubgraph <- function(x, cols, keys, keytype){
 
 
 ## I think this is meant to be an lapply
-getForeignKeys <- function(x, subgr){
+.getForeignKeys <- function(x, subgr){
   fKeys = lapply(strsplit(edgeNames(subgr), "~"),
     function(tables, x, key)
     OrganismDbi:::.mkeys(x, tables[[1]], tables[[2]], "both"), x)
   unlist(fKeys, use.names=FALSE)
 }
-## fKeys <- getForeignKeys(x, subgr)
+## fKeys <- .getForeignKeys(x, subgr)
 
 
 ## now combine all the keys together
 ## selectCols = unique(c(kt, fKeys, cls))
 
 ## sort the needed cols by their nodes
-getColsByNodes <- function(subgr, selectCols, allCols){
+.getColsByNodes <- function(subgr, selectCols, allCols){
   lapply(allCols[nodes(subgr)],
     function(col, selectCols) col[col %in% selectCols], selectCols)
 }
-## needCols <- getColsByNodes(subgr, selectCols, allCols)
+## needCols <- .getColsByNodes(subgr, selectCols, allCols)
 
 
 ## get list of nodes to visit
@@ -247,7 +240,7 @@ getColsByNodes <- function(subgr, selectCols, allCols){
 
 ## new version of .getSelects()
 ## ## select 
-.getSelects <- function(x, keytype,keys,needCols, visitNodes){
+.getSelects <- function(x, keytype, keys, needCols, visitNodes){
   ## set up an empty list with names that match what we want to fill...
   selected = setNames(
     vector("list", length(visitNodes)),
@@ -313,12 +306,12 @@ getColsByNodes <- function(subgr, selectCols, allCols){
   oriCols <- cols  
 
   ## New methods make more use of graph objects.
-  allCols <- colsByNodes(x)
-  subgr <- getRelevantSubgraph(x, cols=cols, keys, keytype=keytype)
-  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
-  fKeys <- getForeignKeys(x, subgr)
+  allCols <- .colsByNodes(x)
+  subgr <- .getRelevantSubgraph(x, cols=cols, keys, keytype=keytype)
+  root = .lookupDbNameFromKeytype(x, keytype)
+  fKeys <- .getForeignKeys(x, subgr)
   selectCols = unique(c(keytype, fKeys, cols))
-  needCols <- getColsByNodes(subgr, selectCols, allCols)
+  needCols <- .getColsByNodes(subgr, selectCols, allCols)
   visitNodes = .bfs(subgr, root)
   selected <- .getSelects(x, keytype,keys,needCols, visitNodes)
   res <- .mergeSelectResults(x, selected, visitNodes)

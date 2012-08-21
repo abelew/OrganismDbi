@@ -71,64 +71,74 @@ test_mkeys <- function(){
 } 
 
 
-## test_getSelects <- function(){
-##   cls <- c("TERM", "ALIAS")
-##   kt <- "GENEID"
-##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  ## reverse order???
-##   keys <- head(keys(x, kt), n=2)
-##   cols <- unique(c(kt, cls, fkys))
-##   res <- OrganismDbi:::.getSelects(x, keys, cols, kt)
-##   checkTrue(length(res)==3)
-##   checkTrue(class(res)=="list")
-##   checkTrue("GENEID" %in% colnames(res[[1]]))
-##   checkTrue("GO" %in% colnames(res[[2]]))
-##   checkTrue("TERM" %in% colnames(res[[3]]))
+test_getSelects <- function(){
+  allCols <- OrganismDbi:::.colsByNodes(x)
+
+  ## start at one end case
+  cols <- c("TERM", "ALIAS")
+  keytype <- "GENEID"
+  keys <- head(keys(x, keytype), n=2)
   
-##   cls <- c("SYMBOL")
-##   kt <- "OMIM"
-##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
-##   keys <- head(keys(x, kt), n=2)
-##   cols <- unique(c(kt, cls, fkys))
-##   res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
-##   checkTrue(length(res)==1)
-##   checkTrue(class(res)=="list")
-##   checkTrue("OMIM" %in% colnames(res[[1]]))
-##   checkTrue("SYMBOL" %in% colnames(res[[1]]))
+  subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
+                                              keytype=keytype)
+  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
+  selectCols = unique(c(keytype, fKeys, cols))
+  needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
+  visitNodes = OrganismDbi:::.bfs(subgr, root)
+  
+  res <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
+ 
+  checkTrue(length(res)==3)
+  checkTrue(class(res)=="list")
+  checkTrue("GENEID" %in% colnames(res[[1]]))
+  checkTrue("GO" %in% colnames(res[[2]]))
+  checkTrue("TERM" %in% colnames(res[[3]]))
+
+  ## The very simple case
+  cols <- c("SYMBOL")
+  keytype <- "OMIM"
+  keys <- head(keys(x, keytype), n=2)
+  
+  subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
+                                              keytype=keytype)
+  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
+  selectCols = unique(c(keytype, fKeys, cols))
+  needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
+  visitNodes = OrganismDbi:::.bfs(subgr, root)
+
+  res <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
+
+  checkTrue(length(res)==1)
+  checkTrue(class(res)=="list")
+  checkTrue("OMIM" %in% colnames(res[[1]]))
+  checkTrue("SYMBOL" %in% colnames(res[[1]]))
 
 
   
-##   ## Then there is this case:
-##   cls = c("GOID" ,  "SYMBOL", "TXNAME")
-##   kt <- "ENTREZID"
-##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)  
-##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)
-##   checkTrue(length(fkys)==length(dbs))
+  ## Then there is this case (start in the middle case)
+  cols = c("GOID" ,  "SYMBOL", "TXNAME")
+  keytype <- "ENTREZID"
+  keys <- head(keys(x, "ENTREZID"))
+  
+  subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
+                                              keytype=keytype)
+  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
+  selectCols = unique(c(keytype, fKeys, cols))
+  needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
+  visitNodes = OrganismDbi:::.bfs(subgr, root)
 
-  
-##   gr = OrganismDbi:::dbGraph(x)
-##   require(graph)
-##   sgr <- subGraph(names(dbs), gr)
-##   require(RBGL)
-##   bfp <- bfs(sgr, names(dbs)[1])
-##   dijkstra.sp(sgr, names(dbs)[1])$distances
+  res <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
 
-##   ## OK HERE is the new "big plan":
-##   ## 1) remove unique from .lookupDbsFromFkeys() so that I get the full result
-##   ## 2) split based on the 1st node (so that each walk is separate)
-##  ## 3) each of these walks is a subgraph
-##  ## 4) Calling bfs on any of them will allow you to easily see the relationships, but in reality that much graph stuff won't be needed. All you really need to know is that whenever you have skipped a node (IOW after you have seen root more than once), you will need to call the subgraph thingy for each unique node BEFORE you call select().
-
+  checkTrue(length(res)==3)
+  checkTrue(class(res)=="list")
+  checkTrue("SYMBOL" %in% colnames(res[[1]]))
+  checkTrue("TXNAME" %in% colnames(res[[2]]))
+  checkTrue("GOID" %in% colnames(res[[3]]))
   
-  
-##   keys <- head(keys(x, "ENTREZID"))
-##   cols <- unique(c(kt, cls, fkys))
-##   res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
-##   ## fails not because of path issue (resolved) but because of problem with a
-##   ## need to reset whenever we start gathering from the root again...
-  
-## }
+}
 
 ## test_mergeSelectResults <- function(){
 ##   cls <- c("TERM", "ALIAS")
