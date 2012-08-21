@@ -195,9 +195,7 @@ setMethod("keys", "OrganismDb",
 ## cls = c("GOID" ,  "SYMBOL", "TXNAME")
 ## keys <- head(keys(x, "ENTREZID"))
 ## subgr <- .getRelevantSubgraph(x, cols=cls, keys, keytype=kt)
-  
-
-## now we will also need the root
+## We will also need the root
 ## root = OrganismDbi:::.lookupDbNameFromKeytype(x, kt)
 
 
