@@ -44,12 +44,12 @@ test_lookupDbFromKeytype <- function(){
 }
 
 
-test_makecolMapping <- function(){
-  res <- OrganismDbi:::.makecolMapping(x)
-  checkTrue("GO.db" == names(res)[res=='TERM'] )
-  checkTrue("TxDb.Hsapiens.UCSC.hg19.knownGene" == names(res)[res=='TXID'] )
-  checkTrue("org.Hs.eg.db" == names(res)[res=='ENTREZID'] )
-}
+## test_makecolMapping <- function(){
+##   res <- OrganismDbi:::.makecolMapping(x)
+##   checkTrue("GO.db" == names(res)[res=='TERM'] )
+##   checkTrue("TxDb.Hsapiens.UCSC.hg19.knownGene" == names(res)[res=='TXID'] )
+##   checkTrue("org.Hs.eg.db" == names(res)[res=='ENTREZID'] )
+## }
 
 
 ## test_resortDbs <- function(){
@@ -74,49 +74,49 @@ test_makecolMapping <- function(){
 
 
 
-test_getForeignEdgeKeys <- function(){
-  keytype <- c("ENTREZID")
-  cls <- c("OBSOLETE") ## this is a defunct ID
-  ## And this should therefore throw an error
-  checkException(OrganismDbi:::.getForeignEdgeKeys(x,cls,"GENEID"))
+## test_getForeignEdgeKeys <- function(){
+##   keytype <- c("ENTREZID")
+##   cls <- c("OBSOLETE") ## this is a defunct ID
+##   ## And this should therefore throw an error
+##   checkException(OrganismDbi:::.getForeignEdgeKeys(x,cls,"GENEID"))
 
-  ## What if there is only DBS required?
-  keytype <- c("TXNAME")
-  cls <- c("TXID")
-  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue(length(res) == 0) ## Should give me an empty list (IOW no edges)
+##   ## What if there is only DBS required?
+##   keytype <- c("TXNAME")
+##   cls <- c("TXID")
+##   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+##   checkTrue(length(res) == 0) ## Should give me an empty list (IOW no edges)
   
-  ## This method needs to be able to interpolate between nodes.
-  ## So this should work out OK:
-  keytype <- c("TXNAME")
-  cls <- c("GOID")
-  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue("GENEID" == res[1]) 
-  checkTrue("ENTREZID" == res[2])
-  checkTrue("GO" == res[3]) 
-  checkTrue("GOID" == res[4])
+##   ## This method needs to be able to interpolate between nodes.
+##   ## So this should work out OK:
+##   keytype <- c("TXNAME")
+##   cls <- c("GOID")
+##   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+##   checkTrue("GENEID" == res[1]) 
+##   checkTrue("ENTREZID" == res[2])
+##   checkTrue("GO" == res[3]) 
+##   checkTrue("GOID" == res[4])
 
-  keytype <- c("ENTREZID")
-  cls <- c("GOID")
-  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue("GO" == res[1])
-  checkTrue("GOID" == res[2])
+##   keytype <- c("ENTREZID")
+##   cls <- c("GOID")
+##   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+##   checkTrue("GO" == res[1])
+##   checkTrue("GOID" == res[2])
   
-  keytype <- c("TXNAME")
-  cls <- c("GO")
-  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
-  checkTrue("GENEID" == res[1])
-  checkTrue("ENTREZID" == res[2])
+##   keytype <- c("TXNAME")
+##   cls <- c("GO")
+##   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype)
+##   checkTrue("GENEID" == res[1])
+##   checkTrue("ENTREZID" == res[2])
 
-  ## Here is a case for when the start node is in the middle of the graph 
-  keytype <- c("ENTREZID") 
-  cls = c("GOID","SYMBOL","TXNAME") 
-  res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype) 
-  checkTrue("GO" == res[1]) 
-  checkTrue("GOID" == res[2]) 
-  checkTrue("ENTREZID" == res[3]) 
-  checkTrue("GENEID" == res[4]) 
-} 
+##   ## Here is a case for when the start node is in the middle of the graph 
+##   keytype <- c("ENTREZID") 
+##   cls = c("GOID","SYMBOL","TXNAME") 
+##   res <- OrganismDbi:::.getForeignEdgeKeys(x, cls, keytype) 
+##   checkTrue("GO" == res[1]) 
+##   checkTrue("GOID" == res[2]) 
+##   checkTrue("ENTREZID" == res[3]) 
+##   checkTrue("GENEID" == res[4]) 
+## } 
 
 test_mkeys <- function(){
   tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
@@ -142,81 +142,81 @@ test_mkeys <- function(){
 } 
 
 
-test_getSelects <- function(){
-  cls <- c("TERM", "ALIAS")
-  kt <- "GENEID"
-  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  ## reverse order???
-  keys <- head(keys(x, kt), n=2)
-  cols <- unique(c(kt, cls, fkys))
-  res <- OrganismDbi:::.getSelects(x, keys, cols, kt)
-  checkTrue(length(res)==3)
-  checkTrue(class(res)=="list")
-  checkTrue("GENEID" %in% colnames(res[[1]]))
-  checkTrue("GO" %in% colnames(res[[2]]))
-  checkTrue("TERM" %in% colnames(res[[3]]))
+## test_getSelects <- function(){
+##   cls <- c("TERM", "ALIAS")
+##   kt <- "GENEID"
+##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  ## reverse order???
+##   keys <- head(keys(x, kt), n=2)
+##   cols <- unique(c(kt, cls, fkys))
+##   res <- OrganismDbi:::.getSelects(x, keys, cols, kt)
+##   checkTrue(length(res)==3)
+##   checkTrue(class(res)=="list")
+##   checkTrue("GENEID" %in% colnames(res[[1]]))
+##   checkTrue("GO" %in% colnames(res[[2]]))
+##   checkTrue("TERM" %in% colnames(res[[3]]))
   
-  cls <- c("SYMBOL")
-  kt <- "OMIM"
-  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
-  keys <- head(keys(x, kt), n=2)
-  cols <- unique(c(kt, cls, fkys))
-  res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
-  checkTrue(length(res)==1)
-  checkTrue(class(res)=="list")
-  checkTrue("OMIM" %in% colnames(res[[1]]))
-  checkTrue("SYMBOL" %in% colnames(res[[1]]))
+##   cls <- c("SYMBOL")
+##   kt <- "OMIM"
+##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)   
+##   keys <- head(keys(x, kt), n=2)
+##   cols <- unique(c(kt, cls, fkys))
+##   res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
+##   checkTrue(length(res)==1)
+##   checkTrue(class(res)=="list")
+##   checkTrue("OMIM" %in% colnames(res[[1]]))
+##   checkTrue("SYMBOL" %in% colnames(res[[1]]))
 
-
-  
-  ## Then there is this case:
-  cls = c("GOID" ,  "SYMBOL", "TXNAME")
-  kt <- "ENTREZID"
-  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)  
-  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)
-  checkTrue(length(fkys)==length(dbs))
 
   
-  gr = OrganismDbi:::dbGraph(x)
-  require(graph)
-  sgr <- subGraph(names(dbs), gr)
-  require(RBGL)
-  bfp <- bfs(sgr, names(dbs)[1])
-  dijkstra.sp(sgr, names(dbs)[1])$distances
+##   ## Then there is this case:
+##   cls = c("GOID" ,  "SYMBOL", "TXNAME")
+##   kt <- "ENTREZID"
+##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)  
+##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)
+##   checkTrue(length(fkys)==length(dbs))
 
-  ## OK HERE is the new "big plan":
-  ## 1) remove unique from .lookupDbsFromFkeys() so that I get the full result
-  ## 2) split based on the 1st node (so that each walk is separate)
- ## 3) each of these walks is a subgraph
- ## 4) Calling bfs on any of them will allow you to easily see the relationships, but in reality that much graph stuff won't be needed. All you really need to know is that whenever you have skipped a node (IOW after you have seen root more than once), you will need to call the subgraph thingy for each unique node BEFORE you call select().
+  
+##   gr = OrganismDbi:::dbGraph(x)
+##   require(graph)
+##   sgr <- subGraph(names(dbs), gr)
+##   require(RBGL)
+##   bfp <- bfs(sgr, names(dbs)[1])
+##   dijkstra.sp(sgr, names(dbs)[1])$distances
+
+##   ## OK HERE is the new "big plan":
+##   ## 1) remove unique from .lookupDbsFromFkeys() so that I get the full result
+##   ## 2) split based on the 1st node (so that each walk is separate)
+##  ## 3) each of these walks is a subgraph
+##  ## 4) Calling bfs on any of them will allow you to easily see the relationships, but in reality that much graph stuff won't be needed. All you really need to know is that whenever you have skipped a node (IOW after you have seen root more than once), you will need to call the subgraph thingy for each unique node BEFORE you call select().
 
   
   
-  keys <- head(keys(x, "ENTREZID"))
-  cols <- unique(c(kt, cls, fkys))
-  res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
-  ## fails not because of path issue (resolved) but because of problem with a
-  ## need to reset whenever we start gathering from the root again...
+##   keys <- head(keys(x, "ENTREZID"))
+##   cols <- unique(c(kt, cls, fkys))
+##   res <- OrganismDbi:::.getSelects(x, keys, cols, kt)  
+##   ## fails not because of path issue (resolved) but because of problem with a
+##   ## need to reset whenever we start gathering from the root again...
   
-}
+## }
 
-test_mergeSelectResults <- function(){
-  cls <- c("TERM", "ALIAS")
-  kt <- "GENEID"
-  fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
-  dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  
-  keys <- head(keys(x, kt), n=3)
-  cols <- unique(c(kt, cls, fkys))
-  sels <- OrganismDbi:::.getSelects(x, keys, cols, kt)
+## test_mergeSelectResults <- function(){
+##   cls <- c("TERM", "ALIAS")
+##   kt <- "GENEID"
+##   fkys <- OrganismDbi:::.getForeignEdgeKeys(x, cls, kt)
+##   dbs <-  OrganismDbi:::.lookupDbsFromFkeys(x, fkys, kt)  
+##   keys <- head(keys(x, kt), n=3)
+##   cols <- unique(c(kt, cls, fkys))
+##   sels <- OrganismDbi:::.getSelects(x, keys, cols, kt)
 
-  res <- OrganismDbi:::.mergeSelectResults(x, sels)
-  checkTrue(dim(res)[2]==6)
-  checkTrue(class(res)=="data.frame")
-  checkTrue("GO" %in% colnames(res)) 
-  checkTrue("GENEID" %in% colnames(res))
-  checkTrue("ALIAS" %in% colnames(res))  
-}
+##   res <- OrganismDbi:::.mergeSelectResults(x, sels)
+##   checkTrue(dim(res)[2]==6)
+##   checkTrue(class(res)=="data.frame")
+##   checkTrue("GO" %in% colnames(res)) 
+##   checkTrue("GENEID" %in% colnames(res))
+##   checkTrue("ALIAS" %in% colnames(res))  
+## }
 
 
 ## MANY more tests
