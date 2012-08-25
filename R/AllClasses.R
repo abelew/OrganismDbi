@@ -48,7 +48,7 @@ OrganismDb <-
 ## helpers to get all supporting libs loaded
 .initPkg <- function(pkg){
   if (missing(pkg)){
-    stop(paste(pkg,"is strictly required, please make sure you have installed it"))
+    stop("'", pkg, "' is required, please install it")
   }else{
     require(pkg, character.only = TRUE)
   }
@@ -57,25 +57,24 @@ OrganismDb <-
 ## helper for extracting pkgs and cols as a vector
 .extractPkgsAndCols <- function(gd){
   gd <- as.matrix(gd)
-  res <- c(gd[,3],gd[,4])
-  pkgs <-  c(gd[,1],gd[,2])
-  names(res) <- pkgs 
-  res
+  setNames(as.vector(gd[,3:4]), as.vector(gd[,1:2]))
 }
 
 
 ## Constructor 
-OrganismDb <- function(dbType, graphData){    
+OrganismDb <- function(dbType, graphData, ...){
   ## make graphData into a graphNEL
+  ## FIXME: validate graphData -- required columns?
   gd <- as.matrix(graphData)    
   graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
   
   ## We should try to call require on all the supporting packages.
   pkgs <- unique(names(.extractPkgsAndCols(gd)))
-  lapply(pkgs, .initPkg)
+  for (pkg in pkgs)
+      .initPkg(pkg)
 
   ## Then make the object.
-  new("OrganismDb", keys=graphData, graph=graph)
+  new("OrganismDb", ..., keys=graphData, graph=graph)
 }
 
 
@@ -94,7 +93,7 @@ OrganismDb <- function(dbType, graphData){
 ##  gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
 
 ## Constructor should look like:
-##  hs <- OrganismDbi:::OrganismDb(dbType= "Homo.sapiens", graphData=gd)
+##  hs <- OrganismDb(dbType= "Homo.sapiens", graphData=gd)
 
 
 
@@ -108,7 +107,7 @@ OrganismDb <- function(dbType, graphData){
 ##  gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
 
 ## Constructor should look like:
-##  rn <- OrganismDbi:::OrganismDb(dbType= "Rattus.norvegicus", graphData=gd)
+##  rn <- OrganismDb(dbType= "Rattus.norvegicus", graphData=gd)
 
 
 
@@ -127,8 +126,7 @@ OrganismDb <- function(dbType, graphData){
 ## IOW, there will be a call to this in zzz.R
 .loadOrganismDbiPkg <- function(pkgname,
                                 graphData){
-  obj <- OrganismDbi:::OrganismDb(dbType= pkgname,
-                                  graphData=graphData)
+  obj <- OrganismDbi(pkgname, graphData)
   ns <- asNamespace(pkgname)
   assign(pkgname, obj, envir=ns)
   namespaceExport(ns, pkgname)
@@ -150,15 +148,13 @@ setMethod("dbGraph", "OrganismDb",
 
 ## Then some helpers to process some of these results a bit
 .getDbObjNames <- function(x){
-  gd <- as.matrix(keyFrame(x))
-  unique(c(gd[,1],gd[,2]))
+  gd <- keyFrame(x)
+  unique(c(gd[[1]],gd[[2]]))
 }
 
 .getDbObjs <- function(x){
   dbs <- .getDbObjNames(x)
-  objs <- lapply(dbs, .makeReal)
-  names(objs) <- dbs
-  objs
+  setNames(lapply(dbs, .makeReal), dbs)
 }
 
 
@@ -166,11 +162,11 @@ setMethod("dbGraph", "OrganismDb",
 setMethod("show", "OrganismDb",
     function(object)
     {
-        #cat("OrganismDb object:\n")
-        cat("The OrganismDb object is a composite object made by aggregating the following annotation resources together:\n")
+        cat("class:", class(object), "\n")
+        cat("Annotation resources:\n")
         objs <- .getDbObjNames(object)
         show(objs)
-        cat("These annotation resources are related to each other as indicated by the following table:\n")
+        cat("Annotation relationships:\n")
         kf <- keyFrame(object)
         show(kf)
     }

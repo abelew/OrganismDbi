@@ -1,14 +1,9 @@
 ## This will just hold code for the initial implementation of select and friends
 
-
-
-
 ## helper to convert text strings (Db pkgs names) into real objects
 .makeReal <- function(x){
   eval(parse(text=x))
 }
-
-
 
 ## Standard methods:
 .keytypes <- function(x){
@@ -16,29 +11,20 @@
   unique(unlist(lapply(dbs, keytypes)))
 }
 
-setMethod("keytypes", "OrganismDb",
-    function(x) .keytypes(x)
-)
+setMethod("keytypes", "OrganismDb", .keytypes)
 
 ## Usage:
 ## keytypes(Homo.sapiens)
-
-
 
 .cols <- function(x){
   dbs <- .getDbObjs(x)
   unique(unlist(lapply(dbs, cols)))
 }
 
-setMethod("cols", "OrganismDb",
-    function(x) .cols(x)
-)
+setMethod("cols", "OrganismDb", .cols)
 
 ## Usage:
 ## cols(Homo.sapiens)
-
-
-
 
 ## Strategy for keys: I need a lookup function that can 1) generate the keys
 ## for each slot and then lookup which slot I should be tapping based on a
@@ -51,18 +37,16 @@ setMethod("cols", "OrganismDb",
 
 .makekeytypeMapping <- function(x){
     objs <- .getDbObjs(x)
-    res <- lapply(objs, keytypes)
-    unlist2(res)
+    unlist2(lapply(objs, keytypes))
 }
 
 .lookupDbNameFromKeytype <- function(x, keytype){
   kts <- keytypes(x)
-  if(!(keytype %in% kts)){
-    stop("keytype must be a value returned by keytypes(x).")
-  }  
-    res <- .makekeytypeMapping(x)
-    ## no duplicates so I can just return the name
-    names(res)[res %in% keytype]  
+  if(!(keytype %in% kts))
+    stop("'keytype' must be a value returned by keytypes(x)")
+  res <- .makekeytypeMapping(x)
+  ## no duplicates so I can just return the name
+  names(res)[res %in% keytype]  
 }
 
 .lookupDbFromKeytype <- function(x, keytype){
@@ -72,39 +56,24 @@ setMethod("cols", "OrganismDb",
 
 .keys <- function(x, keytype){
     kts <- keytypes(x)
-    if(!(keytype %in% kts)){
-      stop("supplied keytype is not allowed.  Please call the keytypes method to see which keytypes are allowed for this organism.")
-    }
+    if(!(keytype %in% kts))
+      stop("'keytype' invalid; call keytypes(x) for valid values")
     ## We need to retrieve the keys from the relevant slot...
     ## So 1st we have to determine WHO has the keys we are after
-    if(length(keytype) !=1){
-      stop("The keys method can only accept one keytype at a time.")
-    }
+    if(length(keytype) != 1L)
+      stop("'keys' only accepts one 'keytype' at a time")
     db <- .lookupDbFromKeytype(x, keytype)
     ## And then we can just call keys...
     keys(db, keytype)
 }
 
-setMethod("keys", "OrganismDb",
-    function(x, keytype){.keys(x, keytype)}
-)
+setMethod("keys", "OrganismDb", .keys)
 
 
 ## Usage: 
 ## head(keys(Homo.sapiens, keytype="PMID"))
 ## the use case for GOID will present a special challenge...
 ## head(keys(Homo.sapiens, keytype="GOID"))
-
-
-
-
-
-
-
-
-
-
-
 
 ## This method just gets me the pkg names as names and vals are fkeys
 .getDbNameFKeys <- function(x){
@@ -123,12 +92,11 @@ setMethod("keys", "OrganismDb",
 ## tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
 ## tbl2 = "org.Hs.eg.db"
 ## key = "tbl1"
-.parseCol <- function(piece, str){
-  grepl(str, piece)
-} 
+.parseCol <- function(piece, str) grepl(str, piece)
 
 .mkeys <- function(x, tbl1, tbl2, key=c("tbl1","tbl2", "both")){
-  if(length(tbl1) >1 || length(tbl2)>1) stop(".mkeys can only process one pair of tables at at time")
+  if(length(tbl1) != 1L || length(tbl2) != 1L)
+      stop("specify only one pair of tables at a time")
   key <- match.arg(key)
   kf <- keyFrame(x)
   ## process for a double match of tbl1 and tbl2 (in any order)
@@ -139,12 +107,14 @@ setMethod("keys", "OrganismDb",
   fin <- res | res2 
   resRowIdx <- fin[,1] & fin[,2]
   matchRow <- kf[resRowIdx,]
-  if(dim(matchRow)[1]<1){stop("No relationship found for ",tbl1," and ",tbl2)}
+  if(dim(matchRow)[1]<1L)
+      stop("no relationship found for ",tbl1," and ",tbl2)
 
   ## now the tricky part is that in returning the keys I have to get the
   ## correct keys back to the user...  And this is based on whether tbl1 was
   ## one thing or another.
-  if(length(matchRow$xDbs) >1)stop("mkeys has failed to limit choices to 1.")
+  if(length(matchRow$xDbs) >1L)
+      stop("failed to limit choices to 1")
   if(key=="tbl1"){
     if(grepl(tbl1,matchRow$xDbs)){
       ans <- as.character(matchRow$xKeys)
@@ -171,8 +141,8 @@ setMethod("keys", "OrganismDb",
 
 ## helper for getting all cols by all nodes
 .colsByNodes <- function(x){
-  gr <- OrganismDbi:::dbGraph(x)
-  allCols <- lapply(nodes(gr), function(elt) cols(OrganismDbi:::.makeReal(elt)))
+  gr <- dbGraph(x)
+  allCols <- lapply(nodes(gr), function(elt) cols(.makeReal(elt)))
   names(allCols) <- nodes(gr)
   allCols
 }
@@ -184,12 +154,11 @@ setMethod("keys", "OrganismDb",
 
 ## helper to get the subgraph
 .getRelevantSubgraph <- function(x, cols, keys, keytype){
-  gr <- OrganismDbi:::dbGraph(x)
+  gr <- dbGraph(x)
   allCols <- .colsByNodes(x)
-  inSubgraph = sapply(allCols,
+  inSubgraph <- sapply(allCols,
     function(cols, keys) any(keys %in% cols),  union(keytype, cols))
-  subgr = subGraph(names(inSubgraph)[inSubgraph], gr)
-  subgr
+  subGraph(names(inSubgraph)[inSubgraph], gr)
 }
 ## kt <- "ENTREZID"
 ## cls = c("GOID" ,  "SYMBOL", "TXNAME")
@@ -201,9 +170,12 @@ setMethod("keys", "OrganismDb",
 
 ## I think this is meant to be an lapply
 .getForeignKeys <- function(x, subgr){
-  fKeys = lapply(strsplit(edgeNames(subgr), "~"),
+
+  fKeys <- lapply(strsplit(edgeNames(subgr), "~"),
     function(tables, x, key)
-    OrganismDbi:::.mkeys(x, tables[[1]], tables[[2]], "both"), x)
+      .mkeys(x, tables[[1]], tables[[2]], "both"),
+    x)
+
   unlist(fKeys, use.names=FALSE)
 }
 ## fKeys <- .getForeignKeys(x, subgr)
@@ -240,13 +212,13 @@ setMethod("keys", "OrganismDb",
 ## ## select 
 .getSelects <- function(x, keytype, keys, needCols, visitNodes){
   ## set up an empty list with names that match what we want to fill...
-  selected = setNames(
+  selected <- setNames(
     vector("list", length(visitNodes)),
     names(visitNodes))
   ## in 1st case we only need the name
-  node1 = names(visitNodes)[[1]]
-  selected[[node1]] =
-    select(OrganismDbi:::.makeReal(node1),
+  node1 <- names(visitNodes)[[1]]
+  selected[[node1]] <- 
+    select(.makeReal(node1),
            keys=keys,
            cols=needCols[[node1]],
            keytype=keytype)
@@ -254,13 +226,13 @@ setMethod("keys", "OrganismDb",
   otherNodes <- visitNodes[-1] 
   for (i in seq_len(length(otherNodes))) {
     nodeName <- names(otherNodes)[i]
-    fromNode = otherNodes[i] 
-    fromKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl1")
-    fromKeys = unique(selected[[fromNode]][[fromKey]])
-    fromKeys = fromKeys[!is.na(fromKeys)]
-    toKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl2")
-    selected[[nodeName]] =
-      select(OrganismDbi:::.makeReal(nodeName),
+    fromNode <- otherNodes[i] 
+    fromKey <- .mkeys(x, fromNode, nodeName, "tbl1")
+    fromKeys <- unique(selected[[fromNode]][[fromKey]])
+    fromKeys <- fromKeys[!is.na(fromKeys)]
+    toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
+    selected[[nodeName]] <- 
+      select(.makeReal(nodeName),
              keys=fromKeys,
              cols=needCols[[nodeName]],
              keytype=toKey)
@@ -273,44 +245,40 @@ setMethod("keys", "OrganismDb",
 ## new version of .mergeSelectResults
 ## ## merge
 .mergeSelectResults <- function(x, selected, visitNodes){
-  final = selected[[1]]
+  final <- selected[[1]]
   otherNodes <- visitNodes[-1] 
   for (i in seq_len(length(otherNodes))) {
     nodeName <- names(otherNodes)[i]
-    fromNode = otherNodes[i] 
-    fromKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl1")
-    toKey = OrganismDbi:::.mkeys(x, fromNode, nodeName, "tbl2")
-    final = merge(final, selected[[nodeName]],
-                  by.x=fromKey, by.y=toKey, all=TRUE)
+    fromNode <- otherNodes[i] 
+    fromKey <- .mkeys(x, fromNode, nodeName, "tbl1")
+    toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
+    final <- merge(final, selected[[nodeName]],
+                   by.x=fromKey, by.y=toKey, all=TRUE)
   }
   final
 }
 ## res <- .mergeSelectResults(selected, visitNodes)
 
-
-
-
-
 .select <- function(x, keys, cols, keytype){
   ## if asked for what they have, just return that.
-  if(all(cols %in% keytype)  && length(cols)==1){
+  if(all(cols %in% keytype)  && length(cols)==1L){
     res <- data.frame(keys=keys)
     colnames(res) <- cols
     return(res)
   }
   
-  ## Preserve original cols (we will be adding some to get our results along
-  ## the way 
+  ## Preserve original cols (we will be adding some to get our results
+  ## along the way
   oriCols <- cols  
 
   ## New methods make more use of graph objects.
   allCols <- .colsByNodes(x)
   subgr <- .getRelevantSubgraph(x, cols=cols, keys, keytype=keytype)
-  root = .lookupDbNameFromKeytype(x, keytype)
+  root <- .lookupDbNameFromKeytype(x, keytype)
   fKeys <- .getForeignKeys(x, subgr)
-  selectCols = unique(c(keytype, fKeys, cols))
+  selectCols <- unique(c(keytype, fKeys, cols))
   needCols <- .getColsByNodes(subgr, selectCols, allCols)
-  visitNodes = .bfs(subgr, root)
+  visitNodes <- .bfs(subgr, root)
   selected <- .getSelects(x, keytype,keys,needCols, visitNodes)
   res <- .mergeSelectResults(x, selected, visitNodes)
   
@@ -328,24 +296,12 @@ setMethod("keys", "OrganismDb",
   res <- res[,!(colnames(res) %in% blackList)]
 
   ## Then call code to clean up, reorder the rows (and add NA rows as needed).
-  if(dim(res)[1]>0){
-    res <- AnnotationDbi:::.resort(tab=res, keys=keys, jointype=keytype,
+  if(nrow(res) > 0L){
+    res <- AnnotationDbi:::.resort(tab=res, keys=keys,
+                                   jointype=keytype,
                                    reqCols=colnames(res))
-
   }
   unique(res)
 }
 
-
-
-
-setMethod("select", "OrganismDb",
-    function(x, keys, cols, keytype) {
-          .select(x, keys, cols, keytype)
-        }
-)
-
-
-
-
-
+setMethod("select", "OrganismDb", .select)

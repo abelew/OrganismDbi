@@ -1,9 +1,9 @@
 \name{@PKGNAME@}
 \docType{data}
 \alias{@PKGNAME@}
-\title{Annotation package that collates together several annotation resources.}
-\description{This data object was automatically created by the @AUTHOR@. It
-  represents a collection of annotation packages that can be use as a
+\title{Annotation package that collates several annotation resources.}
+\description{This data object was automatically created by @AUTHOR@. It
+  represents a collection of annotation packages that can be used as a
   single object named @PKGNAME@.  This object can be used with the
   standard four accessor method for all AnnotationDbi objects.  Namely:
   \code{cols}, \code{keytype}, \code{keys} and \code{select}.}

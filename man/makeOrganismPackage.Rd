@@ -25,7 +25,7 @@ makeOrganismPackage (pkgname,
   \item{pkgname}{What is the desired package name.  Traditionally, this
   should be the genus and species separated by a ".".  So as an example,
   "Homo.sapiens" would be the package name for human}
-  \item{graphData}{A data frame with 4 colums and an unspecified
+  \item{graphData}{A data frame with 4 columns and an unspecified
   number of rows.  Each row of this data.frame represents one pair of
   packages and how they relate to each other.  The 1st two columns of a row
   represent the two packages, and the last two columns are the cols that
@@ -46,7 +46,7 @@ makeOrganismPackage (pkgname,
   depend on existing annotation packages and which will load a special
   \code{annotationOrganismDb} object that will allow proper dispatch of
   special select methods.  These methods will allow the user to easily
-  query across multiple annotationd resources via information contained
+  query across multiple annotation resources via information contained
   by the \code{annotationOrganismDb} object.
 }
 

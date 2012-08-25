@@ -1,2 +1,1 @@
-require("OrganismDbi") || stop("unable to load OrganismDbi package")
-OrganismDbi:::.test()
+BiocGenerics:::testPackage("OrganismDbi")

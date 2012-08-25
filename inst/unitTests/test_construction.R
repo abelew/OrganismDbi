@@ -1,11 +1,8 @@
-xDbs <- c("GO.db","org.Hs.eg.db")
-yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
-xKeys <- c("GOID","ENTREZID")
-yKeys <- c("GO","GENEID")
-gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
-require("RUnit")
+gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
+                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
+                 xKeys=c("GOID","ENTREZID"),
+                 yKeys= c("GO","GENEID")))
 require("Homo.sapiens")
-
 
 test_extractPkgsAndCols <- function(){
   res <- OrganismDbi:::.extractPkgsAndCols(gd)

@@ -5,8 +5,6 @@ require("Homo.sapiens")
 x <- Homo.sapiens
 require("Rattus.norvegicus") 
 r <- Rattus.norvegicus 
-require("RUnit")
-
 
 test_keytypes <- function(){
   res <- OrganismDbi:::.keytypes(x)
@@ -45,25 +43,23 @@ test_lookupDbFromKeytype <- function(){
   checkTrue(length(res) > 42000)
 }
 
-
-
 test_mkeys <- function(){
-  tbl1 = "TxDb.Hsapiens.UCSC.hg19.knownGene"
-  tbl2 = "org.Hs.eg.db"
+  tbl1 <- "TxDb.Hsapiens.UCSC.hg19.knownGene"
+  tbl2 <- "org.Hs.eg.db"
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl1")
   checkTrue("GENEID"==res)
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl2")
   checkTrue("ENTREZID"==res)
 
-  tbl1 = "GO.db"
-  tbl2 = "org.Hs.eg.db"
+  tbl1 <- "GO.db"
+  tbl2 <- "org.Hs.eg.db"
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl1")
   checkTrue("GOID"==res)
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="tbl2")
   checkTrue("GO"==res)
 
-  tbl1 = "GO.db"
-  tbl2 = "org.Hs.eg.db"
+  tbl1 <- "GO.db"
+  tbl2 <- "org.Hs.eg.db"
   res <- OrganismDbi:::.mkeys(x, tbl1, tbl2, key="both")
   res2 <- c("GOID","GO")
   names(res2) <- c("GO.db","org.Hs.eg.db")
@@ -81,11 +77,11 @@ test_getSelects <- function(){
   
   subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
                                               keytype=keytype)
-  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  root <- OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
   fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
-  selectCols = unique(c(keytype, fKeys, cols))
+  selectCols <- unique(c(keytype, fKeys, cols))
   needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
-  visitNodes = OrganismDbi:::.bfs(subgr, root)
+  visitNodes <- OrganismDbi:::.bfs(subgr, root)
   
   res <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
  
@@ -102,11 +98,11 @@ test_getSelects <- function(){
   
   subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
                                               keytype=keytype)
-  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  root <- OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
   fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
-  selectCols = unique(c(keytype, fKeys, cols))
+  selectCols <- unique(c(keytype, fKeys, cols))
   needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
-  visitNodes = OrganismDbi:::.bfs(subgr, root)
+  visitNodes <- OrganismDbi:::.bfs(subgr, root)
 
   res <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
 
@@ -118,17 +114,17 @@ test_getSelects <- function(){
 
   
   ## Then there is this case (start in the middle case)
-  cols = c("GOID" ,  "SYMBOL", "TXNAME")
+  cols <- c("GOID" ,  "SYMBOL", "TXNAME")
   keytype <- "ENTREZID"
   keys <- head(keys(x, "ENTREZID"))
   
   subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
                                               keytype=keytype)
-  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  root <- OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
   fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
-  selectCols = unique(c(keytype, fKeys, cols))
+  selectCols <- unique(c(keytype, fKeys, cols))
   needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
-  visitNodes = OrganismDbi:::.bfs(subgr, root)
+  visitNodes <- OrganismDbi:::.bfs(subgr, root)
 
   res <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
 
@@ -143,16 +139,16 @@ test_getSelects <- function(){
 test_mergeSelectResults <- function(){
   allCols <- OrganismDbi:::.colsByNodes(x)
 
-  cols = c("GOID" ,  "SYMBOL", "TXNAME")
+  cols <- c("GOID" ,  "SYMBOL", "TXNAME")
   keytype <- "ENTREZID"
   keys <- head(keys(x, "ENTREZID"))
   subgr <- OrganismDbi:::.getRelevantSubgraph(x, cols=cols, keys,
                                               keytype=keytype)
-  root = OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
+  root <- OrganismDbi:::.lookupDbNameFromKeytype(x, keytype)
   fKeys <- OrganismDbi:::.getForeignKeys(x, subgr)
-  selectCols = unique(c(keytype, fKeys, cols))
+  selectCols <- unique(c(keytype, fKeys, cols))
   needCols <- OrganismDbi:::.getColsByNodes(subgr, selectCols, allCols)
-  visitNodes = OrganismDbi:::.bfs(subgr, root)
+  visitNodes <- OrganismDbi:::.bfs(subgr, root)
   selected <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
   res <- OrganismDbi:::.mergeSelectResults(x, selected, visitNodes)
   
@@ -242,7 +238,7 @@ test_select <- function(){
 
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
-  cls = c("GOID" ,  "SYMBOL", "TXNAME")
+  cls <- c("GOID" ,  "SYMBOL", "TXNAME")
   res <- select(Homo.sapiens, keys, cls, keytype)
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==6)
@@ -251,7 +247,7 @@ test_select <- function(){
   checkTrue("SYMBOL" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res)) 
   
-  cls = c("ALIAS", "ORYZA_SATIVA")
+  cls <- c("ALIAS", "ORYZA_SATIVA")
   res <- select(Homo.sapiens, keys, cls, keytype)
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==3)
@@ -295,8 +291,8 @@ test_rattus <- function(){
   checkTrue("TXNAME" %in% colnames(res)) 
 
   ## now test different keytype
-  k = head(keys(r, keytype="ENSEMBL"))
-  keytype="ENSEMBL"
+  k <- head(keys(r, keytype="ENSEMBL"))
+  keytype <- "ENSEMBL"
   cls <- c("GO","ALIAS","CHR","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
@@ -309,8 +305,8 @@ test_rattus <- function(){
   checkTrue("TXNAME" %in% colnames(res)) 
 
   ## now test key that starts us from TxDb
-  k = head(keys(r, keytype="TXNAME"))
-  keytype="TXNAME"
+  k <- head(keys(r, keytype="TXNAME"))
+  keytype <- "TXNAME"
   cls <- c("GO","ALIAS","CHR") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
@@ -322,9 +318,9 @@ test_rattus <- function(){
   checkTrue("ALIAS" %in% colnames(res)) 
 
   ## now test key that starts us from Go
-  ## TODO: A cleanup bug??? = Row of NAs in 1st line
-  k = head(keys(r, keytype="GOID"))
-  keytype="GOID"
+  ## TODO: A cleanup bug??? <- Row of NAs in 1st line
+  k <- head(keys(r, keytype="GOID"))
+  keytype <- "GOID"
   cls <- c("GOID","ALIAS","CHR") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
@@ -336,9 +332,9 @@ test_rattus <- function(){
 
 
   ## what happens when we use a key from the middle?
-  k = keys=head(keys(r,keytype="ENTREZID"))
-  cls = c("GOID","SYMBOL","TXNAME")
-  keytype = "ENTREZID"
+  k <- keys <- head(keys(r,keytype="ENTREZID"))
+  cls <- c("GOID","SYMBOL","TXNAME")
+  keytype <- "ENTREZID"
   res <- OrganismDbi:::.select(r, k, cls, keytype)
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==6) 
