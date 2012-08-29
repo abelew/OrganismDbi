@@ -125,9 +125,9 @@ select method depends on the values from the previous three methods to
 specify what it will extract.  Here is an example that will extract,
 UCSC transcript names, and gene symbols using Entrez Gene IDs as keys.
 
-<<keys>>=
-k <- head(keys(Homo.sapiens, keytype="ENTREZID"))
-select(Homo.sapiens, keys=k, cols=c(), keytype="ENTREZID")
+<<select>>=
+k <- head(keys(Homo.sapiens, keytype="ENTREZID"),n=3)
+select(Homo.sapiens, keys=k, cols=c("TXNAME","SYMBOL"), keytype="ENTREZID")
 @
 
 
