@@ -61,16 +61,18 @@ makeOrganismPackage (pkgname,
 }
 
 \examples{
-\dontrun{
 ## set up the data.frame with the relevant relationships:
 gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
                  yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
                  xKeys=c("GOID","ENTREZID"),
                  yKeys= c("GO","GENEID"))
 
-## makes an Organism package for human called Homo.sapiens
+## sets up a temporary directory for this example
+## (users won't need to do this step)
 destination <- tempfile()
 dir.create(destination)
+
+## makes an Organism package for human called Homo.sapiens
 makeOrganismPackage(pkgname = "Homo.sapiens",
   graphData = gd,
   organism = "Homo sapiens",
@@ -79,7 +81,6 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
   author = "Bioconductor Core Team",
   destDir = destination,
   license = "Artistic-2.0")
-}
 }
 
 

@@ -199,7 +199,7 @@ Once this is finished, we just have to call the
 \Rfunction{makeOrganismPackage} function to finish the task.
 
 
-<<makeOrganismPackage>>=
+<<makeOrganismPackage, eval=FALSE>>=
 destination <- tempfile()
 dir.create(destination)
 makeOrganismPackage(pkgname = "Homo.sapiens",
