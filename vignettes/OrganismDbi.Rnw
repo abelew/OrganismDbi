@@ -198,24 +198,17 @@ foreign keys.
 Once this is finished, we just have to call the
 \Rfunction{makeOrganismPackage} function to finish the task.
 
-<<TempDir, echo=FALSE, results=hide>>=
-tmpout = tempdir()
-@ 
 
 <<makeOrganismPackage>>=
 makeOrganismPackage(pkgname = "Homo.sapiens",
   graphData = gd,
   organism = "Homo sapiens",
   version = "1.0.0",
-  maintainer = "Package Maintainer <maintainer@somewhere.org>",
+  maintainer = "Package Maintainer<maintainer@somewhere.org>",
   author = "Some Body",
-  destDir = tmpout,
+  destDir = tmpdir(),
   license = "Artistic-2.0")
 @ 
-
-<<cleanup, echo=FALSE, results=hide>>=
-file.rename(file.path(tmpout, "Homo.sapiens"),file.path(tmpout, "foo.db"))
-@
 
 
 \Rfunction{makeOrganismPackage} will then generate a lightweight
