@@ -246,14 +246,16 @@ test_select <- function(){
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("SYMBOL" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res)) 
-  
-  cls <- c("ALIAS", "ORYZA_SATIVA")
-  res <- select(Homo.sapiens, keys, cls, keytype)
-  checkTrue(dim(res)[1] >0)
-  checkTrue(dim(res)[2]==3)
-  checkTrue("ENTREZID" %in% colnames(res)) 
-  checkTrue("ALIAS" %in% colnames(res)) 
-  checkTrue("ORYZA_SATIVA" %in% colnames(res))  
+
+##   ## This tests for fields that are not in the final Homo.sapiens pkg
+##   ## I am keeping it because it may be of use if I decide to add hom pkgs
+##   cls <- c("ALIAS", "ORYZA_SATIVA")
+##   res <- select(Homo.sapiens, keys, cls, keytype)
+##   checkTrue(dim(res)[1] >0)
+##   checkTrue(dim(res)[2]==3)
+##   checkTrue("ENTREZID" %in% colnames(res)) 
+##   checkTrue("ALIAS" %in% colnames(res)) 
+##   checkTrue("ORYZA_SATIVA" %in% colnames(res))  
 }
 
 

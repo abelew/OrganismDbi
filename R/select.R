@@ -107,29 +107,31 @@ setMethod("keys", "OrganismDb", .keys)
   fin <- res | res2 
   resRowIdx <- fin[,1] & fin[,2]
   matchRow <- kf[resRowIdx,]
-  if(dim(matchRow)[1]<1L)
+  if(length(matchRow) == 0L)
       stop("no relationship found for ",tbl1," and ",tbl2)
 
   ## now the tricky part is that in returning the keys I have to get the
   ## correct keys back to the user...  And this is based on whether tbl1 was
   ## one thing or another.
-  if(length(matchRow$xDbs) >1L)
+  if(length(matchRow[["xDbs"]]) >1L)
       stop("failed to limit choices to 1")
   if(key=="tbl1"){
-    if(grepl(tbl1,matchRow$xDbs)){
-      ans <- as.character(matchRow$xKeys)
+    if(grepl(tbl1,matchRow[["xDbs"]])){
+      ans <- as.character(matchRow[["xKeys"]])
     }else{ ## then its reversed of the order in the row...
-      ans <- as.character(matchRow$yKeys)
+      ans <- as.character(matchRow[["yKeys"]])
     }
   }else if(key=="tbl2"){
-    if(grepl(tbl2,matchRow$yDbs)){ 
-      ans <- as.character(matchRow$yKeys)
+    if(grepl(tbl2,matchRow[["yDbs"]])){ 
+      ans <- as.character(matchRow[["yKeys"]])
     }else{ ## and the reverse case
-      ans <- as.character(matchRow$xKeys)
+      ans <- as.character(matchRow[["xKeys"]])
     }
   }else if(key=="both"){
-    ans <- c(as.character(matchRow$xKeys),as.character(matchRow$yKeys))
-    names(ans) <- c(as.character(matchRow$xDbs),as.character(matchRow$yDbs))
+    ans <- c(as.character(matchRow[["xKeys"]]),
+             as.character(matchRow[["yKeys"]]))
+    names(ans) <- c(as.character(matchRow[["xDbs"]]),
+                    as.character(matchRow[["yDbs"]]))
     ## When we say "both" we still want keys returned in same order as
     ## original packages.  IOW, if tbl1 goes with key 1, then we should list
     ## key 1 1st in the result...
