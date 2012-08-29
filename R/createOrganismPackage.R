@@ -85,7 +85,8 @@ makeOrganismPackage <- function(pkgname,
    ## other stuff) in /data as a serialized R file.
    ## There will already be a /data dir in the template
    ## So just save to it:
-   save(gd, file=file.path(destDir,pkgname,"data","graphData.Rda"))
+   graphData <- gd
+   save(graphData, file=file.path(destDir,pkgname,"data","graphData.Rda"))
 }
 
 
