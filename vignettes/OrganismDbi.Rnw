@@ -172,14 +172,17 @@ we could make Homo.sapiens, such that it allowed access to
 \Rpackage{org.Hs.eg.db}, \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}
 and \Rpackage{GO.db}.
 
-The 1st thing that we do is set up a data frame that expresses the way
-that these different packages relate to each other.  To do this, we
-make an \Robject{data.frame} that contains 4 columns.  The 1st two
-columns indicate the package names, and the 2nd two columns give the
-keys that connect each row/pair of packages together.  Please note
-that the key names in this \Robject{data.frame} are the same strings
-that are returned by the \Rmethod{cols} method for the individual
-packages.
+The 1st thing that we need to do is set up a data frame that expresses
+the way that these different packages relate to each other.  To do
+this, we make an \Robject{data.frame} that contains 4 columns.  The
+1st two columns indicate the package names, and the 2nd two columns
+give the keys that connect each row/pair of packages together.  Each
+row of this data frame indicates how two of the packages relate to
+each other.  Please note that the key names in the last two columns of
+htis \Robject{data.frame} are the same strings that are returned by
+the \Rmethod{cols} method for the individual packages.  Here is an
+example that shows how \Rpackage{GO.db}, \Rpackage{org.Hs.eg.db} and
+\Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene} all relate to each other.
 
 <<setupColData>>=
 gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
@@ -208,7 +211,6 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
   author = "Some Body",
   destDir = tmpout,
   license = "Artistic-2.0")
-}
 @ 
 
 <<cleanup, echo=FALSE, results=hide>>=
