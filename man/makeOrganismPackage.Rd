@@ -63,11 +63,10 @@ makeOrganismPackage (pkgname,
 \examples{
 \dontrun{
 ## set up the data.frame with the relevant relationships:
-xDbs <- c("GO.db","org.Hs.eg.db")
-yDbs <- c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene")
-xKeys <- c("GOID","ENTREZID")
-yKeys <- c("GO","GENEID")
-gd <- data.frame(cbind(xDbs, yDbs, xKeys, yKeys))
+gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
+                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
+                 xKeys=c("GOID","ENTREZID"),
+                 yKeys= c("GO","GENEID"))
 
 ## makes an Organism package for human called Homo.sapiens
 makeOrganismPackage(pkgname = "Homo.sapiens",

@@ -35,7 +35,7 @@
 ## require(GO.db) etc.
 OrganismDb <-
     setClass("OrganismDb",
-             representation(keys="data.frame",
+             representation(keys="matrix",
                             graph="graphNEL")
 )
 
@@ -56,7 +56,7 @@ OrganismDb <-
 
 ## helper for extracting pkgs and cols as a vector
 .extractPkgsAndCols <- function(gd){
-  gd <- as.matrix(gd)
+  gd <- gd
   setNames(as.vector(gd[,3:4]), as.vector(gd[,1:2]))
 }
 
@@ -65,7 +65,7 @@ OrganismDb <-
 OrganismDb <- function(dbType, graphData, ...){
   ## make graphData into a graphNEL
   ## FIXME: validate graphData -- required columns?
-  gd <- as.matrix(graphData)    
+  gd <- graphData    
   graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
   
   ## We should try to call require on all the supporting packages.
@@ -126,7 +126,7 @@ OrganismDb <- function(dbType, graphData, ...){
 ## IOW, there will be a call to this in zzz.R
 .loadOrganismDbiPkg <- function(pkgname,
                                 graphData){
-  obj <- OrganismDbi(pkgname, graphData)
+  obj <- OrganismDb(pkgname, graphData)
   ns <- asNamespace(pkgname)
   assign(pkgname, obj, envir=ns)
   namespaceExport(ns, pkgname)

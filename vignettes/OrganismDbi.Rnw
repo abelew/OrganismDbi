@@ -1,0 +1,229 @@
+%\VignetteIndexEntry{OrganismDbi: A meta framework for Annotation Packages}
+%\VignetteDepends{Homo.sapiens}
+
+\documentclass[11pt]{article}
+
+\usepackage{Sweave}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{graphics}
+\usepackage{latexsym, amsmath, amssymb}
+\usepackage{authblk}
+\usepackage[colorlinks=true, linkcolor=Blue, urlcolor=Blue,
+  citecolor=Blue]{hyperref}
+
+%% Simple macros
+
+\newcommand{\code}[1]{{\texttt{#1}}}
+\newcommand{\file}[1]{{\texttt{#1}}}
+
+\newcommand{\software}[1]{\textsl{#1}}
+\newcommand\R{\textsl{R}}
+\newcommand\Bioconductor{\textsl{Bioconductor}}
+\newcommand\Rpackage[1]{{\textsl{#1}\index{#1 (package)}}}
+\newcommand\Biocpkg[1]{%
+  {\href{http://bioconductor.org/packages/devel/bioc/html/#1.html}%
+    {\textsl{#1}}}%
+  \index{#1 (package)}}
+\newcommand\Rpkg[1]{%
+  {\href{http://cran.fhcrc.org/web/devel/#1/index.html}%
+    {\textsl{#1}}}%
+  \index{#1 (package)}}
+\newcommand\Biocdatapkg[1]{%
+  {\href{http://bioconductor.org/packages/devel/data/experiment/html/#1.html}%
+    {\textsl{#1}}}%
+  \index{#1 (package)}}
+\newcommand\Robject[1]{{\small\texttt{#1}}}
+\newcommand\Rclass[1]{{\textit{#1}\index{#1 (class)}}}
+\newcommand\Rfunction[1]{{{\small\texttt{#1}}\index{#1 (function)}}}
+\newcommand\Rmethod[1]{{\texttt{#1}}}
+\newcommand\Rfunarg[1]{{\small\texttt{#1}}}
+\newcommand\Rcode[1]{{\small\texttt{#1}}}
+
+%% Question, Exercise, Solution
+\usepackage{theorem}
+\theoremstyle{break}
+\newtheorem{Ext}{Exercise}
+\newtheorem{Question}{Question}
+
+
+\newenvironment{Exercise}{
+  \renewcommand{\labelenumi}{\alph{enumi}.}\begin{Ext}%
+}{\end{Ext}}
+\newenvironment{Solution}{%
+  \noindent\textbf{Solution:}\renewcommand{\labelenumi}{\alph{enumi}.}%
+}{\bigskip}
+
+
+
+
+\title{OrganismDbi: A meta framework for Annotation Packages}
+\author{Marc Carlson}
+
+\SweaveOpts{keep.source=TRUE}
+\begin{document}
+
+\maketitle
+
+
+OrganismDbi is a software package that helps tie together different
+annotation resources.  It is expected that users may have previously
+made seen packages like \Rpackage{org.Hs.eg.db} and
+\Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}.  Packages like these two
+are very different and contain very different kinds of information,
+but are still about the same organism: Homo sapiens.  The
+\Rpackage{OrganismDbi} package allows us to combine resources like
+these together into a single package resource, which can represent ALL
+of these resources at the same time.  An example of this is the
+\Rpackage{homo.sapiens} package, which combines access to the two
+resources above along with others.
+
+This is made possible because the packages that are represented by
+\Rpackage{homo.sapiens} are related to each other via foreign keys.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=.6\textwidth]{databaseTypes.pdf}
+\caption{Relationships between Annotation packages}
+\label{fig:dbtypes}
+\end{figure}
+
+
+
+\section{Getting started with OrganismDbi}
+
+Usage of a package like this has been deliberately kept very simple.
+The methods supported are the same ones that work for all the packages
+based on \Rclass{AnnotationDb} objects.  The methods that can be
+applied to these new packages are \Rmethod{cols}, \Rmethod{keys},
+\Rmethod{keytypes} and \Rmethod{select}.
+
+So to learn which kinds of data can be retrieved from a package like
+this we would simply load the package and then call the \Rmethod{cols}
+method.
+
+<<cols>>=
+library(Homo.sapiens)
+cols(Homo.sapiens)
+@
+
+To learn which of those kinds of data can be used as keys to extract
+data, we use the \Rmethod{keytypes} method.
+
+<<keys>>=
+keytypes(Homo.sapiens)
+@
+
+To extract specific keys, we need to use the \Rmethod{keys} method,
+and also provide it a legitimate keytype:
+
+<<keys>>=
+head(keys(Homo.sapiens, keytype="ENTREZID"))
+@
+
+And to extract data, we can use the \Rmethod{select} method.  The
+select method depends on the values from the previous three methods to
+specify what it will extract.  Here is an example that will extract,
+UCSC transcript names, and gene symbols using Entrez Gene IDs as keys.
+
+<<keys>>=
+k <- head(keys(Homo.sapiens, keytype="ENTREZID"))
+select(Homo.sapiens, keys=k, cols=c(), keytype="ENTREZID")
+@
+
+
+
+
+\section{Making your own OrganismDbi packages}
+
+So in the preceding section you can see that using an
+\Rpackage{OrganismDbi} package behaves very similarly to how you might
+use a \Robject{TranscriptDb} or an \Robject{OrgDb} package.  The same
+methods are defined, and the behave similarly except that they now
+have access to much more data than before.  But before you make your
+own OrganismDbi package you need to understand that there are few
+logical limitations for what can be included in this kind of package.
+
+\begin{itemize}
+  
+\item The 1st limitation is that all the annotation resources in question
+must have implemented the four methods described in the preceding
+section (\Rmethod{cols}, \Rmethod{keys}, \Rmethod{keytypes} and
+\Rmethod{select}).
+
+\item The 2nd limitation is that you cannot have more than one example
+of each field that can be retrieved from each type of package that is
+included.  So basically, all values returned by \Rmethod{cols} must be
+unique across ALL of the supporting packages.
+
+\item The 3rd limitation is that you cannot have more than one example
+of each object type represented.  So you cannot have two org packages
+since that would introduce two \Robject{OrgDb} objects.
+
+\item And the 4th limitation is that you cannot have cycles in the
+graph.  What this means is that there will be a graph that represents
+the relationships between the different object types in your package,
+and this graph must not present more than one pathway between any two
+nodes/objects.
+
+\end{itemize}
+
+With these limitations in mind, lets set up an example.  Lets show how
+we could make Homo.sapiens, such that it allowed access to
+\Rpackage{org.Hs.eg.db}, \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}
+and \Rpackage{GO.db}.
+
+The 1st thing that we do is set up a data frame that expresses the way
+that these different packages relate to each other.  To do this, we
+make an \Robject{data.frame} that contains 4 columns.  The 1st two
+columns indicate the package names, and the 2nd two columns give the
+keys that connect each row/pair of packages together.  Please note
+that the key names in this \Robject{data.frame} are the same strings
+that are returned by the \Rmethod{cols} method for the individual
+packages.
+
+<<setupColData>>=
+gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
+                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
+                 xKeys=c("GOID","ENTREZID"),
+                 yKeys= c("GO","GENEID"))
+@ 
+
+So this \Robject{data.frame} indicates both which packages are
+connected to each other, and also what these connections are using for
+foreign keys.
+
+Once this is finished, we just have to call the
+\Rfunction{makeOrganismPackage} function to finish the task.
+
+<<TempDir, echo=FALSE, results=hide>>=
+tmpout = tempdir()
+@ 
+
+<<makeOrganismPackage>>=
+makeOrganismPackage(pkgname = "Homo.sapiens",
+  graphData = gd,
+  organism = "Homo sapiens",
+  version = "1.0.0",
+  maintainer = "Package Maintainer <maintainer@somewhere.org>",
+  author = "Some Body",
+  destDir = tmpout,
+  license = "Artistic-2.0")
+}
+@ 
+
+<<cleanup, echo=FALSE, results=hide>>=
+file.rename(file.path(tmpout, "Homo.sapiens"),file.path(tmpout, "foo.db"))
+@
+
+
+\Rfunction{makeOrganismPackage} will then generate a lightweight
+package that you can install.  This package will not contain all the
+data that it refers to, but will instead depend on the packages that
+were referred to in the \Robject{data.frame}.
+
+
+\end{document}
+
+
+
+
