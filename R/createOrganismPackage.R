@@ -35,7 +35,7 @@ makeOrganismPackage <- function(pkgname,
                                 version,
                                 maintainer,
                                 author,
-                                destDir=".",
+                                destDir,
                                 license="Artistic-2.0"){
    ## there should only be one template
    template_path <- system.file("OrgPkg-template",package="OrganismDbi")

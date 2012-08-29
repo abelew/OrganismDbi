@@ -200,13 +200,15 @@ Once this is finished, we just have to call the
 
 
 <<makeOrganismPackage>>=
+destination <- tempfile()
+dir.create(destination)
 makeOrganismPackage(pkgname = "Homo.sapiens",
   graphData = gd,
   organism = "Homo sapiens",
   version = "1.0.0",
   maintainer = "Package Maintainer<maintainer@somewhere.org>",
   author = "Some Body",
-  destDir = tmpdir(),
+  destDir = destination,
   license = "Artistic-2.0")
 @ 
 

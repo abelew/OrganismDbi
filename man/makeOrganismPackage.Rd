@@ -18,7 +18,7 @@ makeOrganismPackage (pkgname,
                      version,
                      maintainer,
                      author,
-                     destDir=".",
+                     destDir,
                      license="Artistic-2.0")
 }
 \arguments{
@@ -69,13 +69,15 @@ gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
                  yKeys= c("GO","GENEID"))
 
 ## makes an Organism package for human called Homo.sapiens
+destination <- tempfile()
+dir.create(destination)
 makeOrganismPackage(pkgname = "Homo.sapiens",
   graphData = gd,
   organism = "Homo sapiens",
   version = "1.0.0",
   maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
   author = "Bioconductor Core Team",
-  destDir = ".",
+  destDir = destination,
   license = "Artistic-2.0")
 }
 }
