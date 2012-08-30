@@ -86,6 +86,9 @@ makeOrganismPackage <- function(pkgname,
    ## There will already be a /data dir in the template
    ## So just save to it:
    graphData <- gd
+   ## create data dir (because R CMD build removes empty dirs)
+   ## And then save the data there.
+   dir.create(file.path(destDir,pkgname,"data"))
    save(graphData, file=file.path(destDir,pkgname,"data","graphData.Rda"))
 }
 
