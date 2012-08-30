@@ -69,8 +69,10 @@ gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
 
 ## sets up a temporary directory for this example
 ## (users won't need to do this step)
-destination <- tempfile()
-dir.create(destination)
+# destination <- tempfile()
+# dir.create(destination)
+
+destination <- getwd()
 
 ## makes an Organism package for human called Homo.sapiens
 makeOrganismPackage(pkgname = "Homo.sapiens",
