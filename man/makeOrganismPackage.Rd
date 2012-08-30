@@ -61,6 +61,7 @@ makeOrganismPackage (pkgname,
 }
 
 \examples{
+\dontrun{
 ## set up the data.frame with the relevant relationships:
 gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
                  yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
@@ -83,6 +84,8 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
   author = "Bioconductor Core Team",
   destDir = destination,
   license = "Artistic-2.0")
+
+}
 }
 
 
