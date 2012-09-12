@@ -1,18 +1,20 @@
-gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
-                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
-                 xKeys=c("GOID","ENTREZID"),
-                 yKeys= c("GO","GENEID"))
+gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
+           join2 = c(org.Hs.eg.db="ENTREZID",
+                     TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID"))
+
 require("Homo.sapiens")
 
 test_extractPkgsAndCols <- function(){
-  res <- OrganismDbi:::.extractPkgsAndCols(gd)
+  gdm <- OrganismDbi:::.mungeGraphData(gd)
+  res <- OrganismDbi:::.extractPkgsAndCols(gdm)
   checkEquals(names(res), c("GO.db","org.Hs.eg.db","org.Hs.eg.db",
                           "TxDb.Hsapiens.UCSC.hg19.knownGene"))
   checkTrue(all(res %in%  c("GOID","ENTREZID","GO","GENEID")))
 }
 
 test_testKeys <- function(){
-  res <- OrganismDbi:::.extractPkgsAndCols(gd)
+  gdm <- OrganismDbi:::.mungeGraphData(gd)
+  res <- OrganismDbi:::.extractPkgsAndCols(gdm)
   ## the following should not blow up
   OrganismDbi:::.testKeys(res)
 

@@ -163,7 +163,8 @@ since that would introduce two \Robject{OrgDb} objects.
 graph.  What this means is that there will be a graph that represents
 the relationships between the different object types in your package,
 and this graph must not present more than one pathway between any two
-nodes/objects.
+nodes/objects.  This limitation means that you can choose one foreign
+key relationship to connect any two packages in your graph.
 
 \end{itemize}
 
@@ -172,23 +173,22 @@ we could make Homo.sapiens, such that it allowed access to
 \Rpackage{org.Hs.eg.db}, \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene}
 and \Rpackage{GO.db}.
 
-The 1st thing that we need to do is set up a data frame that expresses
-the way that these different packages relate to each other.  To do
-this, we make an \Robject{data.frame} that contains 4 columns.  The
-1st two columns indicate the package names, and the 2nd two columns
-give the keys that connect each row/pair of packages together.  Each
-row of this data frame indicates how two of the packages relate to
-each other.  Please note that the key names in the last two columns of
-htis \Robject{data.frame} are the same strings that are returned by
-the \Rmethod{cols} method for the individual packages.  Here is an
-example that shows how \Rpackage{GO.db}, \Rpackage{org.Hs.eg.db} and
+The 1st thing that we need to do is set up a list that expresses the
+way that these different packages relate to each other.  To do this,
+we make a \Robject{list} that contains short two element long
+character vectors.  Each character vector represents one relationship
+between a pair of packages.  The names of the vectors are the package
+names and the values are the foreign keys.  Please note that the
+foreign key values in these vectors are the same strings that are
+returned by the \Rmethod{cols} method for the individual packages.
+Here is an example that shows how \Rpackage{GO.db},
+\Rpackage{org.Hs.eg.db} and
 \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene} all relate to each other.
 
 <<setupColData>>=
-gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
-                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
-                 xKeys=c("GOID","ENTREZID"),
-                 yKeys= c("GO","GENEID"))
+gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
+           join2 = c(org.Hs.eg.db="ENTREZID",
+                     TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID"))
 @ 
 
 So this \Robject{data.frame} indicates both which packages are
@@ -216,7 +216,11 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
 \Rfunction{makeOrganismPackage} will then generate a lightweight
 package that you can install.  This package will not contain all the
 data that it refers to, but will instead depend on the packages that
-were referred to in the \Robject{data.frame}.
+were referred to in the \Robject{data.frame}.  Because the end result
+will be a package that treats all the data mapped together as a single
+source, the user is encouraged to take extra care to ensure that the
+different packages used are from the same build etc.
+
 
 
 \end{document}

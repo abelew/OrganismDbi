@@ -3,10 +3,9 @@ require(OrganismDbi)
 version = "1.0.0"
 
 ## for human
-gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
-                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
-                 xKeys=c("GOID","ENTREZID"),
-                 yKeys= c("GO","GENEID"))
+gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
+           join2 = c(org.Hs.eg.db="ENTREZID",
+                     TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID"))
 
 makeOrganismPackage(pkgname = "Homo.sapiens",
                     graphData = gd,
@@ -21,10 +20,9 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
 
 
 ## for mouse
-gd <- data.frame(xDbs = c("GO.db","org.Mm.eg.db"),
-                 yDbs = c("org.Mm.eg.db","TxDb.Mmusculus.UCSC.mm10.ensGene"),
-                 xKeys = c("GOID","ENSEMBL"),
-                 yKeys = c("GO","GENEID"))
+gd <- list(join1 = c(GO.db="GOID", org.Mm.eg.db="GO"),
+           join2 = c(org.Mm.eg.db="ENSEMBL",
+                     TxDb.Mmusculus.UCSC.mm10.ensGene="GENEID"))
 
 makeOrganismPackage(pkgname = "Mus.musculus",
                     graphData = gd,
@@ -38,10 +36,9 @@ makeOrganismPackage(pkgname = "Mus.musculus",
 
 
 ## for rat
-gd <- data.frame(xDbs = c("GO.db","org.Rn.eg.db"),
-                 yDbs = c("org.Rn.eg.db","TxDb.Rnorvegicus.UCSC.rn4.ensGene"),
-                 xKeys = c("GOID","ENSEMBL"),
-                 yKeys = c("GO","GENEID"))
+gd <- list(join1 = c(GO.db="GOID", org.Rn.eg.db="GO"),
+           join2 = c(org.Rn.eg.db="ENTREZID",
+                     TxDb.Rnorvegicus.UCSC.rn5.refGene="GENEID"))
 
 makeOrganismPackage(pkgname = "Rattus.norvegicus",
                     graphData = gd,

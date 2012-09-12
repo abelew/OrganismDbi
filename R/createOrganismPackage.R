@@ -8,13 +8,19 @@
   res
 }
 
+## function to allow us to convert a list into the inernally preferred form...
+.mungeGraphData <- function(graphData){
+  pkgs <- sapply(graphData, names)
+  keys <- matrix(unlist(graphData), ncol=2,byrow=TRUE)
+  graphData <- cbind(pkgs, keys)
+  colnames(graphData) <- c("xDbs","yDbs","xKeys","yKeys")
+  graphData
+}
+
 ## early sanity checks for graphData
 .testGraphData <- function(graphData){
   if(ncol(graphData) !=4L)
       stop("'graphData' must contain exactly 4 columns.")
-  ## enforce colnames of graphData to always be uniform.
-  colnames(graphData) <- c("xDbs","yDbs","xKeys","yKeys")
-  graphData
 }
 
 ## test keys for graphData 
@@ -40,7 +46,8 @@ makeOrganismPackage <- function(pkgname,
    ## there should only be one template
    template_path <- system.file("OrgPkg-template",package="OrganismDbi")
    ## We need to get a list of dependencies:
-   gd <- as.matrix(graphData)
+   ## 1st convert graphData into a data.frame
+   gd <- .mungeGraphData(graphData)
    deps <- paste(unique(as.vector(gd[,1:2])),collapse=", ")
    ## We need to define some symbols in order to have the
    ## template filled out correctly. 
@@ -58,7 +65,7 @@ makeOrganismPackage <- function(pkgname,
     DEPENDENCIES=deps
    )
    ## Check the graphData object and rename if needed
-   graphData <- .testGraphData(graphData)
+   .testGraphData(gd)
    ## Try to call require on all the supporting packages.
    pkgs <- unique(names(.extractPkgsAndCols(gd)))
    for (pkg in pkgs)

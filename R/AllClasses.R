@@ -56,7 +56,7 @@ OrganismDb <-
 
 ## helper for extracting pkgs and cols as a vector
 .extractPkgsAndCols <- function(gd){
-  gd <- as.matrix(gd)
+  ##  gd <- as.matrix(gd)
   setNames(as.vector(gd[,3:4]), as.vector(gd[,1:2]))
 }
 

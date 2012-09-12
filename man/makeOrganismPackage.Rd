@@ -25,14 +25,14 @@ makeOrganismPackage (pkgname,
   \item{pkgname}{What is the desired package name.  Traditionally, this
   should be the genus and species separated by a ".".  So as an example,
   "Homo.sapiens" would be the package name for human}
-  \item{graphData}{A data frame with 4 columns and an unspecified
-  number of rows.  Each row of this data.frame represents one pair of
-  packages and how they relate to each other.  The 1st two columns of a row
-  represent the two packages, and the last two columns are the cols that
-  can connect results from these two packages as foreign keys.  All
-  foreign keys must be values that can be returned by the cols method
-  for each package in question, and obviously they also must be the same
-  kind of identifier as well.}
+\item{graphData}{A list of short character vectors.  Each character
+  vector in the list is exactly two elements long and represents a join
+  relationship between two packages.  The names of these character
+  vectors are the package names and the values are the foreign keys that
+  should be used to connect each package.  All foreign keys must be
+  values that can be returned by the cols method for each package in
+  question, and obviously they also must be the same kind of identifier
+  as well.}
   \item{organism}{The name of the organism this package represents}
   \item{version}{What is the version number for this package?}
   \item{maintainer}{Who is the package maintainer? (must include email to be 
@@ -47,7 +47,10 @@ makeOrganismPackage (pkgname,
   \code{annotationOrganismDb} object that will allow proper dispatch of
   special select methods.  These methods will allow the user to easily
   query across multiple annotation resources via information contained
-  by the \code{annotationOrganismDb} object.
+  by the \code{annotationOrganismDb} object. Because the end result will
+  be a package that treats all the data mapped together as a single
+  source, the user is encouraged to take extra care to ensure that the
+  different packages used are from the same build etc.
 }
 
 \value{A special package to load an \link{OrganismDb} object.}
@@ -61,11 +64,10 @@ makeOrganismPackage (pkgname,
 }
 
 \examples{
-## set up the data.frame with the relevant relationships:
-gd <- data.frame(xDbs=c("GO.db","org.Hs.eg.db"),
-                 yDbs=c("org.Hs.eg.db","TxDb.Hsapiens.UCSC.hg19.knownGene"),
-                 xKeys=c("GOID","ENTREZID"),
-                 yKeys= c("GO","GENEID"))
+## set up the list with the relevant relationships:
+gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
+           join2 = c(org.Hs.eg.db="ENTREZID",
+                     TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID"))
 
 ## sets up a temporary directory for this example
 ## (users won't need to do this step)
