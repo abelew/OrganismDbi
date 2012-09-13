@@ -9,4 +9,4 @@ Imports: GenomicFeatures, AnnotationDbi
 License: @LIC@
 organism: @ORGANISM@
 species: @ORGANISM@
-biocViews: AnnotationData, Genetics, @ORGANISMBIOCVIEW@
+biocViews: AnnotationData, Genetics, OrganismDb, @ORGANISMBIOCVIEW@
