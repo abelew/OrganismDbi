@@ -4,7 +4,7 @@ Description: The package enables a simple unified interface to several
 	     annotation packages each of which has its own schema by taking
 	     advantage of the fact that each of these packages implements a 
 	     select methods.
-Version: 1.0.0
+Version: 1.1.0
 Author: Marc Carlson, Herve Pages, Martin Morgan, Valerie Obenchain
 Maintainer: Biocore Data Team <maintainer@bioconductor.org>
 Depends: R (>= 2.14.0), methods, AnnotationDbi (>= 1.16.10), GenomicFeatures
