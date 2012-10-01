@@ -1,0 +1,27 @@
+ 	**************************************************
+	*						 *
+	*	        1.0.0 SERIES NEWS		 *
+	*						 *
+	**************************************************
+
+
+		OrganismDbi VERSION 1.0.0
+
+
+PKG FEATURES
+
+    o	OrganismDbi is for the creation and support of a new class of
+    super-annotation packages
+
+    o	'Stock' OrganismDbi packages are available for human mouse and
+    rat with the 2.11 release of Bioconductor.
+
+    o	OrganismDbi has functionality for generating these packages.
+
+    o	OrganismDbi has methods that allow these packages to function.
+
+    o	OrganismDbi works by combining resources from Annotation
+    packages that implement the four methods needed for a "select"
+    style interface.  The essense of this is detailed in the
+    AnnotationDbi package, along with base classes etc.
+
