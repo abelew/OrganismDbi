@@ -3,6 +3,8 @@
 ## Will base testing on humans for now
 require("Homo.sapiens")
 x <- Homo.sapiens
+## debug(OrganismDbi:::.select)
+## debug(OrganismDbi:::.mergeSelectResults)
 require("Rattus.norvegicus") 
 r <- Rattus.norvegicus 
 
@@ -152,7 +154,7 @@ test_mergeSelectResults <- function(){
   selected <- OrganismDbi:::.getSelects(x, keytype, keys, needCols, visitNodes)
   res <- OrganismDbi:::.mergeSelectResults(x, selected, visitNodes)
   
-  checkTrue(dim(res)[2]==6)
+  checkTrue(dim(res)[2]==8)
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
@@ -188,7 +190,7 @@ test_select <- function(){
   res <- OrganismDbi:::.select(x, keys, cls, keytype)
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==4)
-  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("GOID" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
  
   cls <- c("ALIAS","CHR","EXONNAME")
@@ -243,7 +245,7 @@ test_select <- function(){
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==6)
   checkTrue("ENTREZID" %in% colnames(res)) 
-  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("GOID" %in% colnames(res)) 
   checkTrue("SYMBOL" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res)) 
 
@@ -255,7 +257,17 @@ test_select <- function(){
 ##   checkTrue(dim(res)[2]==3)
 ##   checkTrue("ENTREZID" %in% colnames(res)) 
 ##   checkTrue("ALIAS" %in% colnames(res)) 
-##   checkTrue("ORYZA_SATIVA" %in% colnames(res))  
+##   checkTrue("ORYZA_SATIVA" %in% colnames(res))
+
+  ## Getting an error here 
+  keys <- head(keys(x, "TXNAME"))
+  keytype <- "TXNAME"
+  cls <- c("ENTREZID" , "TXNAME")
+  res <- select(Homo.sapiens, keys, cls, keytype)
+  checkTrue(dim(res)[1] >0)
+  checkTrue(dim(res)[2]==2)
+  checkTrue("ENTREZID" %in% colnames(res)) 
+  checkTrue("TXNAME" %in% colnames(res))   
 }
 
 
@@ -341,7 +353,7 @@ test_rattus <- function(){
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==6) 
   checkTrue("ENTREZID" %in% colnames(res))
-  checkTrue("GO" %in% colnames(res)) 
+  checkTrue("GOID" %in% colnames(res)) 
   checkTrue("SYMBOL" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res))   
 } 
@@ -356,3 +368,4 @@ test_rattus <- function(){
 
 
 
+## TODO: add something to fix the the cosmetic bug where then the GOID is to the right of the columns that come with it (like EVIDENCE and/or ONTOLOGY.  This should really be handled in a general way (even though it ONLY happens with GOID)

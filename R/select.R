@@ -245,8 +245,8 @@ setMethod("keys", "OrganismDb", .keys)
 
 
 ## new version of .mergeSelectResults
-## ## merge
-.mergeSelectResults <- function(x, selected, visitNodes){
+## merge
+.mergeSelectResults <- function(x, selected, visitNodes, oriCols){
   final <- selected[[1]]
   otherNodes <- visitNodes[-1] 
   for (i in seq_len(length(otherNodes))) {
@@ -256,12 +256,18 @@ setMethod("keys", "OrganismDb", .keys)
     toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
     final <- merge(final, selected[[nodeName]],
                    by.x=fromKey, by.y=toKey, all=TRUE)
+    ## recover the col that is lost from the merge
+    ## (header is sometimes needed)
+    lostKeys <- data.frame(toKey=final[[fromKey]])
+    colnames(lostKeys) <- toKey
+    final <- cbind(final, lostKeys) ## bind b.c lostKeys is post-merge clone 
   }
   final
 }
 ## res <- .mergeSelectResults(selected, visitNodes)
 
-.select <- function(x, keys, cols, keytype){
+
+.select <- function(x, keys, cols, keytype, ...){
   ## if asked for what they have, just return that.
   if(all(cols %in% keytype)  && length(cols)==1L){
     res <- data.frame(keys=keys)
@@ -282,20 +288,20 @@ setMethod("keys", "OrganismDb", .keys)
   needCols <- .getColsByNodes(subgr, selectCols, allCols)
   visitNodes <- .bfs(subgr, root)
   selected <- .getSelects(x, keytype,keys,needCols, visitNodes)
-  res <- .mergeSelectResults(x, selected, visitNodes)
+  res <- .mergeSelectResults(x, selected, visitNodes, oriCols)
   
-  ## Then we need to filter out all columns that we didn't ask for.  
+  ## Next we need to filter out all columns that we didn't ask for.  
   ## Actually that is not quite right, what we want to do is make a blacklist
   ## of columns that were added (in fkeys) and that were NOT requested
   ## (oriCols and keytype).
-
+  
   extraKeys <- .getDbNameFKeys(x)
   blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
   ## if they asked for one of the GO items, then GO is not blacklisted
-  if(any(cols(GO.db) %in% oriCols)){
-    blackList <- blackList[!(blackList %in% "GO")]
-  }
-  res <- res[,!(colnames(res) %in% blackList)]
+##   if(any(cols(GO.db) %in% oriCols)){
+##     blackList <- blackList[!(blackList %in% "GO")]
+##   }
+  res <- res[,!(colnames(res) %in% blackList), drop=FALSE] 
 
   ## Then call code to clean up, reorder the rows (and add NA rows as needed).
   if(nrow(res) > 0L){
@@ -306,4 +312,11 @@ setMethod("keys", "OrganismDb", .keys)
   unique(res)
 }
 
-setMethod("select", "OrganismDb", .select)
+setMethod("select", "OrganismDb",
+          function(x, keys, cols, keytype, ...){
+            .select(x, keys, cols, keytype, ...)
+          }
+)
+
+
+##TODO: .mergeSelectResults is leaving incorrect labels on things:  Clean this up!
