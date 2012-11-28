@@ -1,6 +1,6 @@
 ## script to test my package code generator
 require(OrganismDbi)
-version = "1.0.0"
+version = "1.1.0"
 
 ## for human
 gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
@@ -21,8 +21,8 @@ makeOrganismPackage(pkgname = "Homo.sapiens",
 
 ## for mouse
 gd <- list(join1 = c(GO.db="GOID", org.Mm.eg.db="GO"),
-           join2 = c(org.Mm.eg.db="ENSEMBL",
-                     TxDb.Mmusculus.UCSC.mm10.ensGene="GENEID"))
+           join2 = c(org.Mm.eg.db="ENTREZID",
+                     TxDb.Mmusculus.UCSC.mm10.knownGene="GENEID"))
 
 makeOrganismPackage(pkgname = "Mus.musculus",
                     graphData = gd,
