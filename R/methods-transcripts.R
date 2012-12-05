@@ -15,6 +15,12 @@
 ## I need helpers to extract that Txdb, and to remove cols that are
 ## part of a ranges object.
 
+## 1st helper I need is one to identify which node (if any) is a TranscriptDb...
+## if there is one, return it, otherwise error out with message to explain.
+.findTranscriptDb <- function(x){
+    
+
+}
 
 
 ## 
