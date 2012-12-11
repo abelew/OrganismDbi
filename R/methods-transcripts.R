@@ -12,27 +12,33 @@
 ## the internal transcripts call
 
 
-## I need helpers to extract that Txdb, and to remove cols that are
-## part of a ranges object.
 
-## 1st helper I need is one to identify which node (if any) is a TranscriptDb...
-## if there is one, return it, otherwise error out with message to explain.
-.findTranscriptDb <- function(x){
+## How will we merge the results from select() and transcripts()?  We
+## will join on tx_id (for transcripts)
+.transcripts <- function(x, cols, vals=NULL, columns=c("tx_id", "tx_name")){
+    ## 1st get the TranscriptDb object.
+    ## trick: there will *always* be a TXID
+    txdb <- .lookupDbFromKeytype(x, "TXID")
     
-
+    ## call transcripts method (on the TxDb)
+    columns <- unique(c(columns, "tx_id"))
+    txs <- transcripts(txdb, vals=vals, columns=columns)
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID")
+    
+    ## assemble it all together.
+    mcols(txs) <- merge(as(mcols(txs), "data.frame"), meta,
+                        by.x="tx_id", by.y="TXID")
+    txs
 }
 
-
-## 
 setMethod("transcripts", "OrganismDb",
-    function(x, vals=NULL, columns=c("tx_id", "tx_name")){
-                
-        ## Here we call the other transcripts method (on the TxDb)
+          function(x, cols, vals=NULL, columns=c("tx_id", "tx_name")){
+              .transcripts(x, cols, vals=NULL, columns=c("tx_id", "tx_name"))})
 
-        ## Then we call select on the rest.
 
-        ## Then we can assemble it all together.
-        
-      }
-)
+## test usage:
+## library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
+## transcripts(h, cols)
 
