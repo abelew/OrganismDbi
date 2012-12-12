@@ -26,7 +26,7 @@
     cols <- meta[,!colnames(meta) %in% avoidID]
     res <- lapply(cols, splitAsList, f) ## fast
     ## call unique on all cols
-##    res <- lapply(res, unique) ## This step is super slow and sometimes? doesn't work?? :(
+    res <- lapply(res, unique) ## This step is super slow and sometimes? doesn't work?? :(
     ## cbind all the cols together (they will be in same order b/c of
     ## special factor)
     resf <- do.call(DataFrame, res)

@@ -268,6 +268,15 @@ setMethod("keys", "OrganismDb", .keys)
 
 
 .select <- function(x, keys, cols, keytype, ...){
+    ## Argument checking:
+    if(missing(keys)){stop("You must provide a keys argument")}
+    if(missing(cols)){stop("You must provide cols argument")}
+    if(missing(keytype)){stop("You must provide a keytype argument")}
+    if(!all(cols %in% cols(x)) ){
+        stop("Invalid cols values. For legal cols argument values use: cols()")}
+    if(!keytype %in% keytypes(x)){
+        stop("Invalid keytype value. For legal keytype argument values use: keytypes()")}
+    
     ## if asked for what they have, just return that.
     if(all(cols %in% keytype)  && length(cols)==1L){
         res <- data.frame(keys=keys)
