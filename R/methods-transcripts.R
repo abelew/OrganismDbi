@@ -12,16 +12,20 @@
 ## the internal transcripts call
 
 
+.getTxDb <- function(x){
+    ## trick: there will *always* be a TXID
+    .lookupDbFromKeytype(x, "TXID")
+}
+
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
 .transcripts <- function(x, cols, vals=NULL, columns=c("tx_id", "tx_name")){
     ## 1st get the TranscriptDb object.
-    ## trick: there will *always* be a TXID
-    txdb <- .lookupDbFromKeytype(x, "TXID")
+    txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "tx_id"))
+    columns <- unique(c(columns, "tx_id")) ## b/c tx_id always exists
     txs <- transcripts(txdb, vals=vals, columns=columns)
     
     ## call select on the rest and use tx_id as keys 
@@ -42,3 +46,72 @@ setMethod("transcripts", "OrganismDb",
 ## library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
 ## transcripts(h, cols)
 
+
+## How will we merge the results from select() and transcripts()?  We
+## will join on tx_id (for transcripts)
+.exons <- function(x, cols, vals=NULL, columns="exon_id"){
+    ## 1st get the TranscriptDb object.
+    txdb <- .getTxDb(x)
+    
+    ## call transcripts method (on the TxDb)
+    columns <- unique(c(columns, "exon_id")) ## b/c exon_id always exists
+    exs <- exons(txdb, vals=vals, columns=columns)
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=mcols(exs)$exon_id, cols, "EXONID")
+    
+    ## assemble it all together.
+    mcols(exs) <- merge(as(mcols(exs), "data.frame"), meta,
+                        by.x="exon_id", by.y="EXONID")
+    exs
+}
+
+setMethod("exons", "OrganismDb",
+          function(x, cols, vals=NULL, columns="exon_id"){
+              .exons(x, cols, vals=NULL, columns="exon_id")})
+
+
+## test usage:
+## library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","SYMBOL")
+## exons(h, cols)
+
+
+## How will we merge the results from select() and transcripts()?  We
+## will join on tx_id (for transcripts)
+.cds <- function(x, cols, vals=NULL, columns="cds_id"){
+    ## 1st get the TranscriptDb object.
+    txdb <- .getTxDb(x)
+    
+    ## call transcripts method (on the TxDb)
+    columns <- unique(c(columns, "cds_id")) ## b/c cds_id always exists
+    cds <- cds(txdb, vals=vals, columns=columns)
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=mcols(cds)$cds_id, cols, "CDSID")
+    
+    ## assemble it all together.
+    mcols(cds) <- merge(as(mcols(cds), "data.frame"), meta,
+                        by.x="cds_id", by.y="CDSID")
+    cds
+}
+
+setMethod("cds", "OrganismDb",
+          function(x, cols, vals=NULL, columns="cds_id"){
+              .cds(x, cols, vals=NULL, columns="cds_id")})
+
+
+## test usage:
+## library(Homo.sapiens); h = Homo.sapiens; cols = c("GENENAME","SYMBOL")
+## cds(h, cols)
+
+
+
+
+########################################################################
+## General problem: I will usually have more stuff to cram into mcols
+## than I have rows of ranges...  How should we handle this?
+
+
+## You can see this in action by doing this (for example)
+## library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
+## exonsh, cols)
