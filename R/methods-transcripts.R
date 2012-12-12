@@ -115,3 +115,8 @@ setMethod("cds", "OrganismDb",
 ## You can see this in action by doing this (for example)
 ## library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
 ## exonsh, cols)
+
+
+## If I am lucky, there will be a method already to squish a
+## DataFrame() and so I will be able to just call that in a helper
+## when I am merging...
