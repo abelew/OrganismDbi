@@ -18,22 +18,39 @@
 }
 
 
+## This helper processes data.frame data into a DataFrame with compressed chars
+.compressMetadata <- function(rngs, meta, avoidID, joinID){
+    ## make a special factor
+    f <- factor(meta[[avoidID]],levels=mcols(rngs)[[joinID]])
+    ## call splitAsList (using factor) on all cols except avoidId
+    cols <- meta[,!colnames(meta) %in% avoidID]
+    res <- lapply(cols, splitAsList, f) ## fast
+    ## call unique on all cols
+##    res <- lapply(res, unique) ## This step is super slow and sometimes? doesn't work?? :(
+    ## cbind all the cols together (they will be in same order b/c of
+    ## special factor)
+    resf <- do.call(DataFrame, res)
+    if(dim(mcols(rngs))[1] == dim(resf)[1]){
+        return(cbind(mcols(rngs),resf))
+    }else{
+        stop("Ranges and annotations retrieved are not of matching lengths.")
+    }
+}
+
+
+
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
 .transcripts <- function(x, cols, vals=NULL, columns=c("tx_id", "tx_name")){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
-    
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "tx_id")) ## b/c tx_id always exists
-    txs <- transcripts(txdb, vals=vals, columns=columns)
-    
+    columns <- unique(c(columns, "tx_id")) ## tx_id always exists
+    txs <- transcripts(txdb, vals=vals, columns=columns)  
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID")
-    
+    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID")    
     ## assemble it all together.
-    mcols(txs) <- merge(as(mcols(txs), "data.frame"), meta,
-                        by.x="tx_id", by.y="TXID")
+    mcols(txs) <- .compressMetadata(txs,meta,avoidID="TXID",joinID="tx_id")
     txs
 }
 
@@ -54,15 +71,14 @@ setMethod("transcripts", "OrganismDb",
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "exon_id")) ## b/c exon_id always exists
+    columns <- unique(c(columns, "exon_id")) ## exon_id always exists
     exs <- exons(txdb, vals=vals, columns=columns)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=mcols(exs)$exon_id, cols, "EXONID")
     
     ## assemble it all together.
-    mcols(exs) <- merge(as(mcols(exs), "data.frame"), meta,
-                        by.x="exon_id", by.y="EXONID")
+    mcols(exs) <- .compressMetadata(exs,meta,avoidID="EXONID",joinID="exon_id")
     exs
 }
 
@@ -83,15 +99,14 @@ setMethod("exons", "OrganismDb",
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "cds_id")) ## b/c cds_id always exists
+    columns <- unique(c(columns, "cds_id")) ## cds_id always exists
     cds <- cds(txdb, vals=vals, columns=columns)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=mcols(cds)$cds_id, cols, "CDSID")
     
     ## assemble it all together.
-    mcols(cds) <- merge(as(mcols(cds), "data.frame"), meta,
-                        by.x="cds_id", by.y="CDSID")
+    mcols(cds) <- .compressMetadata(cds,meta,avoidID="CDSID",joinID="cds_id")
     cds
 }
 
