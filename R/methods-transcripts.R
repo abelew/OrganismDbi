@@ -29,6 +29,7 @@
 ## was the basis for the special factor (avoidID)
 .compressMetadata <- function(f, meta, avoidID){
     cols <- meta[,!colnames(meta) %in% avoidID]
+    ## call splitAsList (using factor) on all cols except avoidId
     res <- lapply(cols, splitAsList, f) ## fast
     ## call unique on all cols
     res <- lapply(res, unique)  ## slower
@@ -39,7 +40,7 @@
 .combineMetadata <- function(rngs, meta, avoidID, joinID){
     ## make a special factor
     f <- factor(meta[[avoidID]],levels=mcols(rngs)[[joinID]])
-    ## call splitAsList (using factor) on all cols except avoidId
+    ## compress the metadata by splitting according to f
     res <- .compressMetadata(f, meta, avoidID)
     ## attach to mcols values. from before.
     if(dim(mcols(rngs))[1] == dim(res)[1]){

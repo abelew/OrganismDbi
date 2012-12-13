@@ -1,0 +1,101 @@
+require("Homo.sapiens")
+
+## TODO: to speed up unit tests I need some small pieces of annotation
+## for testing a small subset of granges and the matching metadata
+## Ideally I want a Homo.sapiens package that uses the small subset DB
+## from GenomicFeatures.  Perhaps a "mini-me" package for testing? -
+## but making this is a bit of a project.
+
+x <- Homo.sapiens
+txdb <- OrganismDbi:::.getTxDb(x)
+
+
+## some internal testing (make sure helpers work as expected)
+
+test_compressMetadata <- function(){
+    cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
+    txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
+    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID") 
+    f <- factor(meta[["TXID"]],levels=mcols(txs)[["tx_id"]])
+    res <- OrganismDbi:::.compressMetadata(f, meta, "TXID")
+    checkTrue(class(res)== "DataFrame")
+    checkTrue(dim(res)[2] ==4)
+    checkTrue(dim(res)[1] ==100)
+    checkTrue(all(colnames(res) %in% c("tx_id",cols)))
+}
+
+
+test_combineMetadata <- function(){
+    cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
+    txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
+    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID") 
+    res <- OrganismDbi:::.combineMetadata(txs,meta,avoidID="TXID",
+                                          joinID="tx_id")
+    checkTrue(class(res)== "DataFrame")
+    checkTrue(dim(res)[2] ==5)
+    checkTrue(dim(res)[1] ==100)
+    checkTrue(all(colnames(res) %in% c("tx_id",cols))) 
+}
+
+
+## These tests are slow so I will need a smaller thing to test with...
+test_transcripts <- function(){
+    library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
+    res <- transcripts(h, cols)
+    checkTrue(class(res) == "GRanges")
+    checkTrue(length(res) == 80922)
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("tx_id","tx_name","TXNAME","SYMBOL")))
+}
+
+test_exons <- function(){
+    library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","REFSEQ")
+    res <- exons(h, cols)
+    checkTrue(class(res) == "GRanges")
+    checkTrue(length(res) == 286852)
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("exon_id","CHR","REFSEQ")))
+}
+
+test_cds <- function(){
+    library(Homo.sapiens); h = Homo.sapiens; cols = c("GENENAME","SYMBOL")
+    res <- cds(h, cols)
+    checkTrue(class(res) == "GRanges")
+    checkTrue(length(res) == 235842)
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("cds_id","GENENAME","SYMBOL")))
+}
+
+
+
+
+
+test_transcriptsBy <- function(){
+    library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
+    res <- transcriptsBy(h, by="gene", cols)    
+    checkTrue(class(res) == "GRangesList")
+    checkTrue(length(res) == 22932)
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("tx_id","GENENAME","SYMBOL")))
+}
+
+test_exonsBy <- function(){
+    library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
+    res <- exonsBy(h, by="gene", cols)
+    ## TODO: look more closely at this one.  The metadata looks off...
+    checkTrue(class(res) == "GRangesList")
+    checkTrue(length(res) == 22932) 
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("exon_id","GENENAME","SYMBOL")))
+}
+
+test_cdsBy <- function(){
+    library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
+    res <- cdsBy(h, by="gene", cols)
+    checkTrue(class(res) == "GRangesList")
+    checkTrue(length(res) == 19511)
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("cds_id","GENENAME","SYMBOL")))
+}
+
+
