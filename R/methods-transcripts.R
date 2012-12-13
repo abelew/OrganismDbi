@@ -17,7 +17,7 @@
     .lookupDbFromKeytype(x, "TXID")
 }
 
-
+## TODO: .compressMetadata() might be useful to move into IRanges, as a complement to expand() methods.
 ## This helper processes data.frame data into a DataFrame with compressed chars
 .compressMetadata <- function(rngs, meta, avoidID, joinID){
     ## make a special factor
@@ -122,15 +122,40 @@ setMethod("cds", "OrganismDb",
 
 
 ########################################################################
-## General problem: I will usually have more stuff to cram into mcols
-## than I have rows of ranges...  How should we handle this?
+## "By" methods will just cram the same metadata into the INTERNAL
+## metadata slot so that it appears with the show method.
+## No attempt will be made to manage the insanity of knowing which
+## metadata types belong in which spot...
 
 
-## You can see this in action by doing this (for example)
-## library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
-## exonsh, cols)
+.transcriptsBy <- function(x, by, cols){
+    ## 1st get the TranscriptDb object.
+    txdb <- .getTxDb(x)
+    ## call transcriptsBy with use.names set to FALSE
+    txby <- transcriptsBy(txdb, by=by, use.names=FALSE)
+
+    ## get the tx_ids from the transcripts
+    ## AND I need to one from the internal slot.
+    gr = txby@unlistData
+    mc = mcols(gr)
+    k  = mc$tx_id
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=k, cols, "TXID")    
+    ## assemble it all together.
+    ## TODO:(I need to refactor/simplify this a bit)
+    mcols(gr) <- .compressMetadata(gr, meta, avoidID="TXID", joinID="tx_id") 
+
+    ## now cram it back in there.
+    txby@unlistData <- gr
+    txby
+}
+
+setMethod("transcriptsBy", "OrganismDb",
+          function(x, by, cols){
+              .transcriptsBy(x, by, cols)})
 
 
-## If I am lucky, there will be a method already to squish a
-## DataFrame() and so I will be able to just call that in a helper
-## when I am merging...
+
+## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
+## transcriptsBy(h, by="gene", cols)

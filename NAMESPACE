@@ -2,7 +2,13 @@ importFrom("graph", ftM2graphNEL)
 importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
 importMethodsFrom("RBGL", bfs)
 
-importMethodsFrom("GenomicFeatures", transcripts, exons, cds)
+importMethodsFrom("GenomicFeatures",
+                  transcripts,
+                  exons,
+                  cds,
+                  transcriptsBy,
+                  exonsBy,
+                  cdsBy)
 
 importClassesFrom("graph", graphNEL)
 exportClasses("OrganismDb")
@@ -12,6 +18,9 @@ exportMethods("cols",
               "select",
               "transcripts",
               "exons",
-              "cds"
+              "cds",
+              "transcriptsBy",
+              "exonsBy",
+              "cdsBy"              
               )
 export("makeOrganismPackage")
