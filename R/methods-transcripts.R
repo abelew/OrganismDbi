@@ -135,6 +135,11 @@ setMethod("cds", "OrganismDb",
 
 
 ########################################################################
+########################################################################
+##                       The "By" methods
+########################################################################
+########################################################################
+
 ## "By" methods will just cram the same metadata into the INTERNAL
 ## metadata slot so that it appears with the show method.
 ## No attempt will be made to manage the insanity of knowing which
@@ -149,9 +154,8 @@ setMethod("cds", "OrganismDb",
 
     ## get the tx_ids from the transcripts
     ## AND I need to one from the internal slot.
-    gr = txby@unlistData
-    mc = mcols(gr)
-    k  = mc$tx_id
+    gr <- txby@unlistData
+    k  <- mcols(gr)$tx_id
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, cols, "TXID")    
@@ -171,3 +175,93 @@ setMethod("transcriptsBy", "OrganismDb",
 
 ## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
 ## transcriptsBy(h, by="gene", cols)
+
+
+
+
+
+
+
+.exonsBy <- function(x, by, cols){
+    ## 1st get the TranscriptDb object.
+    txdb <- .getTxDb(x)
+    ## call transcriptsBy with use.names set to FALSE
+    exby <- exonsBy(txdb, by=by, use.names=FALSE)
+
+    ## get the tx_ids from the transcripts
+    ## AND I need to one from the internal slot.
+    gr <- exby@unlistData
+    k  <- mcols(gr)$exon_id
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=k, cols, "EXONID")    
+    ## assemble it all together.
+    mcols(gr) <- .combineMetadata(gr, meta, avoidID="EXONID", joinID="exon_id") 
+
+    ## now cram it back in there.
+    exby@unlistData <- gr
+    exby
+}
+
+setMethod("exonsBy", "OrganismDb",
+          function(x, by, cols){
+              .exonsBy(x, by, cols)})
+
+
+
+## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
+## exonsBy(h, by="tx", cols)
+
+
+
+
+
+.cdsBy <- function(x, by, cols){
+    ## 1st get the TranscriptDb object.
+    txdb <- .getTxDb(x)
+    ## call transcriptsBy with use.names set to FALSE
+    cdsby <- cdsBy(txdb, by=by, use.names=FALSE)
+
+    ## get the tx_ids from the transcripts
+    ## AND I need to one from the internal slot.
+    gr <- cdsby@unlistData
+    k  <- mcols(gr)$cds_id
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=k, cols, "CDSID")    
+    ## assemble it all together.
+    mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID", joinID="cds_id") 
+
+    ## now cram it back in there.
+    cdsby@unlistData <- gr
+    cdsby
+}
+
+setMethod("cdsBy", "OrganismDb",
+          function(x, by, cols){
+              .cdsBy(x, by, cols)})
+
+
+
+## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
+## cdsBy(h, by="tx", cols)
+
+
+
+
+
+## TODO: (known issues)
+## 1) cols don't come back in same order that the went in
+
+## 2) some values (tx_id and tx_name come to mind) are not relabeled
+## in a pretty way and may not have been requested (to solve this we
+## have to adress issue #3)
+
+## 3) I now have a columns AND a cols argument for the transcripts()
+## family of methods.  This is totally redundant.  Proposed fix:
+## rename arguments base method to be cols (maybe this is also an
+## opportunity to rename cols everywhere), but rename it so that it's
+## consistent, and then here, just only have one argument...
+
+## 4) exonsBy and cdsBy may have some extra issues that I am missing...
+
