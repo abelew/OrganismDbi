@@ -17,20 +17,33 @@
     .lookupDbFromKeytype(x, "TXID")
 }
 
-## TODO: .compressMetadata() might be useful to move into IRanges, as a complement to expand() methods.
-## This helper processes data.frame data into a DataFrame with compressed chars
-.compressMetadata <- function(rngs, meta, avoidID, joinID){
-    ## make a special factor
-    f <- factor(meta[[avoidID]],levels=mcols(rngs)[[joinID]])
-    ## call splitAsList (using factor) on all cols except avoidId
+## TODO: .compressMetadata() might be useful to move into IRanges, as
+## a complement to expand() methods?  - Discuss this with Val (who
+## apparently may have similar issues in vcf...
+
+## .compressMetadata() processes data.frame data into a DataFrame with
+## compressed chars
+
+## It does so by taking a special factor (f) and then applying it to
+## ALL of the columns in a data.frame (meta) except for the one that
+## was the basis for the special factor (avoidID)
+.compressMetadata <- function(f, meta, avoidID){
     cols <- meta[,!colnames(meta) %in% avoidID]
     res <- lapply(cols, splitAsList, f) ## fast
     ## call unique on all cols
-    res <- lapply(res, unique) 
-    resf <- as(res, "DataFrame") ##do.call(DataFrame, res)
+    res <- lapply(res, unique)  ## slower
+    as(res, "DataFrame") 
+}
+
+## This helper does book keeping that is relevant to my situation here.
+.combineMetadata <- function(rngs, meta, avoidID, joinID){
+    ## make a special factor
+    f <- factor(meta[[avoidID]],levels=mcols(rngs)[[joinID]])
+    ## call splitAsList (using factor) on all cols except avoidId
+    res <- .compressMetadata(f, meta, avoidID)
     ## attach to mcols values. from before.
-    if(dim(mcols(rngs))[1] == dim(resf)[1]){
-        return(c(mcols(rngs),resf))
+    if(dim(mcols(rngs))[1] == dim(res)[1]){
+        return(c(mcols(rngs),res))
     }else{
         stop("Ranges and annotations retrieved are not of matching lengths.")
     }
@@ -49,7 +62,7 @@
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID")    
     ## assemble it all together.
-    mcols(txs) <- .compressMetadata(txs,meta,avoidID="TXID",joinID="tx_id") 
+    mcols(txs) <- .combineMetadata(txs,meta,avoidID="TXID",joinID="tx_id") 
     txs
 }
 
@@ -77,7 +90,7 @@ setMethod("transcripts", "OrganismDb",
     meta <- select(x, keys=mcols(exs)$exon_id, cols, "EXONID")
     
     ## assemble it all together.
-    mcols(exs) <- .compressMetadata(exs,meta,avoidID="EXONID",joinID="exon_id")
+    mcols(exs) <- .combineMetadata(exs,meta,avoidID="EXONID",joinID="exon_id")
     exs
 }
 
@@ -87,7 +100,7 @@ setMethod("exons", "OrganismDb",
 
 
 ## test usage:
-## library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","SYMBOL")
+## library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","REFSEQ")
 ## exons(h, cols)
 
 
@@ -105,7 +118,7 @@ setMethod("exons", "OrganismDb",
     meta <- select(x, keys=mcols(cds)$cds_id, cols, "CDSID")
     
     ## assemble it all together.
-    mcols(cds) <- .compressMetadata(cds,meta,avoidID="CDSID",joinID="cds_id")
+    mcols(cds) <- .combineMetadata(cds,meta,avoidID="CDSID",joinID="cds_id")
     cds
 }
 
@@ -143,8 +156,7 @@ setMethod("cds", "OrganismDb",
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, cols, "TXID")    
     ## assemble it all together.
-    ## TODO:(I need to refactor/simplify this a bit)
-    mcols(gr) <- .compressMetadata(gr, meta, avoidID="TXID", joinID="tx_id") 
+    mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID", joinID="tx_id") 
 
     ## now cram it back in there.
     txby@unlistData <- gr
