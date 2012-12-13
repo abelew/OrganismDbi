@@ -26,12 +26,11 @@
     cols <- meta[,!colnames(meta) %in% avoidID]
     res <- lapply(cols, splitAsList, f) ## fast
     ## call unique on all cols
-    res <- lapply(res, unique) ## This step is super slow and sometimes? doesn't work?? :(
-    ## cbind all the cols together (they will be in same order b/c of
-    ## special factor)
-    resf <- do.call(DataFrame, res)
+    res <- lapply(res, unique) 
+    resf <- as(res, "DataFrame") ##do.call(DataFrame, res)
+    ## attach to mcols values. from before.
     if(dim(mcols(rngs))[1] == dim(resf)[1]){
-        return(cbind(mcols(rngs),resf))
+        return(c(mcols(rngs),resf))
     }else{
         stop("Ranges and annotations retrieved are not of matching lengths.")
     }
@@ -50,7 +49,7 @@
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID")    
     ## assemble it all together.
-    mcols(txs) <- .compressMetadata(txs,meta,avoidID="TXID",joinID="tx_id")
+    mcols(txs) <- .compressMetadata(txs,meta,avoidID="TXID",joinID="tx_id") 
     txs
 }
 
