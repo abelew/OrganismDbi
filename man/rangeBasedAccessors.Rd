@@ -1,4 +1,4 @@
-\name{transcripts}
+\name{rangeBasedAccessors}
 
 \alias{transcripts,OrganismDb-method}
 \alias{exons,OrganismDb-method}
@@ -19,23 +19,17 @@
 }
 
 \usage{
-transcripts(x, ...)
-\S4method{transcripts}{OrganismDb}(x, cols, vals=NULL, columns=c("tx_id", "tx_name"))
+\S4method{transcripts}{OrganismDb}(x, cols, vals=NULL,
+                       columns=c("tx_id", "tx_name"))
 
-exons(x, ...)
 \S4method{exons}{OrganismDb}(x, cols, vals=NULL, columns="exon_id")
 
-cds(x, ...)
 \S4method{cds}{OrganismDb}(x, cols, vals=NULL, columns="cds_id")
 
-
-transcriptsBy(x, by=c("gene", "exon", "cds"), ...)
 \S4method{transcriptsBy}{OrganismDb}(x, by, cols)
 
-exonsBy(x, by=c("tx", "gene"), ...)
 \S4method{exonsBy}{OrganismDb}(x, by, cols)
 
-cdsBy(x, by=c("tx", "gene"), ...)
 \S4method{cdsBy}{OrganismDb}(x, by, cols)
 }
 
@@ -101,7 +95,7 @@ cdsBy(x, by=c("tx", "gene"), ...)
           \code{OrganismDb} object.
     \item \link[GenomicFeatures]{transcripts} for the original
           \code{transcripts} method and related methods.
-    \item \link[GenomicFeatures]{transcriptsby} for the original
+    \item \link[GenomicFeatures]{transcriptsBy} for the original
           \code{transcriptsBy} method and related methods.
 	}
 }

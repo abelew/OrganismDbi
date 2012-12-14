@@ -62,9 +62,9 @@
 
 \seealso{ 
   \itemize{
-    \item \code{\link{makeOrganismPackage}} for functions used to generate 
-    an \code{OrganismDb} based package.
-    \item \link[OrganismDbi]{transcripts} for the range based methods
+    \item \link[OrganismDbi]{makeOrganismPackage} for functions
+    used to generate an \code{OrganismDb} based package.
+    \item \link[OrganismDbi]{rangeBasedAccessors} for the range based methods
     used in extracting data from a \code{OrganismDb} object.
 }
 }
