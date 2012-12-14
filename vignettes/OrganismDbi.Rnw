@@ -130,7 +130,24 @@ k <- head(keys(Homo.sapiens, keytype="ENTREZID"),n=3)
 select(Homo.sapiens, keys=k, cols=c("TXNAME","SYMBOL"), keytype="ENTREZID")
 @
 
+In Addition to \Rmethod{select}, some of the more popular range based
+methods have also been updated to work with an \Rclass{AnnotationDb}
+object.  So for example you could extract transcript information like this:
 
+<<transcripts>>=
+transcripts(Homo.sapiens, cols=c("TXNAME","SYMBOL"))
+@ 
+
+And the \Rclass{GRanges} object that would be returned would have the
+information that you specified in the cols argument.  You could also
+have used the \Rmethod{exons} or \Rmethod{cds} methods in this way.
+
+The \Rmethod{transcriptsBy},\Rmethod{exonsBy} and \Rmethod{cdsBy}
+methods are also supported.  For example:
+
+<<transcriptsBy>>=
+transcriptsBy(Homo.sapiens, by="gene", cols=c("TXNAME","SYMBOL"))
+@ 
 
 
 \section{Making your own OrganismDbi packages}
