@@ -1,8 +1,8 @@
 importFrom("graph", ftM2graphNEL)
 importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
 importMethodsFrom("RBGL", bfs)
-
-importMethodsFrom("GenomicFeatures",
+importFrom(AnnotationDbi, cols, keys, keytypes, select)
+importFrom("GenomicFeatures",
                   transcripts,
                   exons,
                   cds,
