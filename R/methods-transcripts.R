@@ -28,9 +28,9 @@
 ## ALL of the columns in a data.frame (meta) except for the one that
 ## was the basis for the special factor (avoidID)
 .compressMetadata <- function(f, meta, avoidID){
-    cols <- meta[,!colnames(meta) %in% avoidID]
+    cols <- meta[,!colnames(meta) %in% avoidID, drop=FALSE]
     ## call splitAsList (using factor) on all cols except avoidId
-    res <- lapply(cols, splitAsList, f) ## fast
+    res <- lapply(cols, splitAsList, f) ## fast 
     ## call unique on all cols
     res <- lapply(res, unique)  ## slower
     as(res, "DataFrame") 
