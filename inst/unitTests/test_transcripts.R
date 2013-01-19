@@ -77,6 +77,16 @@ test_transcriptsBy <- function(){
     checkTrue(length(res) == 22932)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("tx_id","GENENAME","SYMBOL")))
+
+    ## extra check for case where we only have one field.
+    cols = c("SYMBOL")
+    res2 <- transcriptsBy(h, by="gene", cols)
+    checkTrue(class(res) == "GRangesList")
+    checkTrue(length(res) == 22932)
+    checkTrue(all(colnames(mcols(res)) %in%
+                  c("tx_id","SYMBOL")))
+
+    ## 
 }
 
 test_exonsBy <- function(){
@@ -99,3 +109,11 @@ test_cdsBy <- function(){
 }
 
 
+
+
+
+
+#################
+## Another bug.  The following should work? (but doesn't)
+## it's probably something to do with expansion of TXIDs by select?
+## x = Homo.sapiens; txby= transcriptsBy(x, by="gene", "TXID")
