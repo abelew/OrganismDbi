@@ -116,4 +116,11 @@ test_cdsBy <- function(){
 #################
 ## Another bug.  The following should work? (but doesn't)
 ## it's probably something to do with expansion of TXIDs by select?
+## It's a corner case...  Cause because TXID is on the "avoid" list
+## and is also requested here...  The problems caused by this will
+## change as I remove the default values for tx_id etc. from the
+## internal call to transcriptsBy()...  So that means that 'avoding'
+## TXID will also be unecessary.
+
+## THEREFORE: TODO = resolve the other issues 1st.
 ## x = Homo.sapiens; txby= transcriptsBy(x, by="gene", "TXID")
