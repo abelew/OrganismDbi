@@ -135,7 +135,7 @@ methods have also been updated to work with an \Rclass{AnnotationDb}
 object.  So for example you could extract transcript information like this:
 
 <<transcripts>>=
-transcripts(Homo.sapiens, cols=c("TXNAME","SYMBOL"))
+transcripts(Homo.sapiens, columns=c("TXNAME","SYMBOL"))
 @ 
 
 And the \Rclass{GRanges} object that would be returned would have the
@@ -146,7 +146,7 @@ The \Rmethod{transcriptsBy},\Rmethod{exonsBy} and \Rmethod{cdsBy}
 methods are also supported.  For example:
 
 <<transcriptsBy>>=
-transcriptsBy(Homo.sapiens, by="gene", cols=c("TXNAME","SYMBOL"))
+transcriptsBy(Homo.sapiens, by="gene", columns=c("TXNAME","SYMBOL"))
 @ 
 
 

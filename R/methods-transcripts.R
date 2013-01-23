@@ -1,15 +1,17 @@
 ## This is where I will put methods to overload things like
 ## transcripts() and exons()...
 
-
-
-## new argument: cols here can be any legit value for cols. (not just
+## new argument: columns here can be any legit value for columns. (not just
 ## tx_id and tx_name etc.)
 
 ## vals will just pass through to the internal transcripts call.
 
 ## columns arg is just for b/c support and will just pass through to
 ## the internal transcripts call
+
+
+## For consistency, the helper columns just wraps around cols method...
+setMethod("columns", "OrganismDb", cols)
 
 
 .getTxDb <- function(x){
@@ -28,10 +30,10 @@
 ## ALL of the columns in a data.frame (meta) except for the one that
 ## was the basis for the special factor (avoidID)
 .compressMetadata <- function(f, meta, avoidID){
-    cols <- meta[,!colnames(meta) %in% avoidID, drop=FALSE]
-    ## call splitAsList (using factor) on all cols except avoidId
-    res <- lapply(cols, splitAsList, f) ## fast 
-    ## call unique on all cols
+    columns <- meta[,!colnames(meta) %in% avoidID, drop=FALSE]
+    ## call splitAsList (using factor) on all columns except avoidId
+    res <- lapply(columns, splitAsList, f) ## fast 
+    ## call unique on all columns
     res <- lapply(res, unique)  ## slower
     as(res, "DataFrame") 
 }
@@ -44,7 +46,10 @@
     res <- .compressMetadata(f, meta, avoidID)
     ## attach to mcols values. from before.
     if(dim(mcols(rngs))[1] == dim(res)[1]){
-        return(c(mcols(rngs),res))
+        res <- c(mcols(rngs),res)
+        ## throw out joining IDs
+        res <- res[!(colnames(res) %in% c("tx_id","exon_id","cds_id"))]
+        return(res)
     }else{
         stop("Ranges and annotations retrieved are not of matching lengths.")
     }
@@ -54,41 +59,39 @@
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.transcripts <- function(x, cols, vals=NULL, columns=c("tx_id", "tx_name")){
+.transcripts <- function(x, vals, columns){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "tx_id")) ## tx_id always exists
-    txs <- transcripts(txdb, vals=vals, columns=columns)  
+    txs <- transcripts(txdb, vals, columns="tx_id")  
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID")    
+    meta <- select(x, keys=mcols(txs)$tx_id, columns, "TXID")    
     ## assemble it all together.
     mcols(txs) <- .combineMetadata(txs,meta,avoidID="TXID",joinID="tx_id") 
     txs
 }
 
 setMethod("transcripts", "OrganismDb",
-          function(x, cols, vals=NULL, columns=c("tx_id", "tx_name")){
-              .transcripts(x, cols, vals=NULL, columns=c("tx_id", "tx_name"))})
+          function(x, vals=NULL, columns=c("TXID", "TXNAME")){
+              .transcripts(x, vals, columns)})
 
 
 ## test usage:
-## library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
-## transcripts(h, cols)
+## library(Homo.sapiens); h = Homo.sapiens; columns = c("TXNAME","SYMBOL")
+## transcripts(h, columns)
 
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.exons <- function(x, cols, vals=NULL, columns="exon_id"){
+.exons <- function(x, vals, columns){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "exon_id")) ## exon_id always exists
-    exs <- exons(txdb, vals=vals, columns=columns)
+    exs <- exons(txdb, vals, columns="exon_id")
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(exs)$exon_id, cols, "EXONID")
+    meta <- select(x, keys=mcols(exs)$exon_id, columns, "EXONID")
     
     ## assemble it all together.
     mcols(exs) <- .combineMetadata(exs,meta,avoidID="EXONID",joinID="exon_id")
@@ -96,27 +99,26 @@ setMethod("transcripts", "OrganismDb",
 }
 
 setMethod("exons", "OrganismDb",
-          function(x, cols, vals=NULL, columns="exon_id"){
-              .exons(x, cols, vals=NULL, columns="exon_id")})
+          function(x, vals=NULL, columns="EXONID"){
+              .exons(x, vals, columns)})
 
 
 ## test usage:
-## library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","REFSEQ")
-## exons(h, cols)
+## library(Homo.sapiens); h = Homo.sapiens; columns = c("CHR","REFSEQ")
+## exons(h, columns)
 
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.cds <- function(x, cols, vals=NULL, columns="cds_id"){
+.cds <- function(x, vals, columns){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    columns <- unique(c(columns, "cds_id")) ## cds_id always exists
-    cds <- cds(txdb, vals=vals, columns=columns)
+    cds <- cds(txdb, vals, columns="cds_id")
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(cds)$cds_id, cols, "CDSID")
+    meta <- select(x, keys=mcols(cds)$cds_id, columns, "CDSID")
     
     ## assemble it all together.
     mcols(cds) <- .combineMetadata(cds,meta,avoidID="CDSID",joinID="cds_id")
@@ -124,13 +126,13 @@ setMethod("exons", "OrganismDb",
 }
 
 setMethod("cds", "OrganismDb",
-          function(x, cols, vals=NULL, columns="cds_id"){
-              .cds(x, cols, vals=NULL, columns="cds_id")})
+          function(x, vals=NULL, columns="CDSID"){
+              .cds(x, vals, columns)})
 
 
 ## test usage:
-## library(Homo.sapiens); h = Homo.sapiens; cols = c("GENENAME","SYMBOL")
-## cds(h, cols)
+## library(Homo.sapiens); h = Homo.sapiens; columns = c("GENENAME","SYMBOL")
+## cds(h, columns)
 
 
 
@@ -147,7 +149,7 @@ setMethod("cds", "OrganismDb",
 ## metadata types belong in which spot...
 
 
-.transcriptsBy <- function(x, by, cols){
+.transcriptsBy <- function(x, by, columns){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -159,7 +161,7 @@ setMethod("cds", "OrganismDb",
     k  <- mcols(gr)$tx_id
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=k, cols, "TXID")    
+    meta <- select(x, keys=k, columns, "TXID")    
     ## assemble it all together.
     mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID", joinID="tx_id") 
 
@@ -169,13 +171,13 @@ setMethod("cds", "OrganismDb",
 }
 
 setMethod("transcriptsBy", "OrganismDb",
-          function(x, by, cols){
-              .transcriptsBy(x, by, cols)})
+          function(x, by, columns){
+              .transcriptsBy(x, by, columns)})
 
 
 
-## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
-## transcriptsBy(h, by="gene", cols)
+## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
+## transcriptsBy(h, by="gene", columns)
 
 
 
@@ -183,7 +185,7 @@ setMethod("transcriptsBy", "OrganismDb",
 
 
 
-.exonsBy <- function(x, by, cols){
+.exonsBy <- function(x, by, columns){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -195,7 +197,7 @@ setMethod("transcriptsBy", "OrganismDb",
     k  <- mcols(gr)$exon_id
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=k, cols, "EXONID")    
+    meta <- select(x, keys=k, columns, "EXONID")    
     ## assemble it all together.
     mcols(gr) <- .combineMetadata(gr, meta, avoidID="EXONID", joinID="exon_id") 
 
@@ -205,19 +207,19 @@ setMethod("transcriptsBy", "OrganismDb",
 }
 
 setMethod("exonsBy", "OrganismDb",
-          function(x, by, cols){
-              .exonsBy(x, by, cols)})
+          function(x, by, columns){
+              .exonsBy(x, by, columns)})
 
 
 
-## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
-## exonsBy(h, by="tx", cols)
+## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
+## exonsBy(h, by="tx", columns)
 
 
 
 
 
-.cdsBy <- function(x, by, cols){
+.cdsBy <- function(x, by, columns){
     ## 1st get the TranscriptDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -229,7 +231,7 @@ setMethod("exonsBy", "OrganismDb",
     k  <- mcols(gr)$cds_id
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=k, cols, "CDSID")    
+    meta <- select(x, keys=k, columns, "CDSID")    
     ## assemble it all together.
     mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID", joinID="cds_id") 
 
@@ -239,29 +241,29 @@ setMethod("exonsBy", "OrganismDb",
 }
 
 setMethod("cdsBy", "OrganismDb",
-          function(x, by, cols){
-              .cdsBy(x, by, cols)})
+          function(x, by, columns){
+              .cdsBy(x, by, columns)})
 
 
 
-## library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
-## cdsBy(h, by="tx", cols)
+## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
+## cdsBy(h, by="tx", columns)
 
 
 
 
 
 ## TODO: (known issues)
-## 1) cols don't come back in same order that the went in
+## 1) columns don't come back in same order that the went in
 
 ## 2) some values (tx_id and tx_name come to mind) are not relabeled
 ## in a pretty way and may not have been requested (to solve this we
 ## have to adress issue #3)
 
-## 3) I now have a columns AND a cols argument for the transcripts()
+## 3) I now have a columns AND a columns argument for the transcripts()
 ## family of methods.  This is totally redundant.  Proposed fix:
-## rename arguments base method to be cols (maybe this is also an
-## opportunity to rename cols everywhere), but rename it so that it's
+## rename arguments base method to be columns (maybe this is also an
+## opportunity to rename columns everywhere), but rename it so that it's
 ## consistent, and then here, just only have one argument...
 
 ## 4) exonsBy and cdsBy may have some extra issues that I am missing...

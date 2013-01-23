@@ -21,7 +21,7 @@ test_compressMetadata <- function(){
     checkTrue(class(res)== "DataFrame")
     checkTrue(dim(res)[2] ==4)
     checkTrue(dim(res)[1] ==100)
-    checkTrue(all(colnames(res) %in% c("tx_id",cols)))
+    checkTrue(all(colnames(res) %in% cols))
 }
 
 
@@ -32,38 +32,38 @@ test_combineMetadata <- function(){
     res <- OrganismDbi:::.combineMetadata(txs,meta,avoidID="TXID",
                                           joinID="tx_id")
     checkTrue(class(res)== "DataFrame")
-    checkTrue(dim(res)[2] ==5)
+    checkTrue(dim(res)[2] ==4)
     checkTrue(dim(res)[1] ==100)
-    checkTrue(all(colnames(res) %in% c("tx_id",cols))) 
+    checkTrue(all(colnames(res) %in% c(cols))) 
 }
 
 
 ## These tests are slow so I will need a smaller thing to test with...
 test_transcripts <- function(){
     library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
-    res <- transcripts(h, cols)
+    res <- transcripts(h, columns=cols)
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) == 80922)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("tx_id","tx_name","TXNAME","SYMBOL")))
+                  c("TXNAME","SYMBOL")))
 }
 
 test_exons <- function(){
     library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","REFSEQ")
-    res <- exons(h, cols)
+    res <- exons(h, columns=cols)
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) == 286852)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("exon_id","CHR","REFSEQ")))
+                  c("CHR","REFSEQ")))
 }
 
 test_cds <- function(){
     library(Homo.sapiens); h = Homo.sapiens; cols = c("GENENAME","SYMBOL")
-    res <- cds(h, cols)
+    res <- cds(h, columns=cols)
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) == 235842)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("cds_id","GENENAME","SYMBOL")))
+                  c("GENENAME","SYMBOL")))
 }
 
 
@@ -76,7 +76,7 @@ test_transcriptsBy <- function(){
     checkTrue(class(res) == "GRangesList")
     checkTrue(length(res) == 22932)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("tx_id","GENENAME","SYMBOL")))
+                  c("GENENAME","SYMBOL")))
 
     ## extra check for case where we only have one field.
     cols = c("SYMBOL")
@@ -84,7 +84,7 @@ test_transcriptsBy <- function(){
     checkTrue(class(res) == "GRangesList")
     checkTrue(length(res) == 22932)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("tx_id","SYMBOL")))
+                  c("SYMBOL")))
 
     ## 
 }
@@ -96,7 +96,7 @@ test_exonsBy <- function(){
     checkTrue(class(res) == "GRangesList")
     checkTrue(length(res) == 22932) 
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("exon_id","GENENAME","SYMBOL")))
+                  c("GENENAME","SYMBOL")))
 }
 
 test_cdsBy <- function(){
@@ -105,7 +105,7 @@ test_cdsBy <- function(){
     checkTrue(class(res) == "GRangesList")
     checkTrue(length(res) == 19511)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("cds_id","GENENAME","SYMBOL")))
+                  c("GENENAME","SYMBOL")))
 }
 
 

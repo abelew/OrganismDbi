@@ -21,6 +21,7 @@ exportMethods("cols",
               "cds",
               "transcriptsBy",
               "exonsBy",
-              "cdsBy"              
+              "cdsBy",
+              "columns"
               )
 export("makeOrganismPackage")

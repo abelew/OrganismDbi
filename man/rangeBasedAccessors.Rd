@@ -8,6 +8,9 @@
 \alias{exonsBy,OrganismDb-method}
 \alias{cdsBy,OrganismDb-method}
 
+\alias{columns}
+\alias{columns,OrganismDb-method}
+
 
 \title{
   Extract genomic features from an object
@@ -19,18 +22,19 @@
 }
 
 \usage{
-\S4method{transcripts}{OrganismDb}(x, cols, vals=NULL,
-                       columns=c("tx_id", "tx_name"))
+\S4method{transcripts}{OrganismDb}(x, vals=NULL, columns=c("TXID", "TXNAME"))
 
-\S4method{exons}{OrganismDb}(x, cols, vals=NULL, columns="exon_id")
+\S4method{exons}{OrganismDb}(x, vals=NULL, columns="EXONID")
 
-\S4method{cds}{OrganismDb}(x, cols, vals=NULL, columns="cds_id")
+\S4method{cds}{OrganismDb}(x, vals=NULL, columns="CDSID")
 
-\S4method{transcriptsBy}{OrganismDb}(x, by, cols)
+\S4method{transcriptsBy}{OrganismDb}(x, by, columns)
 
-\S4method{exonsBy}{OrganismDb}(x, by, cols)
+\S4method{exonsBy}{OrganismDb}(x, by, columns)
 
-\S4method{cdsBy}{OrganismDb}(x, by, cols)
+\S4method{cdsBy}{OrganismDb}(x, by, columns)
+
+\S4method{columns}{OrganismDb}(x)
 }
 
 \arguments{ 
@@ -44,9 +48,9 @@
     One of \code{"gene"}, \code{"exon"}, \code{"cds"} or \code{"tx"}.
     Determines the grouping.
   }
-  \item{cols}{
-    The cols or kinds of metadata that can be retrieved from the
-    database.  All possible cols are returned by using the \code{cols}
+  \item{columns}{
+    The columns or kinds of metadata that can be retrieved from the
+    database.  All possible columns are returned by using the \code{columns}
     method.
   }
   \item{vals}{
@@ -59,21 +63,6 @@
     \code{"exon_chrom"}, \code{"exon_strand"},
     \code{"cds_id"}, \code{"cds_name"},
     \code{"cds_chrom"}, \code{"cds_strand"} and \code{"exon_rank"}.
-  }
-  \item{columns}{
-    Columns to include in the output.
-    Must be \code{NULL} or a character vector with values in the
-    above list of valid names. With the following restrictions:
-    \itemize{
-      \item \code{"tx_chrom"} and \code{"tx_strand"} are not allowed
-      for \code{transcripts}.
-      \item \code{"exon_chrom"} and \code{"exon_strand"} are not allowed
-      for \code{exons}.
-      \item \code{"cds_chrom"} and \code{"cds_strand"} are not allowed
-      for \code{cds}.
-    }
-    If the vector is named, those names are used for the corresponding
-    column in the element metadata of the returned object. 
   }
 }
 
@@ -104,11 +93,14 @@
 ## extracting all transcripts from Homo.sapiens with some extra metadata
 library(Homo.sapiens)
 cols = c("TXNAME","SYMBOL")
-res <- transcripts(Homo.sapiens, cols)
+res <- transcripts(Homo.sapiens, columns=cols)
 
 ## extracting all transcripts from Homo.sapiens, grouped by gene and
 ## with extra metadata
-res <- transcriptsBy(Homo.sapiens, by="gene", cols)
+res <- transcriptsBy(Homo.sapiens, by="gene", columns=cols)
+
+## list possible values for columns argument:
+columns(Homo.sapiens)
 }
 
 \keyword{methods}
