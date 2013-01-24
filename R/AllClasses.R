@@ -128,10 +128,27 @@ setMethod("show", "OrganismDb",
         cat("Annotation relationships:\n")
         kf <- keyFrame(object)
         show(kf)
+        cat("For more details, please see the show methods for the component objects listed above.")
     }
 )
 
-
+setMethod("metadata", "OrganismDb",
+    function(x)
+    {
+        objs <- .getDbObjs(x)
+        res <- data.frame()
+        for(i in seq_len(length(objs))){
+            meta <- metadata(objs[[i]])
+            res <- rbind(meta,res) ## inneficient (but i is normally <= 4)
+        }
+        ## Then get rid of any rows that are repeated
+        d <- duplicated(res[,1])
+        dupNames <- unique(res[d,1])
+        res <- res[!(res[,1] %in% dupNames),]
+        message("Only unique values are returned by this metadata method.  For individual metadata values that may share a key, such as the Db type, be sure to call metadata on the individual objects. \n")
+        show(res)
+    }
+)         
 
 
 

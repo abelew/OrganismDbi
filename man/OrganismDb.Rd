@@ -9,6 +9,7 @@
 \alias{keytypes,OrganismDb-method}
 \alias{keys,OrganismDb-method}
 \alias{select,OrganismDb-method}
+\alias{metadata,OrganismDb-method}
 
 \title{OrganismDb objects}
 

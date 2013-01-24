@@ -1,7 +1,7 @@
 importFrom("graph", ftM2graphNEL)
 importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
 importMethodsFrom("RBGL", bfs)
-importFrom(AnnotationDbi, cols, keys, keytypes, select)
+importFrom(AnnotationDbi, cols, keys, keytypes, select, metadata)
 importFrom("GenomicFeatures",
                   transcripts,
                   exons,
@@ -22,6 +22,7 @@ exportMethods("cols",
               "transcriptsBy",
               "exonsBy",
               "cdsBy",
-              "columns"
+              "columns",
+              "metadata"
               )
 export("makeOrganismPackage")
