@@ -128,7 +128,7 @@ setMethod("show", "OrganismDb",
         cat("Annotation relationships:\n")
         kf <- keyFrame(object)
         show(kf)
-        cat("For more details, please see the show methods for the component objects listed above.")
+        cat("For more details, please see the show methods for the component objects listed above.\n")
     }
 )
 
