@@ -17,5 +17,5 @@ Collate: AllGenerics.R
 	 createOrganismPackage.R
 	 test_OrganismDbi_package.R
 License: Artistic-2.0
-biocViews: AnnotationData, Infrastructure
+biocViews: Annotation, Infrastructure
 
