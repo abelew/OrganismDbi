@@ -1,5 +1,44 @@
  	**************************************************
 	*						 *
+	*	        1.2.x SERIES NEWS		 *
+	*						 *
+	**************************************************
+
+
+		OrganismDbi VERSION 1.2.x
+
+
+NEW FEATURES
+
+    o There are now range based accessors (transcripts, exons, cds)
+    that can be used to get data out of OrganismDb objects.  
+
+    o There are now list oriented range based accesors (transcriptsBy,
+    exonsBy, cdsBy) that can be used to get data out of OrganismDb
+    objects
+
+    o All these new ranged based operations allow users to extract
+    additional metadata via mcols slot in the resulting object.  The
+    extra data is specified via the columns argument to these methods.
+    
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o New range based accessors allow you to get data back organized
+    by range.  Please see associated manual pages and vignette for
+    more details.
+
+
+BUG FIXES
+
+    o Show method for these objects is improved.
+
+    o Documentation, tests and vignette updates for new methods.
+
+
+
+ 	**************************************************
+	*						 *
 	*	        1.0.0 SERIES NEWS		 *
 	*						 *
 	**************************************************
