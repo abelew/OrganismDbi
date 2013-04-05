@@ -6,7 +6,9 @@
   represents a collection of annotation packages that can be used as a
   single object named @PKGNAME@.  This object can be used with the
   standard four accessor method for all AnnotationDbi objects.  Namely:
-  \code{cols}, \code{keytype}, \code{keys} and \code{select}.}
+  \code{cols}, \code{keytype}, \code{keys} and \code{select}.  Users are
+  encouraged to read the vignette from the \code{OrganismDbi} package for
+  more details.}
 \usage{library(@PKGNAME@)}
 \keyword{datasets}
 \examples{
