@@ -9,8 +9,9 @@ importFrom("GenomicFeatures",
            transcriptsBy,
            exonsBy,
            cdsBy,
-           seqinfo,
-           "seqinfo<-")
+           seqinfo
+##            "seqinfo<-"
+           )
 
 importFrom("GenomicRanges",
 ##            seqlevels,
@@ -21,8 +22,9 @@ importFrom("GenomicRanges",
 ##            "isCircular<-",
 ##            genome,
 ##            "genome<-",
-           seqnameStyle,
-           "seqnameStyle<-")
+           seqnameStyle
+##            "seqnameStyle<-"
+           )
 
 importClassesFrom("graph", graphNEL)
 exportClasses("OrganismDb")
@@ -39,7 +41,7 @@ exportMethods("cols",
               "columns",
               "metadata",
               seqinfo,
-              "seqinfo<-",
+##               "seqinfo<-",  ## setters can't work b/c of the object.
 ##               seqlevels,
 ##               "seqlevels<-",
 ##               seqlengths,
@@ -48,7 +50,7 @@ exportMethods("cols",
 ##               "isCircular<-",
 ##               genome,
 ##               "genome<-",
-              seqnameStyle,
-              "seqnameStyle<-"
+              seqnameStyle
+##               "seqnameStyle<-"
               )
 export("makeOrganismPackage")

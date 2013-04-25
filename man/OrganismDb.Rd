@@ -12,9 +12,9 @@
 \alias{metadata,OrganismDb-method}
 
 \alias{seqinfo,OrganismDb-method}
-\alias{seqinfo<-,OrganismDb-method}
+% \alias{seqinfo<-,OrganismDb-method}
 \alias{seqnameStyle,OrganismDb-method}
-\alias{seqnameStyle<-,OrganismDb-method}
+% \alias{seqnameStyle<-,OrganismDb-method}
 
 \title{OrganismDb objects}
 
@@ -31,7 +31,7 @@
   object in a manner that should be consistent with how these are used
   on the supporting annotation resources.
 
-  The family of \code{seqinfo} style methods (\code{seqinfo},
+  The family of \code{seqinfo} style getters (\code{seqinfo},
   \code{seqlevels}, \code{seqlengths}, \code{isCircular}, \code{genome},
   and \code{seqnameStyle}) is also supported for OrganismDb objects
   provided that the object in question has an embedded TranscriptDb

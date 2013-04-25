@@ -28,11 +28,11 @@ setMethod("seqinfo","OrganismDb",
               seqinfo(txdb)		
 })
 
-setReplaceMethod("seqinfo", "OrganismDb",
-          function(x, new2old=NULL, force=FALSE, value){
-              txdb <- .safelyGetTxDb(x)
-              seqinfo(txdb, new2old=NULL, force=FALSE) <- value	
-})
+## setReplaceMethod("seqinfo", "OrganismDb",
+##           function(x, new2old=NULL, force=FALSE, value){
+##               txdb <- .safelyGetTxDb(x)
+##               seqinfo(txdb, new2old=NULL, force=FALSE) <- value	
+## })
 
 
 ## #############################################################################
@@ -87,10 +87,11 @@ setMethod("seqnameStyle","OrganismDb",
               seqnameStyle(txdb)	
 })
 
-setReplaceMethod("seqnameStyle", "OrganismDb",
-                 function(x, value){
-                     txdb <- .safelyGetTxDb(x)
-                     seqnameStyle(txdb) <- value	
-})
+## setReplaceMethod("seqnameStyle", "OrganismDb",
+##                  function(x, value){
+##                      txdb <- .safelyGetTxDb(x)
+##                      seqnameStyle(txdb) <- value
+##                      x@
+## })
 
 
