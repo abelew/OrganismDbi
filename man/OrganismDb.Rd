@@ -11,6 +11,11 @@
 \alias{select,OrganismDb-method}
 \alias{metadata,OrganismDb-method}
 
+\alias{seqinfo,OrganismDb-method}
+\alias{seqinfo<-,OrganismDb-method}
+\alias{seqnameStyle,OrganismDb-method}
+\alias{seqnameStyle<-,OrganismDb-method}
+
 \title{OrganismDb objects}
 
 \description{
@@ -25,6 +30,12 @@
   used together to extract data from an \code{OrganismDb}
   object in a manner that should be consistent with how these are used
   on the supporting annotation resources.
+
+  The family of \code{seqinfo} style methods (\code{seqinfo},
+  \code{seqlevels}, \code{seqlengths}, \code{isCircular}, \code{genome},
+  and \code{seqnameStyle}) is also supported for OrganismDb objects
+  provided that the object in question has an embedded TranscriptDb
+  object.
 }
 
 \section{Methods}{
@@ -67,6 +78,10 @@
     used to generate an \code{OrganismDb} based package.
     \item \link[OrganismDbi]{rangeBasedAccessors} for the range based methods
     used in extracting data from a \code{OrganismDb} object.
+    \item \link[GenomicRanges]{seqlevels} .
+    \item \link[GenomicRanges]{seqlengths} .
+    \item \link[GenomicRanges]{isCircular} .
+    \item \link[GenomicRanges]{genome} .    
 }
 }
 

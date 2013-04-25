@@ -3,12 +3,26 @@ importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
 importMethodsFrom("RBGL", bfs)
 importFrom(AnnotationDbi, cols, keys, keytypes, select, metadata)
 importFrom("GenomicFeatures",
-                  transcripts,
-                  exons,
-                  cds,
-                  transcriptsBy,
-                  exonsBy,
-                  cdsBy)
+           transcripts,
+           exons,
+           cds,
+           transcriptsBy,
+           exonsBy,
+           cdsBy,
+           seqinfo,
+           "seqinfo<-")
+
+importFrom("GenomicRanges",
+##            seqlevels,
+##            "seqlevels<-",
+##            seqlengths,
+##            "seqlengths<-",
+##            isCircular,
+##            "isCircular<-",
+##            genome,
+##            "genome<-",
+           seqnameStyle,
+           "seqnameStyle<-")
 
 importClassesFrom("graph", graphNEL)
 exportClasses("OrganismDb")
@@ -23,6 +37,18 @@ exportMethods("cols",
               "exonsBy",
               "cdsBy",
               "columns",
-              "metadata"
+              "metadata",
+              seqinfo,
+              "seqinfo<-",
+##               seqlevels,
+##               "seqlevels<-",
+##               seqlengths,
+##               "seqlengths<-",
+##               isCircular,
+##               "isCircular<-",
+##               genome,
+##               "genome<-",
+              seqnameStyle,
+              "seqnameStyle<-"
               )
 export("makeOrganismPackage")
