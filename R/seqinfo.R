@@ -22,17 +22,23 @@
 
 #############################################################################
 
+## To get all these functions, I ONLY need to make this setter and getter work
+
 setMethod("seqinfo","OrganismDb", 
           function(x){
               txdb <- .safelyGetTxDb(x)
               seqinfo(txdb)		
 })
 
+
+## This can work once I have a local object that I can modify?
+
 ## setReplaceMethod("seqinfo", "OrganismDb",
 ##           function(x, new2old=NULL, force=FALSE, value){
 ##               txdb <- .safelyGetTxDb(x)
 ##               seqinfo(txdb, new2old=NULL, force=FALSE) <- value	
 ## })
+
 
 
 ## #############################################################################
@@ -81,11 +87,11 @@ setMethod("seqinfo","OrganismDb",
 
 #############################################################################
 
-setMethod("seqnameStyle","OrganismDb", 
-          function(x){
-              txdb <- .safelyGetTxDb(x)
-              seqnameStyle(txdb)	
-})
+## setMethod("seqnameStyle","OrganismDb", 
+##           function(x){
+##               txdb <- .safelyGetTxDb(x)
+##               seqnameStyle(txdb)	
+## })
 
 ## setReplaceMethod("seqnameStyle", "OrganismDb",
 ##                  function(x, value){

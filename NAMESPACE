@@ -9,11 +9,13 @@ importFrom("GenomicFeatures",
            transcriptsBy,
            exonsBy,
            cdsBy,
-           seqinfo
+           seqinfo  ## Import this from GenomicFeatures b/c we need txdb vers.
 ##            "seqinfo<-"
            )
 
-importFrom("GenomicRanges",
+## importFrom("GenomicRanges",
+##            seqinfo ##,
+##            "seqinfo<-"
 ##            seqlevels,
 ##            "seqlevels<-",
 ##            seqlengths,
@@ -22,9 +24,9 @@ importFrom("GenomicRanges",
 ##            "isCircular<-",
 ##            genome,
 ##            "genome<-",
-           seqnameStyle
+##            seqnameStyle
 ##            "seqnameStyle<-"
-           )
+##            )
 
 importClassesFrom("graph", graphNEL)
 exportClasses("OrganismDb")
@@ -40,7 +42,7 @@ exportMethods("cols",
               "cdsBy",
               "columns",
               "metadata",
-              seqinfo,
+              seqinfo
 ##               "seqinfo<-",  ## setters can't work b/c of the object.
 ##               seqlevels,
 ##               "seqlevels<-",
@@ -50,7 +52,7 @@ exportMethods("cols",
 ##               "isCircular<-",
 ##               genome,
 ##               "genome<-",
-              seqnameStyle
+##               seqnameStyle
 ##               "seqnameStyle<-"
               )
 export("makeOrganismPackage")

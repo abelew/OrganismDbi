@@ -13,7 +13,7 @@
 
 \alias{seqinfo,OrganismDb-method}
 % \alias{seqinfo<-,OrganismDb-method}
-\alias{seqnameStyle,OrganismDb-method}
+% \alias{seqnameStyle,OrganismDb-method}
 % \alias{seqnameStyle<-,OrganismDb-method}
 
 \title{OrganismDb objects}
@@ -96,3 +96,4 @@ keytype <- "ENTREZID"
 res <- select(Homo.sapiens, keys, cols, keytype)
 head(res)
 }
+

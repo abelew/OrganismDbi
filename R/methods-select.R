@@ -54,7 +54,7 @@ setMethod("cols", "OrganismDb", .cols)
     eval(parse(text=db))
 }
 
-.keys <- function(x, keytype){
+.keys <- function(x, keytype, ...){
     kts <- keytypes(x)
     if(!(keytype %in% kts))
       stop("'keytype' invalid; call keytypes(x) for valid values")
@@ -64,7 +64,7 @@ setMethod("cols", "OrganismDb", .cols)
       stop("'keys' only accepts one 'keytype' at a time")
     db <- .lookupDbFromKeytype(x, keytype)
     ## And then we can just call keys...
-    keys(db, keytype)
+    keys(db, keytype, ...)
 }
 
 setMethod("keys", "OrganismDb", .keys)
