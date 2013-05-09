@@ -91,6 +91,8 @@
 
 \seealso{ 
   \itemize{
+    \item \link[AnnotationDbi]{AnnotationDb-class} for more descriptsion
+    of methods \code{select},\code{keytypes},\code{keys} and \code{cols}.
     \item \link[OrganismDbi]{makeOrganismPackage} for functions
     used to generate an \code{OrganismDb} based package.
     \item \link[OrganismDbi]{rangeBasedAccessors} for the range based methods
