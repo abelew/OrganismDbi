@@ -8,8 +8,8 @@
 \alias{exonsBy,OrganismDb-method}
 \alias{cdsBy,OrganismDb-method}
 
-\alias{columns}
-\alias{columns,OrganismDb-method}
+% \alias{columns}
+% \alias{columns,OrganismDb-method}
 
 
 \title{
@@ -34,7 +34,7 @@
 
 \S4method{cdsBy}{OrganismDb}(x, by, columns)
 
-\S4method{columns}{OrganismDb}(x)
+% \S4method{columns}{OrganismDb}(x)
 }
 
 \arguments{ 

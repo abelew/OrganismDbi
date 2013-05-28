@@ -1,1 +1,1 @@
-setGeneric("columns", function(x, ...) standardGeneric("columns"))
+## setGeneric("columns", function(x, ...) standardGeneric("columns"))

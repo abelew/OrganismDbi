@@ -4,7 +4,7 @@
 ## 3) need a helper to make the extraction of the txdb SAFE and warn if this is not possible.
 
 .safelyGetTxDb <- function(x){
-    if("TXID" %in% cols(x)){
+    if("TXID" %in% columns(x)){
         return(.getTxDb(x))
     }else{
         stop("The OrganismDb object does not have an embedded TranscriptDb.")

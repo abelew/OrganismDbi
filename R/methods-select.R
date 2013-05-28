@@ -18,13 +18,13 @@ setMethod("keytypes", "OrganismDb", .keytypes)
 
 .cols <- function(x){
     dbs <- .getDbObjs(x)
-    unique(unlist(lapply(dbs, cols)))
+    unique(unlist(lapply(dbs, columns)))
 }
 
-setMethod("cols", "OrganismDb", .cols)
+setMethod("columns", "OrganismDb", function(x){.cols(x)})
 
 ## Usage:
-## cols(Homo.sapiens)
+## columns(Homo.sapiens)
 
 ## Strategy for keys: I need a lookup function that can 1) generate the keys
 ## for each slot and then lookup which slot I should be tapping based on a
@@ -144,7 +144,7 @@ setMethod("keys", "OrganismDb", .keys)
 ## helper for getting all cols by all nodes
 .colsByNodes <- function(x){
     gr <- dbGraph(x)
-    allCols <- lapply(nodes(gr), function(elt) cols(.makeReal(elt)))
+    allCols <- lapply(nodes(gr), function(elt) columns(.makeReal(elt)))
     names(allCols) <- nodes(gr)
     allCols
 }
@@ -272,8 +272,8 @@ setMethod("keys", "OrganismDb", .keys)
     if(missing(keys)){stop("You must provide a keys argument")}
     if(missing(cols)){stop("You must provide cols argument")}
     if(missing(keytype)){stop("You must provide a keytype argument")}
-    if(!all(cols %in% cols(x)) ){
-        stop("Invalid cols values. For legal cols argument values use: cols()")}
+    if(!all(cols %in% columns(x)) ){
+        stop("Invalid columns values. For legal columns argument values use: columns()")}
     if(!keytype %in% keytypes(x)){
         stop("Invalid keytype value. For legal keytype argument values use: keytypes()")}
     
@@ -307,7 +307,7 @@ setMethod("keys", "OrganismDb", .keys)
     extraKeys <- .getDbNameFKeys(x)
     blackList <- extraKeys[!(extraKeys %in% unique(c(oriCols, keytype)))]
     ## if they asked for one of the GO items, then GO is not blacklisted
-    ##   if(any(cols(GO.db) %in% oriCols)){
+    ##   if(any(columns(GO.db) %in% oriCols)){
     ##     blackList <- blackList[!(blackList %in% "GO")]
     ##   }
     res <- res[,!(colnames(res) %in% blackList), drop=FALSE] 

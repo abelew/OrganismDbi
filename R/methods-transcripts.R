@@ -10,8 +10,8 @@
 ## the internal transcripts call
 
 
-## For consistency, the helper columns just wraps around cols method...
-setMethod("columns", "OrganismDb", cols)
+## ## For consistency, the helper columns just wraps around cols method...
+## setMethod("columns", "OrganismDb", function(x){.cols(x)})
 
 
 .getTxDb <- function(x){

@@ -28,7 +28,7 @@
   pkgs <- unlist(lapply(names(fkeys), .makeReal))
   res <- logical(length(pkgs))
   for(i in seq_len(length(pkgs))){
-    res[i] <- fkeys[i] %in% cols(pkgs[[i]]) 
+    res[i] <- fkeys[i] %in% columns(pkgs[[i]]) 
   }  
   if(!all(res))
     stop("some foreign keys are not present in their associated databases")
@@ -70,7 +70,7 @@ makeOrganismPackage <- function(pkgname,
    pkgs <- unique(names(.extractPkgsAndCols(gd)))
    for (pkg in pkgs)
        .initPkg(pkg)
-   ## Also check that the fkeys are really cols for the graphData
+   ## Also check that the fkeys are really columns for the graphData
    fkeys <- .extractPkgsAndCols(gd)
    .testKeys(fkeys)
    

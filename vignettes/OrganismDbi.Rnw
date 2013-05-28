@@ -94,16 +94,16 @@ This is made possible because the packages that are represented by
 Usage of a package like this has been deliberately kept very simple.
 The methods supported are the same ones that work for all the packages
 based on \Rclass{AnnotationDb} objects.  The methods that can be
-applied to these new packages are \Rmethod{cols}, \Rmethod{keys},
+applied to these new packages are \Rmethod{columns}, \Rmethod{keys},
 \Rmethod{keytypes} and \Rmethod{select}.
 
 So to learn which kinds of data can be retrieved from a package like
-this we would simply load the package and then call the \Rmethod{cols}
+this we would simply load the package and then call the \Rmethod{columns}
 method.
 
-<<cols>>=
+<<columns>>=
 library(Homo.sapiens)
-cols(Homo.sapiens)
+columns(Homo.sapiens)
 @
 
 To learn which of those kinds of data can be used as keys to extract
@@ -164,12 +164,12 @@ logical limitations for what can be included in this kind of package.
   
 \item The 1st limitation is that all the annotation resources in question
 must have implemented the four methods described in the preceding
-section (\Rmethod{cols}, \Rmethod{keys}, \Rmethod{keytypes} and
+section (\Rmethod{columns}, \Rmethod{keys}, \Rmethod{keytypes} and
 \Rmethod{select}).
 
 \item The 2nd limitation is that you cannot have more than one example
 of each field that can be retrieved from each type of package that is
-included.  So basically, all values returned by \Rmethod{cols} must be
+included.  So basically, all values returned by \Rmethod{columns} must be
 unique across ALL of the supporting packages.
 
 \item The 3rd limitation is that you cannot have more than one example
@@ -197,7 +197,7 @@ character vectors.  Each character vector represents one relationship
 between a pair of packages.  The names of the vectors are the package
 names and the values are the foreign keys.  Please note that the
 foreign key values in these vectors are the same strings that are
-returned by the \Rmethod{cols} method for the individual packages.
+returned by the \Rmethod{columns} method for the individual packages.
 Here is an example that shows how \Rpackage{GO.db},
 \Rpackage{org.Hs.eg.db} and
 \Rpackage{TxDb.Hsapiens.UCSC.hg19.knownGene} all relate to each other.
