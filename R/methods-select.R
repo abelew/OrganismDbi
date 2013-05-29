@@ -222,7 +222,7 @@ setMethod("keys", "OrganismDb", .keys)
     selected[[node1]] <- 
         select(.makeReal(node1),
                keys=keys,
-               cols=needCols[[node1]],
+               columns=needCols[[node1]],
                keytype=keytype)
     ## but here we need to use the name and the value of visitNodes
     otherNodes <- visitNodes[-1] 
@@ -236,7 +236,7 @@ setMethod("keys", "OrganismDb", .keys)
         selected[[nodeName]] <- 
             select(.makeReal(nodeName),
                    keys=fromKeys,
-                   cols=needCols[[nodeName]],
+                   columns=needCols[[nodeName]],
                    keytype=toKey)
     }
     selected
@@ -321,9 +321,24 @@ setMethod("keys", "OrganismDb", .keys)
     unique(res)
 }
 
+
+##  Remove this select warning function after 2.13 has released
+.selectWarnOrganismDb <- function(x, keys, columns, keytype, ...){
+    extraArgs <- list(...)
+    if("cols" %in% names(extraArgs)){
+        ## warn the user about the old argument
+        AnnotationDbi:::.colsArgumentWarning()
+        ## then call it using cols in place of columns
+        .select(x, keys, extraArgs[["cols"]], keytype, ...)  
+    }else{
+        .select(x, keys, columns, keytype, ...)
+    }
+}
+
 setMethod("select", "OrganismDb",
-          function(x, keys, cols, keytype, ...){
-            .select(x, keys, cols, keytype, ...)
+          function(x, keys, columns, keytype, ...){
+            .selectWarnOrganismDb(x, keys, columns, keytype, ...)
+##             .select(x, keys, columns, keytype, ...)
           }
 )
 

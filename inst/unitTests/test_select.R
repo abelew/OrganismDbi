@@ -167,7 +167,7 @@ test_select <- function(){
   cls <- c("GO","ALIAS","CHR","CHRLOC")
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
-  res <- OrganismDbi:::.select(x, keys, cls, keytype)
+  res <- OrganismDbi:::.select(x, keys, cls, keytype)  
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==8)
   checkTrue(class(res)=="data.frame")

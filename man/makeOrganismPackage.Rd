@@ -30,7 +30,7 @@ makeOrganismPackage (pkgname,
   relationship between two packages.  The names of these character
   vectors are the package names and the values are the foreign keys that
   should be used to connect each package.  All foreign keys must be
-  values that can be returned by the cols method for each package in
+  values that can be returned by the columns method for each package in
   question, and obviously they also must be the same kind of identifier
   as well.}
   \item{organism}{The name of the organism this package represents}

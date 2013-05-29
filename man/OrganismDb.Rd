@@ -78,10 +78,10 @@
       \code{OrganismDb} object.
     }
     \item{}{
-      \code{select(x, keys, cols, keytype)}:
+      \code{select(x, keys, columns, keytype)}:
       When all the appropriate arguments are specifiedm \code{select}
       will retrieve the matching data as a data.frame based on
-      parameters for selected \code{keys} and \code{cols} and
+      parameters for selected \code{keys} and \code{columns} and
       \code{keytype} arguments.
     }
 }
@@ -109,10 +109,10 @@
 library(Homo.sapiens)
 ls(2)
 ## then the methods can be used on this object.
-cols <- columns(Homo.sapiens)[c(7,10,11,12)]
+columns <- columns(Homo.sapiens)[c(7,10,11,12)]
 keys <- head(keys(org.Hs.eg.db, "ENTREZID"))
 keytype <- "ENTREZID"
-res <- select(Homo.sapiens, keys, cols, keytype)
+res <- select(Homo.sapiens, keys, columns, keytype)
 head(res)
 }
 
