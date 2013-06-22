@@ -1,4 +1,4 @@
-## This will just hold code for the initial implementation of select and friends
+# This will just hold code for the initial implementation of select and friends
 
 ## helper to convert text strings (Db pkgs names) into real objects
 .makeReal <- function(x){
@@ -325,11 +325,16 @@ setMethod("keys", "OrganismDb", .keys)
 ##  Remove this select warning function after 2.13 has released
 .selectWarnOrganismDb <- function(x, keys, columns, keytype, ...){
     extraArgs <- list(...)
-    if("cols" %in% names(extraArgs)){
+    if("cols" %in% names(extraArgs)){ 
         ## warn the user about the old argument
         AnnotationDbi:::.colsArgumentWarning()
         ## then call it using cols in place of columns
-        .select(x, keys, extraArgs[["cols"]], keytype, ...)  
+        ## YES keytype=columns.  Really!, but ONLY when keytype is null...
+        if(missing(keytype)){
+            .select(x, keys, extraArgs[["cols"]], keytype = columns, ...)
+        }else{
+            .select(x, keys, extraArgs[["cols"]], keytype = keytype, ...)
+        }
     }else{
         .select(x, keys, columns, keytype, ...)
     }
