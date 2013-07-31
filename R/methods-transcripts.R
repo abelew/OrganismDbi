@@ -30,7 +30,11 @@
 ## ALL of the columns in a data.frame (meta) except for the one that
 ## was the basis for the special factor (avoidID)
 .compressMetadata <- function(f, meta, avoidID){
-    columns <- meta[,!colnames(meta) %in% avoidID, drop=FALSE]
+    if(!is.null(avoidID)){
+        columns <- meta[,!colnames(meta) %in% avoidID, drop=FALSE]
+    }else{
+        columns <- meta
+    }
     ## call splitAsList (using factor) on all columns except avoidId
     res <- lapply(columns, splitAsList, f) ## fast 
     ## call unique on all columns
@@ -39,11 +43,15 @@
 }
 
 ## This helper does book keeping that is relevant to my situation here.
-.combineMetadata <- function(rngs, meta, avoidID, joinID){
+.combineMetadata <- function(rngs, meta, avoidID, joinID, columns){
     ## make a special factor
     f <- factor(meta[[avoidID]],levels=mcols(rngs)[[joinID]])
     ## compress the metadata by splitting according to f
-    res <- .compressMetadata(f, meta, avoidID)
+    if(avoidID %in% columns){ ## don't avoid the avoidID        
+        res <- .compressMetadata(f, meta, avoidID=NULL)
+    }else{ ## avoid the avoidID (most common case)
+        res <- .compressMetadata(f, meta, avoidID)
+    }
     ## attach to mcols values. from before.
     if(dim(mcols(rngs))[1] == dim(res)[1]){
         res <- c(mcols(rngs),res)
@@ -67,13 +75,14 @@
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=mcols(txs)$tx_id, columns, "TXID")    
     ## assemble it all together.
-    mcols(txs) <- .combineMetadata(txs,meta,avoidID="TXID",joinID="tx_id") 
+    mcols(txs) <- .combineMetadata(txs,meta,avoidID="TXID",joinID="tx_id",
+                                   columns=columns) 
     txs
 }
 
 setMethod("transcripts", "OrganismDb",
           function(x, vals=NULL, columns=c("TXID", "TXNAME")){
-              .transcripts(x, vals, columns)})
+              .transcripts(x, vals, columns)} )
 
 
 ## test usage:
@@ -94,7 +103,8 @@ setMethod("transcripts", "OrganismDb",
     meta <- select(x, keys=mcols(exs)$exon_id, columns, "EXONID")
     
     ## assemble it all together.
-    mcols(exs) <- .combineMetadata(exs,meta,avoidID="EXONID",joinID="exon_id")
+    mcols(exs) <- .combineMetadata(exs,meta,avoidID="EXONID",joinID="exon_id",
+                                   columns=columns)
     exs
 }
 
@@ -121,7 +131,8 @@ setMethod("exons", "OrganismDb",
     meta <- select(x, keys=mcols(cds)$cds_id, columns, "CDSID")
     
     ## assemble it all together.
-    mcols(cds) <- .combineMetadata(cds,meta,avoidID="CDSID",joinID="cds_id")
+    mcols(cds) <- .combineMetadata(cds,meta,avoidID="CDSID",joinID="cds_id",
+                                   columns=columns)
     cds
 }
 
@@ -163,7 +174,8 @@ setMethod("cds", "OrganismDb",
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, columns, "TXID")    
     ## assemble it all together.
-    mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID", joinID="tx_id") 
+    mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID", joinID="tx_id",
+                                   columns=columns) 
 
     ## now cram it back in there.
     txby@unlistData <- gr
@@ -199,7 +211,8 @@ setMethod("transcriptsBy", "OrganismDb",
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, columns, "EXONID")    
     ## assemble it all together.
-    mcols(gr) <- .combineMetadata(gr, meta, avoidID="EXONID", joinID="exon_id") 
+    mcols(gr) <- .combineMetadata(gr, meta, avoidID="EXONID", joinID="exon_id",
+                                   columns=columns) 
 
     ## now cram it back in there.
     exby@unlistData <- gr
@@ -233,7 +246,8 @@ setMethod("exonsBy", "OrganismDb",
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, columns, "CDSID")    
     ## assemble it all together.
-    mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID", joinID="cds_id") 
+    mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID", joinID="cds_id",
+                                   columns=columns) 
 
     ## now cram it back in there.
     cdsby@unlistData <- gr

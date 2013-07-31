@@ -24,13 +24,13 @@ test_compressMetadata <- function(){
     checkTrue(all(colnames(res) %in% cols))
 }
 
-
+## .combineMetadata is an important helper function.
 test_combineMetadata <- function(){
     cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
     txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
     meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID") 
     res <- OrganismDbi:::.combineMetadata(txs,meta,avoidID="TXID",
-                                          joinID="tx_id")
+                                          joinID="tx_id", columns=cols)
     checkTrue(class(res)== "DataFrame")
     checkTrue(dim(res)[2] ==4)
     checkTrue(dim(res)[1] ==100)
@@ -111,16 +111,36 @@ test_cdsBy <- function(){
 
 
 
-
-
 #################
-## Another bug.  The following should work? (but doesn't)
-## it's probably something to do with expansion of TXIDs by select?
-## It's a corner case...  Cause because TXID is on the "avoid" list
-## and is also requested here...  The problems caused by this will
-## change as I remove the default values for tx_id etc. from the
-## internal call to transcriptsBy()...  So that means that 'avoding'
-## TXID will also be unecessary.
+## This test adresses a bug that relates to the access of TXID and
+## other column values that were used for "joining" data together.
 
-## THEREFORE: TODO = resolve the other issues 1st.
-## x = Homo.sapiens; txby= transcriptsBy(x, by="gene", "TXID")
+test_rangeMethods_for_JoinFailures <- function(){
+    library(Homo.sapiens);h<-Homo.sapiens; cols<-"TXID"    
+    res <- transcripts(h, columns=cols)
+    checkTrue(names(mcols(res))=="TXID")
+    checkTrue(class(res) == "GRanges")
+    checkTrue(length(res) > 10000)  ## large
+    
+    res <- transcriptsBy(h, by="gene", columns=cols)
+    checkTrue("TXID" %in% names(mcols(res[[1]])))
+    checkTrue(class(res) == "GRangesList")
+    checkTrue(length(res) > 10000)  ## large
+}
+
+
+
+## Other Bug: for exons() vals argument does not work on Homo.sapiens objects...
+
+test_valsArg <- function(){
+    ## this works:
+    res <- exons(Homo.sapiens, vals=list(gene_id="100"))
+    checkTrue(class(res) == "GRanges")
+    checkTrue(length(res) < 20)  ## small
+
+    ## so does this! 
+    res <- exons(Homo.sapiens, vals=list(gene_id="100") , columns="SYMBOL")
+    checkTrue("SYMBOL" %in% names(mcols(res)))
+    checkTrue(class(res) == "GRanges")
+    checkTrue(length(res) < 20)  ## small
+}
