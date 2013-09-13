@@ -221,7 +221,7 @@ setMethod("keys", "OrganismDb", .keys)
     node1 <- names(visitNodes)[[1]]
     selected[[node1]] <- 
         select(.makeReal(node1),
-               keys=keys,
+               keys=as.character(keys),
                columns=needCols[[node1]],
                keytype=keytype)
     ## but here we need to use the name and the value of visitNodes
@@ -235,7 +235,7 @@ setMethod("keys", "OrganismDb", .keys)
         toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
         selected[[nodeName]] <- 
             select(.makeReal(nodeName),
-                   keys=fromKeys,
+                   keys=as.character(fromKeys),
                    columns=needCols[[nodeName]],
                    keytype=toKey)
     }
