@@ -43,7 +43,7 @@ test_transcripts <- function(){
     library(Homo.sapiens); h = Homo.sapiens; cols = c("TXNAME","SYMBOL")
     res <- transcripts(h, columns=cols)
     checkTrue(class(res) == "GRanges")
-    checkTrue(length(res) == 80922)
+    checkTrue(length(res) > 80000)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("TXNAME","SYMBOL")))
 }
@@ -52,7 +52,7 @@ test_exons <- function(){
     library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","REFSEQ")
     res <- exons(h, columns=cols)
     checkTrue(class(res) == "GRanges")
-    checkTrue(length(res) == 286852)
+    checkTrue(length(res) > 200000)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("CHR","REFSEQ")))
 }
@@ -61,7 +61,7 @@ test_cds <- function(){
     library(Homo.sapiens); h = Homo.sapiens; cols = c("GENENAME","SYMBOL")
     res <- cds(h, columns=cols)
     checkTrue(class(res) == "GRanges")
-    checkTrue(length(res) == 235842)
+    checkTrue(length(res) > 200000)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("GENENAME","SYMBOL")))
 }
@@ -74,7 +74,7 @@ test_transcriptsBy <- function(){
     library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
     res <- transcriptsBy(h, by="gene", cols)    
     checkTrue(class(res) == "GRangesList")
-    checkTrue(length(res) == 22932)
+    checkTrue(length(res) > 20000)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("GENENAME","SYMBOL")))
 
@@ -82,7 +82,7 @@ test_transcriptsBy <- function(){
     cols = c("SYMBOL")
     res2 <- transcriptsBy(h, by="gene", cols)
     checkTrue(class(res) == "GRangesList")
-    checkTrue(length(res) == 22932)
+    checkTrue(length(res) > 20000)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("SYMBOL")))
 
@@ -94,7 +94,7 @@ test_exonsBy <- function(){
     res <- exonsBy(h, by="gene", cols)
     ## TODO: look more closely at this one.  The metadata looks off...
     checkTrue(class(res) == "GRangesList")
-    checkTrue(length(res) == 22932) 
+    checkTrue(length(res) > 20000) 
     checkTrue(all(colnames(mcols(res)) %in%
                   c("GENENAME","SYMBOL")))
 }
@@ -103,7 +103,7 @@ test_cdsBy <- function(){
     library(Homo.sapiens);h=Homo.sapiens;by="gene";cols = c("GENENAME","SYMBOL")
     res <- cdsBy(h, by="gene", cols)
     checkTrue(class(res) == "GRangesList")
-    checkTrue(length(res) == 19511)
+    checkTrue(length(res) > 19000)
     checkTrue(all(colnames(mcols(res)) %in%
                   c("GENENAME","SYMBOL")))
 }
