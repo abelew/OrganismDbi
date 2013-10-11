@@ -1,5 +1,28 @@
  	**************************************************
 	*						 *
+	*	        1.4.x SERIES NEWS		 *
+	*						 *
+	**************************************************
+
+
+		OrganismDbi VERSION 1.2.x
+
+
+NEW FEATURES
+
+    o keys method now has new arguments to allow for more
+    sophisticated filtering.
+    
+
+BUG FIXES
+
+    o cols arguments and methods will now be columns arguments and methods
+
+    o stricter argument checking for select and friends
+
+
+ 	**************************************************
+	*						 *
 	*	        1.2.x SERIES NEWS		 *
 	*						 *
 	**************************************************
