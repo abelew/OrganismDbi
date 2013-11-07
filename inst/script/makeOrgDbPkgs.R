@@ -43,7 +43,7 @@ gd <- list(join1 = c(GO.db="GOID", org.Rn.eg.db="GO"),
 makeOrganismPackage(pkgname = "Rattus.norvegicus",
                     graphData = gd,
                     organism = "Rattus norvegicus",
-                    version = "1.0.0",
+                    version = version,
                     maintainer =
               "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
                     author = "Bioconductor Core Team",
