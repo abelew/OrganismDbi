@@ -73,7 +73,7 @@
     ## call transcripts method (on the TxDb)
     txs <- transcripts(txdb, vals, columns="tx_id")  
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(txs)$tx_id, columns, "TXID")    
+    meta <- select(x, keys=as.character(mcols(txs)$tx_id), columns, "TXID")    
     ## assemble it all together.
     mcols(txs) <- .combineMetadata(txs,meta,avoidID="TXID",joinID="tx_id",
                                    columns=columns) 
@@ -100,7 +100,7 @@ setMethod("transcripts", "OrganismDb",
     exs <- exons(txdb, vals, columns="exon_id")
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(exs)$exon_id, columns, "EXONID")
+    meta <- select(x, keys=as.character(mcols(exs)$exon_id), columns, "EXONID")
     
     ## assemble it all together.
     mcols(exs) <- .combineMetadata(exs,meta,avoidID="EXONID",joinID="exon_id",
@@ -128,7 +128,7 @@ setMethod("exons", "OrganismDb",
     cds <- cds(txdb, vals, columns="cds_id")
     
     ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=mcols(cds)$cds_id, columns, "CDSID")
+    meta <- select(x, keys=as.character(mcols(cds)$cds_id), columns, "CDSID")
     
     ## assemble it all together.
     mcols(cds) <- .combineMetadata(cds,meta,avoidID="CDSID",joinID="cds_id",
@@ -169,7 +169,7 @@ setMethod("cds", "OrganismDb",
     ## get the tx_ids from the transcripts
     ## AND I need to one from the internal slot.
     gr <- txby@unlistData
-    k  <- mcols(gr)$tx_id
+    k  <- as.character(mcols(gr)$tx_id)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, columns, "TXID")    
@@ -206,7 +206,7 @@ setMethod("transcriptsBy", "OrganismDb",
     ## get the tx_ids from the transcripts
     ## AND I need to one from the internal slot.
     gr <- exby@unlistData
-    k  <- mcols(gr)$exon_id
+    k  <- as.character(mcols(gr)$exon_id)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, columns, "EXONID")    
@@ -241,7 +241,7 @@ setMethod("exonsBy", "OrganismDb",
     ## get the tx_ids from the transcripts
     ## AND I need to one from the internal slot.
     gr <- cdsby@unlistData
-    k  <- mcols(gr)$cds_id
+    k  <- as.character(mcols(gr)$cds_id)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=k, columns, "CDSID")    

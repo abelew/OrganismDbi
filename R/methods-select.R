@@ -41,9 +41,6 @@ setMethod("columns", "OrganismDb", function(x){.cols(x)})
 }
 
 .lookupDbNameFromKeytype <- function(x, keytype){
-    kts <- keytypes(x)
-    if(!(keytype %in% kts))
-        stop("'keytype' must be a value returned by keytypes(x)")
     res <- .makekeytypeMapping(x)
     ## no duplicates so I can just return the name
     names(res)[res %in% keytype]  
@@ -55,16 +52,10 @@ setMethod("columns", "OrganismDb", function(x){.cols(x)})
 }
 
 .keys <- function(x, keytype, ...){
-    kts <- keytypes(x)
-    if(!(keytype %in% kts))
-      stop("'keytype' invalid; call keytypes(x) for valid values")
-    ## We need to retrieve the keys from the relevant slot...
-    ## So 1st we have to determine WHO has the keys we are after
-    if(length(keytype) != 1L)
-      stop("'keys' only accepts one 'keytype' at a time")
+    AnnotationDbi:::.testForValidKeytype(x, keytype)
     db <- .lookupDbFromKeytype(x, keytype)
     ## And then we can just call keys...
-    keys(db, keytype, ...)
+    as.character(keys(db, keytype, ...))
 }
 
 setMethod("keys", "OrganismDb", .keys)
@@ -272,11 +263,8 @@ setMethod("keys", "OrganismDb", .keys)
     if(missing(keys)){stop("You must provide a keys argument")}
     if(missing(cols)){stop("You must provide cols argument")}
     if(missing(keytype)){stop("You must provide a keytype argument")}
-    if(!all(cols %in% columns(x)) ){
-        stop("Invalid columns values. For legal columns argument values use: columns()")}
-    if(!keytype %in% keytypes(x)){
-        stop("Invalid keytype value. For legal keytype argument values use: keytypes()")}
-    
+    ## Some argument checking
+    AnnotationDbi:::.testSelectArgs(x, keys=keys, cols=cols, keytype=keytype)
     ## if asked for what they have, just return that.
     if(all(cols %in% keytype)  && length(cols)==1L){
         res <- data.frame(keys=keys)

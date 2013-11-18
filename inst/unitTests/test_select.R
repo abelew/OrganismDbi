@@ -31,13 +31,13 @@ test_lookupDbFromKeytype <- function(){
   checkTrue(class(res)=="OrgDb")
 }
 
-test_lookupDbFromKeytype <- function(){
+test_lookupDbFromKeytype2 <- function(){
   res <- OrganismDbi:::.keys(x, "GOID")
   checkTrue(is.character(head(res)))
   checkTrue(length(res) > 33000)
 
   res <- OrganismDbi:::.keys(x, "TXID")
-  checkTrue(is.integer(head(res)))
+  checkTrue(is.character(head(res)))
   checkTrue(length(res) > 70000)
 
   res <- OrganismDbi:::.keys(x, "ENTREZID")
@@ -66,7 +66,7 @@ test_mkeys <- function(){
   res2 <- c("GOID","GO")
   names(res2) <- c("GO.db","org.Hs.eg.db")
   checkEquals(res, res2)
-} 
+}
 
 
 test_getSelects <- function(){

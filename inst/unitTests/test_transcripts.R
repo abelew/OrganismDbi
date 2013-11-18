@@ -15,7 +15,7 @@ txdb <- OrganismDbi:::.getTxDb(x)
 test_compressMetadata <- function(){
     cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
     txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
-    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID") 
+    meta <- select(x, keys=as.character(mcols(txs)$tx_id), cols, "TXID") 
     f <- factor(meta[["TXID"]],levels=mcols(txs)[["tx_id"]])
     res <- OrganismDbi:::.compressMetadata(f, meta, "TXID")
     checkTrue(class(res)== "DataFrame")
@@ -28,7 +28,7 @@ test_compressMetadata <- function(){
 test_combineMetadata <- function(){
     cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
     txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
-    meta <- select(x, keys=mcols(txs)$tx_id, cols, "TXID") 
+    meta <- select(x, keys=as.character(mcols(txs)$tx_id), cols, "TXID") 
     res <- OrganismDbi:::.combineMetadata(txs,meta,avoidID="TXID",
                                           joinID="tx_id", columns=cols)
     checkTrue(class(res)== "DataFrame")
