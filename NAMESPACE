@@ -7,11 +7,13 @@ importFrom("GenomicFeatures",
            transcripts,
            exons,
            cds,
+           genes,
            transcriptsBy,
            exonsBy,
            cdsBy,
            seqinfo  ## Import this from GenomicFeatures b/c we need txdb vers.
 ##            "seqinfo<-"
+           
            )
 
 ## importFrom("GenomicRanges",
@@ -38,6 +40,7 @@ exportMethods("columns",
               "transcripts",
               "exons",
               "cds",
+              "genes",
               "transcriptsBy",
               "exonsBy",
               "cdsBy",

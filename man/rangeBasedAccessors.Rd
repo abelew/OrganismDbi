@@ -3,6 +3,7 @@
 \alias{transcripts,OrganismDb-method}
 \alias{exons,OrganismDb-method}
 \alias{cds,OrganismDb-method}
+\alias{genes,OrganismDb-method}
 
 \alias{transcriptsBy,OrganismDb-method}
 \alias{exonsBy,OrganismDb-method}
@@ -27,6 +28,8 @@
 \S4method{exons}{OrganismDb}(x, vals=NULL, columns="EXONID")
 
 \S4method{cds}{OrganismDb}(x, vals=NULL, columns="CDSID")
+
+\S4method{genes}{OrganismDb}(x, vals=NULL, columns="GENEID")
 
 \S4method{transcriptsBy}{OrganismDb}(x, by, columns)
 

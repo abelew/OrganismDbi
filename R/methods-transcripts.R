@@ -45,7 +45,7 @@
 ## This helper does book keeping that is relevant to my situation here.
 .combineMetadata <- function(rngs, meta, avoidID, joinID, columns){
     ## make a special factor
-    f <- factor(meta[[avoidID]],levels=mcols(rngs)[[joinID]])
+    f <- factor(meta[[avoidID]],levels=as.character(mcols(rngs)[[joinID]]))
     ## compress the metadata by splitting according to f
     if(avoidID %in% columns){ ## don't avoid the avoidID        
         res <- .compressMetadata(f, meta, avoidID=NULL)
@@ -56,7 +56,8 @@
     if(dim(mcols(rngs))[1] == dim(res)[1]){
         res <- c(mcols(rngs),res)
         ## throw out joining IDs
-        res <- res[!(colnames(res) %in% c("tx_id","exon_id","cds_id"))]
+        res <- res[!(colnames(res) %in%
+                     c("tx_id","exon_id","cds_id","gene_id"))]
         return(res)
     }else{
         stop("Ranges and annotations retrieved are not of matching lengths.")
@@ -144,6 +145,39 @@ setMethod("cds", "OrganismDb",
 ## test usage:
 ## library(Homo.sapiens); h = Homo.sapiens; columns = c("GENENAME","SYMBOL")
 ## cds(h, columns)
+
+
+
+
+
+## How will we merge the results from select() and transcripts()?  We
+## will join on tx_id (for transcripts)
+.genes <- function(x, vals, columns){
+    ## 1st get the TranscriptDb object.
+    txdb <- .getTxDb(x)
+    
+    ## call transcripts method (on the TxDb)
+    genes <- genes(txdb, vals, columns="gene_id")
+    
+    ## call select on the rest and use tx_id as keys 
+    meta <- select(x, keys=as.character(mcols(genes)$gene_id), columns,
+                   "GENEID")
+    
+    ## assemble it all together.
+    mcols(genes) <- .combineMetadata(genes,meta,avoidID="GENEID",
+                                     joinID="gene_id",
+                                     columns=columns)
+    genes
+}
+
+setMethod("genes", "OrganismDb",
+          function(x, vals=NULL, columns="GENEID"){
+              .genes(x, vals, columns)})
+
+
+## test usage:
+## library(Homo.sapiens); h = Homo.sapiens; columns = c("GENENAME","SYMBOL")
+## genes(h, columns)
 
 
 
