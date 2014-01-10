@@ -200,24 +200,28 @@ setMethod("genes", "OrganismDb",
     ## call transcriptsBy with use.names set to FALSE
     txby <- transcriptsBy(txdb, by=by, use.names=FALSE)
 
-    ## get the tx_ids from the transcripts
-    ## AND I need to one from the internal slot.
-    gr <- txby@unlistData
-    k  <- as.character(mcols(gr)$tx_id)
+    if(length(columns) >= 1){ 
+        ## get the tx_ids from the transcripts
+        ## AND I need to one from the internal slot.
+        gr <- txby@unlistData
+        k  <- as.character(mcols(gr)$tx_id)
     
-    ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=k, columns, "TXID")    
-    ## assemble it all together.
-    mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID", joinID="tx_id",
-                                   columns=columns) 
-
-    ## now cram it back in there.
-    txby@unlistData <- gr
+        ## call select on the rest and use tx_id as keys 
+        meta <- select(x, keys=k, columns, "TXID")    
+        ## assemble it all together.
+        mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID",
+                                      joinID="tx_id", columns=columns) 
+        ## now cram it back in there.
+        txby@unlistData <- gr
+    }
     txby
 }
 
 setMethod("transcriptsBy", "OrganismDb",
-          function(x, by, columns){
+          function(x, by="gene", columns=character()){
+              if(missing(by) || !any(by %in% c("gene","exon","cds")) ||
+                 length(by) !=1){
+                  stop("You must provide a valid argument for by")}
               .transcriptsBy(x, by, columns)})
 
 
@@ -237,24 +241,28 @@ setMethod("transcriptsBy", "OrganismDb",
     ## call transcriptsBy with use.names set to FALSE
     exby <- exonsBy(txdb, by=by, use.names=FALSE)
 
-    ## get the tx_ids from the transcripts
-    ## AND I need to one from the internal slot.
-    gr <- exby@unlistData
-    k  <- as.character(mcols(gr)$exon_id)
+    if(length(columns) >= 1){ 
+        ## get the tx_ids from the transcripts
+        ## AND I need to one from the internal slot.
+        gr <- exby@unlistData
+        k  <- as.character(mcols(gr)$exon_id)
     
-    ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=k, columns, "EXONID")    
-    ## assemble it all together.
-    mcols(gr) <- .combineMetadata(gr, meta, avoidID="EXONID", joinID="exon_id",
-                                   columns=columns) 
-
-    ## now cram it back in there.
-    exby@unlistData <- gr
+        ## call select on the rest and use tx_id as keys 
+        meta <- select(x, keys=k, columns, "EXONID")    
+        ## assemble it all together.
+        mcols(gr) <- .combineMetadata(gr, meta, avoidID="EXONID",
+                                      joinID="exon_id", columns=columns) 
+        ## now cram it back in there.
+        exby@unlistData <- gr
+    }
     exby
 }
 
 setMethod("exonsBy", "OrganismDb",
-          function(x, by, columns){
+          function(x, by="tx", columns=character()){
+              if(missing(by) || !any(by %in% c("tx", "gene")) ||
+                 length(by) !=1){
+                  stop("You must provide a valid argument for by")}
               .exonsBy(x, by, columns)})
 
 
@@ -272,24 +280,28 @@ setMethod("exonsBy", "OrganismDb",
     ## call transcriptsBy with use.names set to FALSE
     cdsby <- cdsBy(txdb, by=by, use.names=FALSE)
 
-    ## get the tx_ids from the transcripts
-    ## AND I need to one from the internal slot.
-    gr <- cdsby@unlistData
-    k  <- as.character(mcols(gr)$cds_id)
-    
-    ## call select on the rest and use tx_id as keys 
-    meta <- select(x, keys=k, columns, "CDSID")    
-    ## assemble it all together.
-    mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID", joinID="cds_id",
-                                   columns=columns) 
-
-    ## now cram it back in there.
-    cdsby@unlistData <- gr
+    if(length(columns) >= 1){ 
+        ## get the tx_ids from the transcripts
+        ## AND I need to one from the internal slot.
+        gr <- cdsby@unlistData
+        k  <- as.character(mcols(gr)$cds_id)
+        
+        ## call select on the rest and use tx_id as keys 
+        meta <- select(x, keys=k, columns, "CDSID")    
+        ## assemble it all together.
+        mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID",
+                                      joinID="cds_id", columns=columns) 
+        ## now cram it back in there.
+        cdsby@unlistData <- gr
+    }
     cdsby
 }
 
 setMethod("cdsBy", "OrganismDb",
-          function(x, by, columns){
+          function(x, by="tx", columns=character()){
+              if(missing(by) || !any(by %in% c("tx", "gene")) ||
+                 length(by) !=1){
+                  stop("You must provide a valid argument for by")}
               .cdsBy(x, by, columns)})
 
 

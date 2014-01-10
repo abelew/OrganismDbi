@@ -261,7 +261,7 @@ setMethod("keys", "OrganismDb", .keys)
 .select <- function(x, keys, cols, keytype, ...){
     ## Argument checking:
     if(missing(keys)){stop("You must provide a keys argument")}
-    if(missing(cols)){stop("You must provide cols argument")}
+    if(missing(cols)){stop("You must provide columns argument")}
     if(missing(keytype)){stop("You must provide a keytype argument")}
     ## Some argument checking
     AnnotationDbi:::.testSelectArgs(x, keys=keys, cols=cols, keytype=keytype)
