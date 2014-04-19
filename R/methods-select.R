@@ -318,11 +318,11 @@ setMethod("keys", "OrganismDb", .keys)
         AnnotationDbi:::.colsArgumentWarning()
         ## then call it using cols in place of columns
         ## YES keytype=columns.  Really!, but ONLY when keytype is null...
-        if(missing(keytype)){
-            .select(x, keys, extraArgs[["cols"]], keytype = columns, ...)
-        }else{
-            .select(x, keys, extraArgs[["cols"]], keytype = keytype, ...)
-        }
+        ## if(missing(keytype)){
+        ##     .select(x, keys, extraArgs[["cols"]], keytype = columns, ...)
+        ## }else{
+        ##     .select(x, keys, extraArgs[["cols"]], keytype = keytype, ...)
+        ## }
     }else{
         .select(x, keys, columns, keytype, ...)
     }

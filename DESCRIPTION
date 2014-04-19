@@ -1,22 +1,20 @@
 Package: OrganismDbi
-Title: Software to enable the smooth interfacing of different database packages.
+Title: Software to enable the smooth interfacing of different database
+        packages.
 Description: The package enables a simple unified interface to several
 	     annotation packages each of which has its own schema by taking
 	     advantage of the fact that each of these packages implements a 
 	     select methods.
-Version: 1.7.0
+Version: 1.7.1
 Author: Marc Carlson, Herve Pages, Martin Morgan, Valerie Obenchain
 Maintainer: Biocore Data Team <maintainer@bioconductor.org>
-Depends: R (>= 2.14.0), methods, AnnotationDbi (>= 1.16.10), GenomicFeatures
+Depends: R (>= 2.14.0), methods, AnnotationDbi (>= 1.16.10),
+        GenomicFeatures
 Imports: BiocGenerics, graph, RBGL, AnnotationDbi
 Suggests: Homo.sapiens, Rattus.norvegicus, RUnit
-Collate: AllGenerics.R
-	 AllClasses.R
-	 methods-select.R
-	 methods-transcripts.R
-	 createOrganismPackage.R
-	 seqinfo.R
-	 test_OrganismDbi_package.R
+Collate: AllGenerics.R AllClasses.R methods-select.R
+        methods-transcripts.R createOrganismPackage.R seqinfo.R
+        test_OrganismDbi_package.R
 License: Artistic-2.0
 biocViews: Annotation, Infrastructure
-
+Packaged: 2014-04-18 23:01:14 UTC; mcarlson
