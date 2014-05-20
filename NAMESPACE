@@ -2,7 +2,7 @@ importFrom("graph", ftM2graphNEL)
 importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
 importMethodsFrom("RBGL", bfs)
 importFrom(AnnotationDbi, columns, keys, keytypes, select, metadata)
-importFrom(AnnotationDbi, cols)
+#importFrom(AnnotationDbi, cols)
 importFrom("GenomicFeatures",
            transcripts,
            exons,
