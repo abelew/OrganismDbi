@@ -306,32 +306,33 @@ setMethod("keys", "OrganismDb", .keys)
                                        jointype=keytype,
                                        reqCols=colnames(res))
     }
-    unique(res)
+#    unique(res) ## NO! We don't want to do this.
+    res
 }
 
 
-##  Remove this select warning function after 2.13 has released
-.selectWarnOrganismDb <- function(x, keys, columns, keytype, ...){
-    extraArgs <- list(...)
-    if("cols" %in% names(extraArgs)){ 
-        ## warn the user about the old argument
-        AnnotationDbi:::.colsArgumentWarning()
-        ## then call it using cols in place of columns
-        ## YES keytype=columns.  Really!, but ONLY when keytype is null...
-        ## if(missing(keytype)){
-        ##     .select(x, keys, extraArgs[["cols"]], keytype = columns, ...)
-        ## }else{
-        ##     .select(x, keys, extraArgs[["cols"]], keytype = keytype, ...)
-        ## }
-    }else{
-        .select(x, keys, columns, keytype, ...)
-    }
-}
+## ##  Remove this select warning function after 2.13 has released
+## .selectWarnOrganismDb <- function(x, keys, columns, keytype, ...){
+##     extraArgs <- list(...)
+##     if("cols" %in% names(extraArgs)){ 
+##         ## warn the user about the old argument
+##         AnnotationDbi:::.colsArgumentWarning()
+##         ## then call it using cols in place of columns
+##         ## YES keytype=columns.  Really!, but ONLY when keytype is null...
+##         ## if(missing(keytype)){
+##         ##     .select(x, keys, extraArgs[["cols"]], keytype = columns, ...)
+##         ## }else{
+##         ##     .select(x, keys, extraArgs[["cols"]], keytype = keytype, ...)
+##         ## }
+##     }else{
+##         .select(x, keys, columns, keytype, ...)
+##     }
+## }
 
 setMethod("select", "OrganismDb",
           function(x, keys, columns, keytype, ...){
-            .selectWarnOrganismDb(x, keys, columns, keytype, ...)
-##             .select(x, keys, columns, keytype, ...)
+            ## .selectWarnOrganismDb(x, keys, columns, keytype, ...)
+            .select(x, keys, columns, keytype, ...)
           }
 )
 
