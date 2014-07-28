@@ -26,7 +26,7 @@ test_lookupDbFromKeytype <- function(){
   res <- OrganismDbi:::.lookupDbFromKeytype(x, "GOID")
   checkTrue(class(res)=="GODb")  
   res <- OrganismDbi:::.lookupDbFromKeytype(x, "TXID")
-  checkTrue(class(res)=="TranscriptDb")
+  checkTrue(class(res)=="TxDb")
   res <- OrganismDbi:::.lookupDbFromKeytype(x, "ENTREZID")
   checkTrue(class(res)=="OrgDb")
 }
