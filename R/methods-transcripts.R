@@ -69,7 +69,7 @@
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
 .transcripts <- function(x, vals, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcripts method (on the TxDb)
     txs <- transcripts(txdb, vals, columns="tx_id")  
@@ -94,7 +94,7 @@ setMethod("transcripts", "OrganismDb",
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
 .exons <- function(x, vals, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
@@ -122,7 +122,7 @@ setMethod("exons", "OrganismDb",
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
 .cds <- function(x, vals, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
@@ -153,7 +153,7 @@ setMethod("cds", "OrganismDb",
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
 .genes <- function(x, vals, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
@@ -195,7 +195,7 @@ setMethod("genes", "OrganismDb",
 
 
 .transcriptsBy <- function(x, by, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
     txby <- transcriptsBy(txdb, by=by, use.names=FALSE)
@@ -236,7 +236,7 @@ setMethod("transcriptsBy", "OrganismDb",
 
 
 .exonsBy <- function(x, by, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
     exby <- exonsBy(txdb, by=by, use.names=FALSE)
@@ -275,7 +275,7 @@ setMethod("exonsBy", "OrganismDb",
 
 
 .cdsBy <- function(x, by, columns){
-    ## 1st get the TranscriptDb object.
+    ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
     cdsby <- cdsBy(txdb, by=by, use.names=FALSE)

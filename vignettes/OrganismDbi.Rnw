@@ -154,7 +154,7 @@ transcriptsBy(Homo.sapiens, by="gene", columns=c("TXNAME","SYMBOL"))
 
 So in the preceding section you can see that using an
 \Rpackage{OrganismDbi} package behaves very similarly to how you might
-use a \Robject{TranscriptDb} or an \Robject{OrgDb} package.  The same
+use a \Robject{TxDb} or an \Robject{OrgDb} package.  The same
 methods are defined, and the behave similarly except that they now
 have access to much more data than before.  But before you make your
 own OrganismDbi package you need to understand that there are few

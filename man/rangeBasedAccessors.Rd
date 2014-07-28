@@ -42,7 +42,7 @@
 
 \arguments{ 
   \item{x}{
-    A \link{TranscriptDb} object.
+    A \link{TxDb} object.
   }
   \item{...}{
     Arguments to be passed to or from methods.

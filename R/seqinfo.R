@@ -7,7 +7,7 @@
     if("TXID" %in% columns(x)){
         return(.getTxDb(x))
     }else{
-        stop("The OrganismDb object does not have an embedded TranscriptDb.")
+        stop("The OrganismDb object does not have an embedded TxDb.")
     }
 }
 

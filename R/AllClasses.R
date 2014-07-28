@@ -19,8 +19,8 @@
 
 
 ## So lets start with an object where we have a slot for an OrgDb and also a
-## slot for a GODb, then lets add in a slot for a TranscriptDb.  Since
-## AnnotationDbi does not know about TranscriptDbs, I will have to define the
+## slot for a GODb, then lets add in a slot for a TxDb.  Since
+## AnnotationDbi does not know about TxDbs, I will have to define the
 ## base class here (with the aim of creating a new software package to hold
 ## this stuff later on.
 

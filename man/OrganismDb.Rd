@@ -34,7 +34,7 @@
   The family of \code{seqinfo} style getters (\code{seqinfo},
   \code{seqlevels}, \code{seqlengths}, \code{isCircular}, \code{genome},
   and \code{seqnameStyle}) is also supported for OrganismDb objects
-  provided that the object in question has an embedded TranscriptDb
+  provided that the object in question has an embedded TxDb
   object.
 }
 
@@ -50,7 +50,7 @@
     }
     \item{}{
       \code{keys(x, keytype, pattern, column, fuzzy)}: Return keys for
-      the database contained in the \link{TranscriptDb} object .
+      the database contained in the \link{TxDb} object .
 
       The \code{keytype} argument specifies the kind of keys that will
       be returned and is always required.
