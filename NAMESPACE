@@ -1,0 +1,61 @@
+importFrom("graph", ftM2graphNEL)
+importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
+importMethodsFrom("RBGL", bfs)
+importFrom(AnnotationDbi, columns, keys, keytypes, select, metadata)
+#importFrom(AnnotationDbi, cols)
+importFrom("GenomicFeatures",
+           transcripts,
+           exons,
+           cds,
+           genes,
+           transcriptsBy,
+           exonsBy,
+           cdsBy,
+           seqinfo  ## Import this from GenomicFeatures b/c we need txdb vers.
+##            "seqinfo<-"
+           
+           )
+
+## importFrom("GenomicRanges",
+##            seqinfo ##,
+##            "seqinfo<-"
+##            seqlevels,
+##            "seqlevels<-",
+##            seqlengths,
+##            "seqlengths<-",
+##            isCircular,
+##            "isCircular<-",
+##            genome,
+##            "genome<-",
+##            seqnameStyle
+##            "seqnameStyle<-"
+##            )
+
+importClassesFrom("graph", graphNEL)
+exportClasses("OrganismDb")
+exportMethods("columns",
+              "keys",
+              "keytypes",
+              "select",
+              "transcripts",
+              "exons",
+              "cds",
+              "genes",
+              "transcriptsBy",
+              "exonsBy",
+              "cdsBy",
+              "metadata",
+              seqinfo
+##               "seqinfo<-",  ## setters can't work b/c of the object.
+##               seqlevels,
+##               "seqlevels<-",
+##               seqlengths,
+##               "seqlengths<-",
+##               isCircular,
+##               "isCircular<-",
+##               genome,
+##               "genome<-",
+##               seqnameStyle
+##               "seqnameStyle<-"
+              )
+export("makeOrganismPackage")
