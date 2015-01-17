@@ -1,6 +1,6 @@
 ## simplify DB retrievals from metadata table
 .getMetaDataValue <- function(db, name){
-  con <- AnnotationDbi:::dbConn(db)
+  con <- AnnotationDbi:::dbconn(db)
   res <- dbGetQuery(con,
     paste0("SELECT value FROM metadata WHERE name='", name,"'"))[[1]]
   if(!is.character(res))
