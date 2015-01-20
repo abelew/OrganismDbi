@@ -338,3 +338,19 @@ setMethod("select", "OrganismDb",
 
 
 ##TODO: .mergeSelectResults is leaving incorrect labels on things:  Clean this up!
+
+
+## methods for easy DB access:
+.dbconn <- function(x){
+    dbs <- .getDbObjs(x)
+    res <- unique(unlist(lapply(dbs, dbconn)))
+    names(res) <- names(dbs)
+    res
+}
+setMethod("dbconn", "OrganismDb", function(x){.dbconn(x)})
+
+.dbfile <- function(x){
+    dbs <- .getDbObjs(x)
+    unique(unlist(lapply(dbs, dbfile)))
+}
+setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})

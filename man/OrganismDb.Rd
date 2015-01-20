@@ -10,6 +10,8 @@
 \alias{keys,OrganismDb-method}
 \alias{select,OrganismDb-method}
 \alias{metadata,OrganismDb-method}
+\alias{dbconn,OrganismDb-method}
+\alias{dbfile,OrganismDb-method}
 
 \alias{seqinfo,OrganismDb-method}
 % \alias{seqinfo<-,OrganismDb-method}
@@ -114,5 +116,10 @@ keys <- head(keys(org.Hs.eg.db, "ENTREZID"))
 keytype <- "ENTREZID"
 res <- select(Homo.sapiens, keys, columns, keytype)
 head(res)
+
+## Get the DB connections or DB file paths associated with those for
+## each.
+dbconn(Homo.sapiens)
+dbfile(Homo.sapiens)
 }
 

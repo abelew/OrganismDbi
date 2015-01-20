@@ -1,7 +1,7 @@
 importFrom("graph", ftM2graphNEL)
 importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
 importMethodsFrom("RBGL", bfs)
-importFrom(AnnotationDbi, columns, keys, keytypes, select, metadata)
+importFrom(AnnotationDbi, columns, keys, keytypes, select, metadata, dbconn, dbfile)
 #importFrom(AnnotationDbi, cols)
 importFrom("GenomicFeatures",
            transcripts,
@@ -44,6 +44,8 @@ exportMethods("columns",
               "transcriptsBy",
               "exonsBy",
               "cdsBy",
+              "dbconn",
+              "dbfile",
               "metadata",
               seqinfo
 ##               "seqinfo<-",  ## setters can't work b/c of the object.
