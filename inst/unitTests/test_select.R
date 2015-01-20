@@ -363,6 +363,16 @@ test_rattus <- function(){
 
 
 
+test_dbconn_and_dbfile <- function(){
+    resc <- dbconn(x)[[1]]
+    m <- dbGetQuery(resc, "SELECT * FROM metadata")
+    checkTrue(dim(m)[2] ==2)
+    checkTrue(dim(m)[1] > 6)
+              
+    resf <- dbfile(x)[[1]]
+    mf <- dbGetQuery(dbConnect(SQLite(), resf), "SELECT * FROM metadata")
+    checkTrue(all(mf == m))
+}
 
 
 
