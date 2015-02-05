@@ -351,6 +351,8 @@ setMethod("dbconn", "OrganismDb", function(x){.dbconn(x)})
 
 .dbfile <- function(x){
     dbs <- .getDbObjs(x)
-    unique(unlist(lapply(dbs, dbfile)))
+    res <- unique(unlist(lapply(dbs, dbfile)))
+    names(res) <- names(dbs)
+    res
 }
 setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
