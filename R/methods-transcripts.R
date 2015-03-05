@@ -16,8 +16,19 @@
 
 .getTxDb <- function(x){
     ## trick: there will *always* be a TXID
-    .lookupDbFromKeytype(x, "TXID")
+    res <- .lookupDbFromKeytype(x, "TXID")
+    if(!is.null(res)){
+        return(res)
+    }else{
+        return(NA)
+    }
 }
+
+## expose method for gettting A TxDb (if there is one)
+setMethod("getTxDbIfAvailable", "OrganismDb", function(x, ...){.getTxDb(x)})
+
+
+
 
 ## TODO: .compressMetadata() might be useful to move into IRanges, as
 ## a complement to expand() methods?  - Discuss this with Val (who

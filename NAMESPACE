@@ -47,7 +47,8 @@ exportMethods("columns",
               "dbconn",
               "dbfile",
               "metadata",
-              seqinfo
+              seqinfo,
+              getTxDbIfAvailable
 ##               "seqinfo<-",  ## setters can't work b/c of the object.
 ##               seqlevels,
 ##               "seqlevels<-",
@@ -60,4 +61,5 @@ exportMethods("columns",
 ##               seqnameStyle
 ##               "seqnameStyle<-"
               )
-export("makeOrganismPackage")
+export(getTxDbIfAvailable,  ## b/c the generic is here
+       "makeOrganismPackage")

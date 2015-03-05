@@ -9,6 +9,9 @@
 \alias{exonsBy,OrganismDb-method}
 \alias{cdsBy,OrganismDb-method}
 
+\alias{getTxDbIfAvailable}
+\alias{getTxDbIfAvailable,OrganismDb-method}
+
 % \alias{columns}
 % \alias{columns,OrganismDb-method}
 
@@ -37,6 +40,7 @@
 
 \S4method{cdsBy}{OrganismDb}(x, by, columns)
 
+\S4method{getTxDbIfAvailable}{OrganismDb}(x, ...)
 % \S4method{columns}{OrganismDb}(x)
 }
 
@@ -104,6 +108,9 @@ res <- transcriptsBy(Homo.sapiens, by="gene", columns=cols)
 
 ## list possible values for columns argument:
 columns(Homo.sapiens)
+
+## Get the TxDb from an OrganismDb object (if it's available)
+getTxDbIfAvailable(Homo.sapiens)
 }
 
 \keyword{methods}
