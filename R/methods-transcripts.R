@@ -339,3 +339,104 @@ setMethod("cdsBy", "OrganismDb",
 
 ## 4) exonsBy and cdsBy may have some extra issues that I am missing...
 
+
+###############################################################################
+## Wrapper methods for TxDb methods (that are the same)
+
+
+
+setMethod(promoters, 'OrganismDb',
+          function(x, upstream=2000, downstream=200, ...){
+              promoters(getTxDbIfAvailable(x), upstream,
+                        downstream, ...)})
+
+setMethod(disjointExons, 'OrganismDb',
+          function(x, aggregateGenes=FALSE, includeTranscripts=TRUE, ...){
+              disjointExons(getTxDbIfAvailable(x), aggregateGenes,
+                        includeTranscripts,  ...)})
+
+setMethod(microRNAs, 'OrganismDb',
+          function(x){microRNAs(getTxDbIfAvailable(x))})
+
+setMethod(tRNAs, 'OrganismDb',
+          function(x){tRNAs(getTxDbIfAvailable(x))})
+
+## Deliberately leaving these out for now (should probably just deprecate them)
+## So commented for now.  If someone wants them we can discuss their fate.
+## setMethod(transcriptsByOverlaps, 'OrganismDb',
+##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
+##                    type = c("any", "start", "end"),
+##                    columns = c("tx_id", "tx_name"), ...){
+##               transcriptsByOverlaps(getTxDbIfAvailable(x),
+##                                     ranges, maxgap = 0L, minoverlap = 1L,
+##                                     type = c("any", "start", "end"),
+##                                     columns = c("tx_id", "tx_name"), ...)})
+
+## setMethod(exonsByOverlaps, 'OrganismDb',
+##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
+##                    type = c("any", "start", "end"),
+##                    columns = "exon_id"){
+##               exonsByOverlaps(getTxDbIfAvailable(x), ranges,
+##                               maxgap = 0L, minoverlap = 1L,
+##                               type = c("any", "start", "end"),
+##                               columns = "exon_id")})
+
+## setMethod(cdsByOverlaps, 'OrganismDb',
+##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
+##                    type = c("any", "start", "end"),
+##                    columns = "cds_id"){
+##               cdsByOverlaps(getTxDbIfAvailable(x), ranges,
+##                             maxgap = 0L, minoverlap = 1L,
+##                             type = c("any", "start", "end"),
+##                             columns = "cds_id")})
+
+setMethod(intronsByTranscript, 'OrganismDb',
+          function(x, use.names=FALSE){
+              intronsByTranscript(getTxDbIfAvailable(x), use.names=FALSE)})
+
+setMethod(fiveUTRsByTranscript, 'OrganismDb',
+          function(x, use.names=FALSE){
+              fiveUTRsByTranscript(getTxDbIfAvailable(x), use.names=FALSE)})
+
+setMethod(threeUTRsByTranscript, 'OrganismDb',
+          function(x, use.names=FALSE){
+              threeUTRsByTranscript(getTxDbIfAvailable(x), use.names=FALSE)})
+
+setMethod(extractUpstreamSeqs, 'OrganismDb',
+          function(x, genes, width=1000, exclude.seqlevels=NULL){
+              extractUpstreamSeqs(x, getTxDbIfAvailable(genes),
+                                  width=1000, exclude.seqlevels=NULL)})
+
+setMethod(extractTranscriptSeqs, 'OrganismDb',
+          function(x, transcripts, strand="+"){
+              extractTranscriptSeqs(x, getTxDbIfAvailable(transcripts),
+                                    strand="+")})
+
+setMethod(isActiveSeq, 'OrganismDb',
+          function(x){isActiveSeq(getTxDbIfAvailable(x))})
+
+setReplaceMethod('isActiveSeq', 'OrganismDb',
+          function(x, value){
+              ## This will change the val in 'x' as well...
+              txdb <- getTxDbIfAvailable(x)
+              isActiveSeq(txdb) <- value
+              x
+          })
+
+setMethod(asBED, 'OrganismDb', function(x){asBED(getTxDbIfAvailable(x))})
+setMethod(asGFF, 'OrganismDb', function(x){asGFF(getTxDbIfAvailable(x))})
+
+## These ones dispatch on compound types (not just TxDbs):
+setMethod(distance, c('GenomicRanges','OrganismDb'),
+          function(x, y, ignore.strand=FALSE, ..., id, 
+                   type=c("gene", "tx", "exon", "cds")){
+              distance(x, getTxDbIfAvailable(y), ignore.strand=FALSE,
+                       ..., id, type=c("gene", "tx", "exon", "cds"))})
+
+setMethod(mapToTranscripts, c('ANY', 'OrganismDb'),
+          function(x, transcripts, ignore.strand=TRUE, 
+                   extractor.fun = transcripts, ...){
+              mapToTranscripts(x, getTxDbIfAvailable(transcripts),
+                               ignore.strand=TRUE, 
+                               extractor.fun = transcripts, ... )})
+

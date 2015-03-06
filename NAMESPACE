@@ -11,25 +11,29 @@ importFrom("GenomicFeatures",
            transcriptsBy,
            exonsBy,
            cdsBy,
-           seqinfo  ## Import this from GenomicFeatures b/c we need txdb vers.
-##            "seqinfo<-"
-           
+           seqinfo,  ## Import this from GenomicFeatures b/c we need txdb vers.
+
+           ## Below are methods that we are 'just wrapping' from TxDbs
+           ## transcriptsByOverlaps,
+           ## exonsByOverlaps,
+           ## cdsByOverlaps,
+           promoters,
+           disjointExons,
+           microRNAs,
+           tRNAs,
+           intronsByTranscript,
+           fiveUTRsByTranscript,
+           threeUTRsByTranscript,
+           extractUpstreamSeqs,
+           extractTranscriptSeqs,
+           isActiveSeq ,
+           "isActiveSeq<-",
+           asBED, asGFF,
+           distance,
+           mapToTranscripts, pmapToTranscripts,
+           mapFromTranscripts, pmapFromTranscripts
            )
 
-## importFrom("GenomicRanges",
-##            seqinfo ##,
-##            "seqinfo<-"
-##            seqlevels,
-##            "seqlevels<-",
-##            seqlengths,
-##            "seqlengths<-",
-##            isCircular,
-##            "isCircular<-",
-##            genome,
-##            "genome<-",
-##            seqnameStyle
-##            "seqnameStyle<-"
-##            )
 
 importClassesFrom("graph", graphNEL)
 exportClasses("OrganismDb")
@@ -48,18 +52,26 @@ exportMethods("columns",
               "dbfile",
               "metadata",
               seqinfo,
-              getTxDbIfAvailable
-##               "seqinfo<-",  ## setters can't work b/c of the object.
-##               seqlevels,
-##               "seqlevels<-",
-##               seqlengths,
-##               "seqlengths<-",
-##               isCircular,
-##               "isCircular<-",
-##               genome,
-##               "genome<-",
-##               seqnameStyle
-##               "seqnameStyle<-"
+              getTxDbIfAvailable,
+
+              ## Below are methods that we are 'just wrapping' from TxDbs
+              ## transcriptsByOverlaps,
+              ## exonsByOverlaps,
+              ## cdsByOverlaps,
+              promoters,
+              disjointExons,
+              microRNAs,
+              tRNAs,
+              intronsByTranscript,
+              fiveUTRsByTranscript,
+              threeUTRsByTranscript,
+              extractUpstreamSeqs,
+              extractTranscriptSeqs,
+              isActiveSeq ,
+              "isActiveSeq<-",
+              asBED, asGFF,
+              distance,
+              mapToTranscripts
               )
 export(getTxDbIfAvailable,  ## b/c the generic is here
        "makeOrganismPackage")

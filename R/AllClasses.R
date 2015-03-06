@@ -33,11 +33,29 @@
 
 ## I need an initialize method just to allow me to do things like
 ## require(GO.db) etc.
+
+## Original class
 OrganismDb <-
     setClass("OrganismDb",
              representation(keys="matrix",
                             graph="graphNEL")
 )
+
+## ## Reference style class that does not work
+## ## Also this recapitulates an odd bug that keeps popping up...
+## OrganismDb <-
+##     setRefClass("OrganismDb",
+##              contains="TxDb",
+##              fields=list(keys="matrix", graph="graphNEL")
+## )
+
+## ## Reference style class that does work (but no inheritance)
+## OrganismDb <-
+##     setRefClass("OrganismDb",
+##           ##   contains="TxDb",
+##              fields=list(keys="matrix", graph="graphNEL")
+## )
+
 
 
 
