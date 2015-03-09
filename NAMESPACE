@@ -33,7 +33,7 @@ importFrom("GenomicFeatures",
            mapToTranscripts, pmapToTranscripts,
            mapFromTranscripts, pmapFromTranscripts
            )
-
+importFrom("stats", setNames)
 
 importClassesFrom("graph", graphNEL)
 exportClasses("OrganismDb")
@@ -75,3 +75,7 @@ exportMethods("columns",
               )
 export(getTxDbIfAvailable,  ## b/c the generic is here
        "makeOrganismPackage")
+
+
+
+## checkUsagePackage("OrganismDbi",all=TRUE)
