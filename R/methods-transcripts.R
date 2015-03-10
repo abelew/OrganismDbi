@@ -205,7 +205,7 @@ setMethod("genes", "OrganismDb",
 ## metadata types belong in which spot...
 
 
-.transcriptsBy <- function(x, by, columns){
+.transcriptsBy <- function(x, by, columns, use.names){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -224,16 +224,21 @@ setMethod("genes", "OrganismDb",
                                       joinID="tx_id", columns=columns) 
         ## now cram it back in there.
         txby@unlistData <- gr
+        ## then put the names back (if available)
+        if(use.names==TRUE){
+            names <- id2name(txdb, feature.type='tx')
+            names(txby) <- names[match(names(txby), names(names))]
+        }
     }
     txby
 }
 
 setMethod("transcriptsBy", "OrganismDb",
-          function(x, by="gene", columns=character()){
+          function(x, by="gene", columns=character(), use.names=FALSE){
               if(missing(by) || !any(by %in% c("gene","exon","cds")) ||
                  length(by) !=1){
                   stop("You must provide a valid argument for by")}
-              .transcriptsBy(x, by, columns)})
+              .transcriptsBy(x, by, columns, use.names=use.names)})
 
 
 
@@ -246,7 +251,7 @@ setMethod("transcriptsBy", "OrganismDb",
 
 
 
-.exonsBy <- function(x, by, columns){
+.exonsBy <- function(x, by, columns, use.names){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -265,16 +270,21 @@ setMethod("transcriptsBy", "OrganismDb",
                                       joinID="exon_id", columns=columns) 
         ## now cram it back in there.
         exby@unlistData <- gr
+        ## then put the names back (if available)
+        if(use.names==TRUE){
+            names <- id2name(txdb, feature.type='exon')
+            names(exby) <- names[match(names(exby), names(names))]
+        }
     }
     exby
 }
 
 setMethod("exonsBy", "OrganismDb",
-          function(x, by="tx", columns=character()){
+          function(x, by="tx", columns=character(), use.names=FALSE){
               if(missing(by) || !any(by %in% c("tx", "gene")) ||
                  length(by) !=1){
                   stop("You must provide a valid argument for by")}
-              .exonsBy(x, by, columns)})
+              .exonsBy(x, by, columns, use.names=use.names)})
 
 
 
@@ -285,7 +295,7 @@ setMethod("exonsBy", "OrganismDb",
 
 
 
-.cdsBy <- function(x, by, columns){
+.cdsBy <- function(x, by, columns, use.names){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -304,16 +314,21 @@ setMethod("exonsBy", "OrganismDb",
                                       joinID="cds_id", columns=columns) 
         ## now cram it back in there.
         cdsby@unlistData <- gr
+        ## then put the names back (if available)
+        if(use.names==TRUE){
+            names <- id2name(txdb, feature.type='cds')
+            names(cdsby) <- names[match(names(cdsby), names(names))]
+        }
     }
     cdsby
 }
 
 setMethod("cdsBy", "OrganismDb",
-          function(x, by="tx", columns=character()){
+          function(x, by="tx", columns=character(), use.names=FALSE){
               if(missing(by) || !any(by %in% c("tx", "gene")) ||
                  length(by) !=1){
                   stop("You must provide a valid argument for by")}
-              .cdsBy(x, by, columns)})
+              .cdsBy(x, by, columns, use.names=use.names)})
 
 
 
@@ -417,12 +432,16 @@ setMethod(extractUpstreamSeqs, 'OrganismDb',
 ## here. (which is just NOT elegant)
 ## But: we plan to move OrganismDbi down into TxDbs later on so this
 ## is temporary.
-setMethod(extractTranscriptSeqs, 'BSgenome',
-          function(x, transcripts, strand="+"){
-              if(class(transcripts)=='OrganismDb'){
-                  transcripts<-getTxDbIfAvailable(transcripts)
-              }
-              extractTranscriptSeqs(x, transcripts, strand=strand)})
+## setMethod(extractTranscriptSeqs, 'BSgenome',
+##           function(x, transcripts, strand="+"){
+##               if(class(transcripts)=='OrganismDb'){
+##                   transcripts<-getTxDbIfAvailable(transcripts)
+##               }
+##               extractTranscriptSeqs(x, transcripts, strand=strand)})
+
+## This works now without the need for an overload...
+## library(Homo.sapiens);library(BSgenome.Hsapiens.UCSC.hg19);genome <- BSgenome.Hsapiens.UCSC.hg19;debug(GenomicFeatures:::.normarg_transcripts);tx_seqs <- extractTranscriptSeqs(genome, Homo.sapiens)
+
 
 setMethod(isActiveSeq, 'OrganismDb',
           function(x){isActiveSeq(getTxDbIfAvailable(x))})

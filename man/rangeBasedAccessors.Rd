@@ -53,11 +53,11 @@
 
 \S4method{genes}{OrganismDb}(x, vals=NULL, columns="GENEID")
 
-\S4method{transcriptsBy}{OrganismDb}(x, by, columns)
+\S4method{transcriptsBy}{OrganismDb}(x, by, columns, use.names=FALSE)
 
-\S4method{exonsBy}{OrganismDb}(x, by, columns)
+\S4method{exonsBy}{OrganismDb}(x, by, columns, use.names=FALSE)
 
-\S4method{cdsBy}{OrganismDb}(x, by, columns)
+\S4method{cdsBy}{OrganismDb}(x, by, columns, use.names=FALSE)
 
 \S4method{getTxDbIfAvailable}{OrganismDb}(x, ...)
 % \S4method{columns}{OrganismDb}(x)
@@ -103,6 +103,35 @@
     The columns or kinds of metadata that can be retrieved from the
     database.  All possible columns are returned by using the \code{columns}
     method.
+  }
+  \item{use.names}{Controls how to set the names of the returned
+    \link[GenomicRanges]{GRangesList} object.
+    These functions return all the features of a given type (e.g.
+    all the exons) grouped by another feature type (e.g. grouped by
+    transcript) in a \link[GenomicRanges]{GRangesList} object.
+    By default (i.e. if \code{use.names} is \code{FALSE}), the
+    names of this \link[GenomicRanges]{GRangesList} object
+    (aka the group names) are the internal ids of the features
+    used for grouping (aka the grouping features), which are
+    guaranteed to be unique.
+    If \code{use.names} is \code{TRUE}, then the names of the
+    grouping features are used instead of their internal ids.
+    For example, when grouping by transcript (\code{by="tx"}),
+    the default group names are the transcript internal ids
+    (\code{"tx_id"}). But, if \code{use.names=TRUE}, the group
+    names are the transcript names (\code{"tx_name"}).
+    Note that, unlike the feature ids, the feature names are not
+    guaranteed to be unique or even defined (they could be all
+    \code{NA}s). A warning is issued when this happens.
+    See \code{?\link{id2name}} for more information about
+    feature internal ids and feature external names and how
+    to map the formers to the latters.
+
+    Finally, \code{use.names=TRUE} cannot be used when grouping
+    by gene \code{by="gene"}. This is because, unlike for the
+    other features, the gene ids are external ids (e.g. Entrez
+    Gene or Ensembl ids) so the db doesn't have a \code{"gene_name"}
+    column for storing alternate gene names.
   }
   \item{vals}{
     Either \code{NULL} or a named list of vectors to be used to
@@ -195,35 +224,6 @@
   \item{exclude.seqlevels}{
     A character vector containing the chromosome names (a.k.a. sequence levels)
     to exclude when the genes are obtained from a \link{OrganismDb} object.
-  }
-  \item{use.names}{Controls how to set the names of the returned
-    \link[GenomicRanges]{GRangesList} object.
-    These functions return all the features of a given type (e.g.
-    all the exons) grouped by another feature type (e.g. grouped by
-    transcript) in a \link[GenomicRanges]{GRangesList} object.
-    By default (i.e. if \code{use.names} is \code{FALSE}), the
-    names of this \link[GenomicRanges]{GRangesList} object
-    (aka the group names) are the internal ids of the features
-    used for grouping (aka the grouping features), which are
-    guaranteed to be unique.
-    If \code{use.names} is \code{TRUE}, then the names of the
-    grouping features are used instead of their internal ids.
-    For example, when grouping by transcript (\code{by="tx"}),
-    the default group names are the transcript internal ids
-    (\code{"tx_id"}). But, if \code{use.names=TRUE}, the group
-    names are the transcript names (\code{"tx_name"}).
-    Note that, unlike the feature ids, the feature names are not
-    guaranteed to be unique or even defined (they could be all
-    \code{NA}s). A warning is issued when this happens.
-    See \code{?\link{id2name}} for more information about
-    feature internal ids and feature external names and how
-    to map the formers to the latters.
-
-    Finally, \code{use.names=TRUE} cannot be used when grouping
-    by gene \code{by="gene"}. This is because, unlike for the
-    other features, the gene ids are external ids (e.g. Entrez
-    Gene or Ensembl ids) so the db doesn't have a \code{"gene_name"}
-    column for storing alternate gene names.
   }
 
 }
