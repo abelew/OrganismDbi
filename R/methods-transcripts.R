@@ -407,10 +407,17 @@ setMethod(extractUpstreamSeqs, 'OrganismDb',
               extractUpstreamSeqs(x, getTxDbIfAvailable(genes),
                                   width=1000, exclude.seqlevels=NULL)})
 
-setMethod(extractTranscriptSeqs, 'OrganismDb',
+## problem: no way for this to dispatch correctly...
+## So we are basically trampling the original method definition
+## here. (which is just NOT elegant)
+## But: we plan to move OrganismDbi down into TxDbs later on so this
+## is temporary.
+setMethod(extractTranscriptSeqs, 'BSgenome',
           function(x, transcripts, strand="+"){
-              extractTranscriptSeqs(x, getTxDbIfAvailable(transcripts),
-                                    strand="+")})
+              if(class(transcripts)=='OrganismDb'){
+                  transcripts<-getTxDbIfAvailable(transcripts)
+              }
+              extractTranscriptSeqs(x, transcripts, strand="+")})
 
 setMethod(isActiveSeq, 'OrganismDb',
           function(x){isActiveSeq(getTxDbIfAvailable(x))})
