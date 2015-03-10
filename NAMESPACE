@@ -30,8 +30,7 @@ importFrom("GenomicFeatures",
            "isActiveSeq<-",
            asBED, asGFF,
            distance,
-           mapToTranscripts, pmapToTranscripts,
-           mapFromTranscripts, pmapFromTranscripts
+           mapToTranscripts
            )
 importFrom("stats", setNames)
 

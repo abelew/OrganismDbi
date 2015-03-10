@@ -368,44 +368,49 @@ setMethod(tRNAs, 'OrganismDb',
 ##                    type = c("any", "start", "end"),
 ##                    columns = c("tx_id", "tx_name"), ...){
 ##               transcriptsByOverlaps(getTxDbIfAvailable(x),
-##                                     ranges, maxgap = 0L, minoverlap = 1L,
-##                                     type = c("any", "start", "end"),
-##                                     columns = c("tx_id", "tx_name"), ...)})
+##                                     ranges=ranges, maxgap = maxgap,
+##                                     minoverlap = minoverlap,
+##                                     type = type,
+##                                     columns = columns, ...)})
 
 ## setMethod(exonsByOverlaps, 'OrganismDb',
 ##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
 ##                    type = c("any", "start", "end"),
 ##                    columns = "exon_id"){
-##               exonsByOverlaps(getTxDbIfAvailable(x), ranges,
-##                               maxgap = 0L, minoverlap = 1L,
-##                               type = c("any", "start", "end"),
-##                               columns = "exon_id")})
+##               exonsByOverlaps(getTxDbIfAvailable(x), ranges=ranges,
+##                               maxgap = maxgap, minoverlap = minoverlap,
+##                               type = type,
+##                               columns = columns)})
 
 ## setMethod(cdsByOverlaps, 'OrganismDb',
 ##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
 ##                    type = c("any", "start", "end"),
 ##                    columns = "cds_id"){
-##               cdsByOverlaps(getTxDbIfAvailable(x), ranges,
-##                             maxgap = 0L, minoverlap = 1L,
-##                             type = c("any", "start", "end"),
-##                             columns = "cds_id")})
+##               cdsByOverlaps(getTxDbIfAvailable(x), ranges=ranges,
+##                             maxgap = maxgap, minoverlap = minoverlap,
+##                             type = type,
+##                             columns = columns)})
 
 setMethod(intronsByTranscript, 'OrganismDb',
           function(x, use.names=FALSE){
-              intronsByTranscript(getTxDbIfAvailable(x), use.names=FALSE)})
+              intronsByTranscript(getTxDbIfAvailable(x),
+                                  use.names=use.names)})
 
 setMethod(fiveUTRsByTranscript, 'OrganismDb',
           function(x, use.names=FALSE){
-              fiveUTRsByTranscript(getTxDbIfAvailable(x), use.names=FALSE)})
+              fiveUTRsByTranscript(getTxDbIfAvailable(x),
+                                   use.names=use.names)})
 
 setMethod(threeUTRsByTranscript, 'OrganismDb',
           function(x, use.names=FALSE){
-              threeUTRsByTranscript(getTxDbIfAvailable(x), use.names=FALSE)})
+              threeUTRsByTranscript(getTxDbIfAvailable(x),
+                                    use.names=use.names)})
 
 setMethod(extractUpstreamSeqs, 'OrganismDb',
           function(x, genes, width=1000, exclude.seqlevels=NULL){
               extractUpstreamSeqs(x, getTxDbIfAvailable(genes),
-                                  width=1000, exclude.seqlevels=NULL)})
+                                  width=width,
+                                  exclude.seqlevels=exclude.seqlevels)})
 
 ## problem: no way for this to dispatch correctly...
 ## So we are basically trampling the original method definition
@@ -417,7 +422,7 @@ setMethod(extractTranscriptSeqs, 'BSgenome',
               if(class(transcripts)=='OrganismDb'){
                   transcripts<-getTxDbIfAvailable(transcripts)
               }
-              extractTranscriptSeqs(x, transcripts, strand="+")})
+              extractTranscriptSeqs(x, transcripts, strand=strand)})
 
 setMethod(isActiveSeq, 'OrganismDb',
           function(x){isActiveSeq(getTxDbIfAvailable(x))})
@@ -437,13 +442,13 @@ setMethod(asGFF, 'OrganismDb', function(x){asGFF(getTxDbIfAvailable(x))})
 setMethod(distance, c('GenomicRanges','OrganismDb'),
           function(x, y, ignore.strand=FALSE, ..., id, 
                    type=c("gene", "tx", "exon", "cds")){
-              distance(x, getTxDbIfAvailable(y), ignore.strand=FALSE,
-                       ..., id, type=c("gene", "tx", "exon", "cds"))})
+              distance(x, getTxDbIfAvailable(y), ignore.strand=ignore.strand,
+                       ..., id=id, type=type)})
 
 setMethod(mapToTranscripts, c('ANY', 'OrganismDb'),
           function(x, transcripts, ignore.strand=TRUE, 
                    extractor.fun = transcripts, ...){
-              mapToTranscripts(x, getTxDbIfAvailable(transcripts),
-                               ignore.strand=TRUE, 
-                               extractor.fun = transcripts, ... )})
+              mapToTranscripts(x, transcripts=getTxDbIfAvailable(transcripts),
+                               ignore.strand=ignore.strand, 
+                               extractor.fun = extractor.fun, ... )})
 
