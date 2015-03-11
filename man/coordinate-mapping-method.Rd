@@ -15,7 +15,8 @@
 
 \usage{
 \S4method{mapToTranscripts}{ANY,OrganismDb}(x, transcripts,
-          ignore.strand = TRUE, extractor.fun = transcripts, ...) 
+          ignore.strand = TRUE,
+          extractor.fun = GenomicFeatures::transcripts, ...) 
 }
 
 \arguments{
@@ -115,12 +116,12 @@
 ## ---------------------------------------------------------------------
 
 library(Homo.sapiens)
-x <- GRanges("chr2", 
-             IRanges(c(7500, 8400, 9000), width=200, 
-                     names=LETTERS[1:3])) 
+x <- GRanges("chr5", 
+             IRanges(c(173315331,174151575), width=400, 
+                     names=LETTERS[1:2])) 
 
 ## Map to transcript coordinates:
-#mapToTranscripts(x, Homo.sapiens)
+mapToTranscripts(x, Homo.sapiens)
 }
 
 \keyword{methods}

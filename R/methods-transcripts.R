@@ -466,7 +466,7 @@ setMethod(distance, c('GenomicRanges','OrganismDb'),
 
 setMethod(mapToTranscripts, c('ANY', 'OrganismDb'),
           function(x, transcripts, ignore.strand=TRUE, 
-                   extractor.fun = transcripts, ...){
+                   extractor.fun = GenomicFeatures::transcripts, ...){
               mapToTranscripts(x, transcripts=getTxDbIfAvailable(transcripts),
                                ignore.strand=ignore.strand, 
                                extractor.fun = extractor.fun, ... )})
