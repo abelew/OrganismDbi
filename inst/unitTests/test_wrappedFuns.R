@@ -4,6 +4,10 @@ x <- Homo.sapiens
 ################################################################################
 ## VERY simple minded tests for VERY simple wrapper funs
 ## Basically are they returning something?  If so then they are proabbly OK.
+.testPopulatedGranges <- function(res){
+    all(checkTrue(length(res) > 1),
+        checkTrue(class(res) == "GRanges"))
+}
 
 test_microRNAs <- function(){
     res <- microRNAs(x)
@@ -26,10 +30,6 @@ test_threeUTRsByTranscript <- function(){
     checkTrue(class(res) == "GRangesList")    
 }
 
-.testPopulatedGranges <- function(res){
-    all(checkTrue(length(res) > 1),
-        checkTrue(class(res) == "GRanges"))
-}
 
 test_asBED <- function(){
     res <- asBED(x)
@@ -95,5 +95,8 @@ test_isActiveSeq <- function(){
     checkTrue(length(res) > 1)
     checkTrue(class(res) == "logical")
     checkTrue(all(res) == "FALSE")
+    ## Because the tests run in some 'other' order, I need to set this
+    ## back to default!
+    isActiveSeq(x)[seqlevels(x)] <- TRUE
 }
 
