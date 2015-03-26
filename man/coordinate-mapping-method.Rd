@@ -98,11 +98,7 @@
 
 \seealso{
   \itemize{
-    \item \code{?\link[GenomicAlignments]{mapToAlignments}}{in the 
-    \pkg{GenomicAlignments} package for methods mapping between
-    reads and genome space using a CIGAR alignment.}  
-    \item \code{?\link[GenomicFeatures]{mapToTranscripts}}{ in the 
-    \pkg{GenomicFeatures} package for orgininal methods and their TxDb uses.}
+    \item \link[GenomicFeatures]{mapToTranscripts} .
   }
 }
 

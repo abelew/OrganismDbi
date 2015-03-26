@@ -99,10 +99,10 @@
     used to generate an \code{OrganismDb} based package.
     \item \link[OrganismDbi]{rangeBasedAccessors} for the range based methods
     used in extracting data from a \code{OrganismDb} object.
-    \item \link[GenomicRanges]{seqlevels} .
-    \item \link[GenomicRanges]{seqlengths} .
-    \item \link[GenomicRanges]{isCircular} .
-    \item \link[GenomicRanges]{genome} .    
+    \item \link[GenomeInfoDb]{seqlevels} .
+    \item \link[GenomeInfoDb]{seqlengths} .
+    \item \link[GenomeInfoDb]{isCircular} .
+    \item \link[GenomeInfoDb]{genome} .    
 }
 }
 
