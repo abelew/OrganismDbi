@@ -21,7 +21,7 @@
 
 \arguments{
   \item{x}{
-    \code{\linkS4class{GenomicRanges}} object of positions to be mapped.
+    \code{\link[GenomicRanges]{GRanges-class}} object of positions to be mapped.
     \code{x} must have names when mapping to the genome.
   }
   \item{transcripts}{
