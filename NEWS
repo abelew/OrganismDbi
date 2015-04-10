@@ -1,5 +1,30 @@
  	**************************************************
 	*						 *
+	*	        1.10.x SERIES NEWS		 *
+	*						 *
+	**************************************************
+
+
+		OrganismDbi VERSION 1.10.x
+
+
+NEW FEATURES
+
+    o OrganismDb objects now have methods for most reasonable TxDb methods.  
+    If you can do it with a TxDb, it should also work for an OrganismDb.
+
+    o Supports dbconn() and dbfile()
+
+    o Exports getTxDbIfAvailable() for those who may want convenient access to 
+    the underlying TxDb object.
+        
+BUG FIXES
+
+    o use.names arguments now work with exonsBy and related methods.
+
+
+ 	**************************************************
+	*						 *
 	*	        1.6.x SERIES NEWS		 *
 	*						 *
 	**************************************************
