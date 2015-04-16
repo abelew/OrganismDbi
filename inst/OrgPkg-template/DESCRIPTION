@@ -1,0 +1,12 @@
+Package: @PKGNAME@
+Title: @PKGTITLE@
+Description: @PKGDESCRIPTION@
+Version: @PKGVERSION@
+Author: @AUTHOR@
+Maintainer: @MAINTAINER@
+Depends: R (>= 1.6), AnnotationDbi (>= 1.17.11), methods, OrganismDbi, GenomicFeatures, @DEPENDENCIES@
+Imports: GenomicFeatures, AnnotationDbi
+License: @LIC@
+organism: @ORGANISM@
+species: @ORGANISM@
+biocViews: AnnotationData, Genetics, OrganismDb, @ORGANISMBIOCVIEW@

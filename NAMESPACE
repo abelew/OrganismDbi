@@ -1,0 +1,78 @@
+importFrom("graph", ftM2graphNEL)
+importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
+importMethodsFrom("RBGL", bfs)
+importFrom(AnnotationDbi, columns, keys, keytypes, select, metadata, dbconn, dbfile)
+#importFrom(AnnotationDbi, cols)
+importFrom("GenomicFeatures",
+           transcripts,
+           exons,
+           cds,
+           genes,
+           transcriptsBy,
+           exonsBy,
+           cdsBy,
+           seqinfo,  ## Import this from GenomicFeatures b/c we need txdb vers.
+
+           ## Below are methods that we are 'just wrapping' from TxDbs
+           ## transcriptsByOverlaps,
+           ## exonsByOverlaps,
+           ## cdsByOverlaps,
+           promoters,
+           disjointExons,
+           microRNAs,
+           tRNAs,
+           intronsByTranscript,
+           fiveUTRsByTranscript,
+           threeUTRsByTranscript,
+           extractUpstreamSeqs,
+           isActiveSeq ,
+           "isActiveSeq<-",
+           asBED, asGFF,
+           distance,
+           mapToTranscripts
+           )
+importFrom("stats", setNames)
+
+importClassesFrom("graph", graphNEL)
+exportClasses("OrganismDb")
+exportMethods("columns",
+              "keys",
+              "keytypes",
+              "select",
+              "transcripts",
+              "exons",
+              "cds",
+              "genes",
+              "transcriptsBy",
+              "exonsBy",
+              "cdsBy",
+              "dbconn",
+              "dbfile",
+              "metadata",
+              seqinfo,
+              getTxDbIfAvailable,
+
+              ## Below are methods that we are 'just wrapping' from TxDbs
+              ## transcriptsByOverlaps,
+              ## exonsByOverlaps,
+              ## cdsByOverlaps,
+              promoters,
+              disjointExons,
+              microRNAs,
+              tRNAs,
+              intronsByTranscript,
+              fiveUTRsByTranscript,
+              threeUTRsByTranscript,
+              extractUpstreamSeqs,
+              isActiveSeq ,
+              "isActiveSeq<-",
+              asBED, asGFF,
+              distance,
+              mapToTranscripts
+              )
+export(getTxDbIfAvailable,  ## b/c the generic is here
+       "makeOrganismPackage")
+
+
+
+## checkUsagePackage("OrganismDbi",all=TRUE)
