@@ -57,19 +57,44 @@ OrganismDb <-
 ## )
 
 
-
-
-
-## A generalized constructor (in the style of loadDb).
-
+ 
+.cantFindResourceMsg <- function(pkg){
+    (paste0("The '", pkg, "' object is required but not ",
+            "found. Please either install it (if it's from ",
+            "a package) or ensure that it's loaded to the ",
+            "search path."))
+}
 
 ## helpers to get all supporting libs loaded
-.initPkg <- function(pkg){
-  if (missing(pkg)){
-    stop("'", pkg, "' is required, please install it")
-  }else{
-    require(pkg, character.only = TRUE)
-  }
+## .initPkg needs to:
+## 1) see if the package is on the search path?
+## 2) if not on search path, try to see if it's installed (and load if needed).
+## 3) emit an appropriate warning in either case. 
+## NOTE:
+## This function deliberately does not use my .biocAnnPackages()
+## function because I have no way of knowing if someone else
+## has made a custom one or is using one from another repos. etc.
+.initPkg <- function(pkg, OrganismDbPkgName, ns=NULL){
+##    message("pkg is:", pkg)
+##    message("OrganismDbPkgName is:", OrganismDbPkgName)
+    
+    if(!exists(pkg)){ ## IOW there is no object
+        if(suppressWarnings(!library(pkg,
+                                     character.only = TRUE,
+                                     logical.return=TRUE))){
+            if(!is.null(OrganismDbPkgName)){
+##    message("The '", pkg, "' pkg is now trying to load from 'inst/extdata/'.")
+                ## THEN TRY to load it from inst/extdata (system.file())
+                ## PROBLEM: this gets called BEFORE it's been actually installed
+                pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
+                           package=OrganismDbPkgName)
+##    message("SEARCHING this path:", pkgPath)
+                msg <- .cantFindResourceMsg(pkg)
+                tryCatch(loadDb(pkgPath),
+                         error = function(e){stop(wmsg(msg))} )
+            }
+        }
+    }
 }
 
 ## helper for extracting pkgs and cols as a vector
@@ -80,7 +105,7 @@ OrganismDb <-
 
 
 ## Constructor 
-OrganismDb <- function(dbType, graphData, ...){
+OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
   ## make graphData into a graphNEL
   ## FIXME: validate graphData -- required columns?
   gd <- graphData    
@@ -89,24 +114,48 @@ OrganismDb <- function(dbType, graphData, ...){
   ## We should try to call require on all the supporting packages.
   pkgs <- unique(names(.extractPkgsAndCols(gd)))
   for (pkg in pkgs)
-      .initPkg(pkg)
+      .initPkg(pkg, dbType, ns=ns)
 
   ## Then make the object.
   new("OrganismDb", ..., keys=graphData, graph=graph)
 }
 
 
-
+## helper that is just used for those resources that are not separate
+## packages, but which need to have loadDb called (and be sealed into
+## the namespace for the OrganismDb object)
+.addLocalPkgsToNamespace <- function(pkgname, graphData, ns){
+    pkgs <- unique(names(.extractPkgsAndCols(graphData)))
+    xsts <- sapply(pkgs, exists)
+    pkgs <- pkgs[!xsts]
+    ## then get the ones that we don't already have and seal to the namespace.
+    for(pkg in pkgs){
+        msg <- .cantFindResourceMsg(pkg)
+        pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
+                               package=pkgname)
+        ## Then try to load this from the source
+        tryCatch({assign(eval(pkg), loadDb(pkgPath)); 
+                  assign(pkgname, get(eval(pkg)), envir=ns)},
+                  error = function(e){stop(wmsg(msg))} )
+    }
+    ## then return the namespace...
+    return(ns)
+}
 
 ###########################################################
 ## Convenience function that will load the package.
 ## IOW, there will be a call to this in zzz.R
 .loadOrganismDbiPkg <- function(pkgname,
                                 graphData){
-  obj <- OrganismDb(pkgname, graphData)
   ns <- asNamespace(pkgname)
+  obj <- OrganismDb(pkgname, graphData, ns=ns)
   assign(pkgname, obj, envir=ns)
-  namespaceExport(ns, pkgname)
+  ## trouble: you can only do namespaceExport once... So I need a
+  ## separate helper (not the constructor) to add any local objects
+  ## into the namespace before we seal it (below).
+  ns <- .addLocalPkgsToNamespace(pkgname, graphData, ns)
+  ## now seal it
+  namespaceExport(ns, pkgname) 
 }
 
 

@@ -10,8 +10,9 @@
 
 ## function to allow us to convert a list into the inernally preferred form...
 .mungeGraphData <- function(graphData){
-  pkgs <- sapply(graphData, names)
-  keys <- matrix(unlist(graphData), ncol=2,byrow=TRUE)
+  ##pkgs <- sapply(graphData, names) ## This is no good.   :(
+  pkgs <- matrix(unlist(lapply(graphData, names)), ncol=2, byrow=TRUE)
+  keys <- matrix(unlist(graphData), ncol=2, byrow=TRUE)
   graphData <- cbind(pkgs, keys)
   colnames(graphData) <- c("xDbs","yDbs","xKeys","yKeys")
   graphData
@@ -34,7 +35,18 @@
     stop("some foreign keys are not present in their associated databases")
 }
 
+## helper to list bioc Annot packages (for filling in things like
+## suggests fields)
+.biocAnnPackages <- function(){
+    availAnns <- as.data.frame(available.packages(
+                               contrib.url(biocinstallRepos()[["BioCann"]],
+                               "source")))
+    as.character(availAnns[["Package"]])
+}
 
+## We want makeOrganismPackage to be self contained (have all it needs)
+## IOW we want to store .sqlite files in a local inst/extdata when
+## they are not known packages.
 makeOrganismPackage <- function(pkgname,
                                 graphData,
                                 organism,
@@ -48,7 +60,11 @@ makeOrganismPackage <- function(pkgname,
    ## We need to get a list of dependencies:
    ## 1st convert graphData into a data.frame
    gd <- .mungeGraphData(graphData)
-   deps <- paste(unique(as.vector(gd[,1:2])),collapse=", ")
+   allDeps <- unique(as.vector(gd[,1:2]))
+   ## Filter dependencies to make sure they are really package names
+   biocPkgNames <- .biocAnnPackages()
+   deps <- allDeps[allDeps %in% biocPkgNames]
+   deps <- paste(deps,collapse=", ")   
    ## We need to define some symbols in order to have the
    ## template filled out correctly. 
    symvals <- list(
@@ -97,6 +113,19 @@ makeOrganismPackage <- function(pkgname,
    ## And then save the data there.
    dir.create(file.path(destDir,pkgname,"data"))
    save(graphData, file=file.path(destDir,pkgname,"data","graphData.rda"))
+
+   ## Get and other things that need to be saved and stash them into
+   ## /inst/extdata
+   otherDeps <- allDeps[!allDeps %in% biocPkgNames]
+   .saveFromStr <- function(x, file){saveDb(x=get(x), file=file)}
+   if(length(otherDeps)>0){
+       ## Then we have to save stuff locally
+       extPath <- file.path(destDir,pkgname,"inst","extdata")
+       dir.create(extPath, recursive=TRUE)
+       mapply(.saveFromStr, x=otherDeps, file=file.path(extPath,
+                                           paste0(otherDeps,".sqlite")))
+   }
 }
+
 
 

@@ -75,14 +75,16 @@ destination <- tempfile()
 dir.create(destination)
 
 ## makes an Organism package for human called Homo.sapiens
-makeOrganismPackage(pkgname = "Homo.sapiens",
-  graphData = gd,
-  organism = "Homo sapiens",
-  version = "1.0.0",
-  maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
-  author = "Bioconductor Core Team",
-  destDir = destination,
-  license = "Artistic-2.0")
+if(interactive()){
+  makeOrganismPackage(pkgname = "Homo.sapiens",
+   graphData = gd,
+   organism = "Homo sapiens",
+   version = "1.0.0",
+   maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
+   author = "Bioconductor Core Team",
+   destDir = destination,
+   license = "Artistic-2.0")
+}
 }
 
 
