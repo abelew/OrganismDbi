@@ -84,8 +84,6 @@ OrganismDb <-
                                      logical.return=TRUE))){
             if(!is.null(OrganismDbPkgName)){
 ##    message("The '", pkg, "' pkg is now trying to load from 'inst/extdata/'.")
-                ## THEN TRY to load it from inst/extdata (system.file())
-                ## PROBLEM: this gets called BEFORE it's been actually installed
                 pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
                            package=OrganismDbPkgName)
 ##    message("SEARCHING this path:", pkgPath)
@@ -128,18 +126,21 @@ OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
     pkgs <- unique(names(.extractPkgsAndCols(graphData)))
     xsts <- sapply(pkgs, exists)
     pkgs <- pkgs[!xsts]
+    pkgVals <- list()
     ## then get the ones that we don't already have and seal to the namespace.
     for(pkg in pkgs){
         msg <- .cantFindResourceMsg(pkg)
         pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
                                package=pkgname)
-        ## Then try to load this from the source
-        tryCatch({assign(eval(pkg), loadDb(pkgPath)); 
-                  assign(pkgname, get(eval(pkg)), envir=ns)},
+        tryCatch({assign(eval(pkg), loadDb(pkgPath))},
                   error = function(e){stop(wmsg(msg))} )
+        ## save what we are getting
+        pkgVals <- c(pkgVals, get(eval(pkg)))
+        ## and assign it to the namespace
+        assign(pkg, get(eval(pkg)), envir=ns)
     }
     ## then return the namespace...
-    return(ns)
+    return(list(ns=ns, vars=pkgVals))
 }
 
 ###########################################################
@@ -148,14 +149,15 @@ OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
 .loadOrganismDbiPkg <- function(pkgname,
                                 graphData){
   ns <- asNamespace(pkgname)
-  obj <- OrganismDb(pkgname, graphData, ns=ns)
-  assign(pkgname, obj, envir=ns)
   ## trouble: you can only do namespaceExport once... So I need a
   ## separate helper (not the constructor) to add any local objects
   ## into the namespace before we seal it (below).
-  ns <- .addLocalPkgsToNamespace(pkgname, graphData, ns)
+  res <- .addLocalPkgsToNamespace(pkgname, graphData, ns)
+  ## THEN make the object...
+  obj <- OrganismDb(pkgname, graphData, ns=res[['ns']])
+  assign(pkgname, obj, envir=ns)
   ## now seal it
-  namespaceExport(ns, pkgname) 
+  namespaceExport(ns, c(pkgname,unlist(res[['vars']])) ) 
 }
 
 
