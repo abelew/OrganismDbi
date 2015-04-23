@@ -126,7 +126,6 @@ OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
     pkgs <- unique(names(.extractPkgsAndCols(graphData)))
     xsts <- sapply(pkgs, exists)
     pkgs <- pkgs[!xsts]
-##    pkgVals <- list()
     ## then get the ones that we don't already have and seal to the namespace.
     for(pkg in pkgs){
         msg <- .cantFindResourceMsg(pkg)
@@ -134,15 +133,14 @@ OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
                                package=pkgname)
         tryCatch({assign(eval(pkg), loadDb(pkgPath))},
                   error = function(e){stop(wmsg(msg))} )
-        ## save what we are getting
-##        pkgVals <- c(pkgVals, get(eval(pkg)))
-        ## and assign it to the namespace
         assign(pkg, get(eval(pkg)), envir=ns)
         namespaceExport(ns, pkg)
     }
-    ## then return the namespace...
-##    return(list(ns=ns, vars=pkgVals))
 }
+## TODO: namespace looks like it doesn't need to be passed around (just referrered to be name with asNamespace())
+## So instead of passing that around, just get it (as needed) and add things to it in each place.
+## lose the list (pkgVals)
+## And get sorted why I have this bug with not being able to export an OrgDb (when I was doing that just a little bit ago)...
 
 ###########################################################
 ## Convenience function that will load the package.
@@ -150,14 +148,9 @@ OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
 .loadOrganismDbiPkg <- function(pkgname,
                                 graphData){
   ns <- asNamespace(pkgname)
-  ## trouble: you can only do namespaceExport once... So I need a
-  ## separate helper (not the constructor) to add any local objects
-  ## into the namespace before we seal it (below).
   .addLocalPkgsToNamespace(pkgname, graphData, ns)
-  ## THEN make the object...
   obj <- OrganismDb(pkgname, graphData, ns)
   assign(pkgname, obj, envir=ns)
-  ## now export it
   namespaceExport(ns, pkgname) 
 }
 
