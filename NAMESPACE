@@ -1,9 +1,31 @@
-importFrom("graph", ftM2graphNEL)
-importMethodsFrom("graph", edges, nodes, subGraph, edgeNames)
+import(methods)
+
+importClassesFrom("graph", graphNEL)
+
+importClassesFrom("GenomicRanges", "GenomicRanges")
+
+importMethodsFrom("AnnotationDbi", saveDb)
+
+importMethodsFrom("GenomicRanges", mcols, "mcols<-")
+
+importMethodsFrom("graph", edgeNames, edges, nodes, show, subGraph,
+                  union)
+
+importMethodsFrom("IRanges", splitAsList)
+
 importMethodsFrom("RBGL", bfs)
-importFrom(AnnotationDbi, columns, keys, keytypes, select, metadata, dbconn, dbfile)
-#importFrom(AnnotationDbi, cols)
+
+importMethodsFrom("RSQLite", dbGetQuery)
+
+importFrom("AnnotationDbi", columns, keys, keytypes, select, mapIds, metadata,
+           dbconn, dbfile, loadDb, unlist2)
+
+importFrom("Biobase", createPackage)
+
+importFrom("BiocInstaller", biocinstallRepos)
+
 importFrom("GenomicFeatures",
+           id2name,
            transcripts,
            exons,
            cds,
@@ -31,10 +53,17 @@ importFrom("GenomicFeatures",
            distance,
            mapToTranscripts
            )
+
+importFrom("graph", ftM2graphNEL)
+
+importFrom("S4Vectors", isSingleString, wmsg)
+
 importFrom("stats", setNames)
 
-importClassesFrom("graph", graphNEL)
+importFrom("utils", available.packages, contrib.url)
+
 exportClasses("OrganismDb")
+
 exportMethods("columns",
               "keys",
               "keytypes",
@@ -71,6 +100,7 @@ exportMethods("columns",
               distance,
               mapToTranscripts
               )
+
 export(getTxDbIfAvailable,  ## b/c the generic is here
        "makeOrganismPackage")
 
