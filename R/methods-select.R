@@ -356,3 +356,20 @@ setMethod("dbconn", "OrganismDb", function(x){.dbconn(x)})
     res
 }
 setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
+
+
+## mapIds
+## Standard methods:
+.mapIds <- function(x, keys, column, keytype, ...,
+                    multiVals=c("filter","asNA","first","list",
+                      "CharacterList")){
+    AnnotationDbi:::.testForValidKeytype(x, keytype)
+    db <- .lookupDbFromKeytype(x, keytype)
+    mapIds(db, keys, column, keytype, ...,
+                    multiVals=multiVals)
+}
+
+setMethod("mapIds", "OrganismDb", .mapIds)
+
+## library(Homo.sapiens);  mapIds(Homo.sapiens, keys=c('1','10'), column='ALIAS', keytype='ENTREZID',  multiVals="CharacterList")
+## TODO: add some unit tests for this.
