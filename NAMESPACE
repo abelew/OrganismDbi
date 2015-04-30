@@ -64,21 +64,21 @@ importFrom("utils", available.packages, contrib.url)
 
 exportClasses("OrganismDb")
 
-exportMethods("columns",
-              "keys",
-              "keytypes",
-              "select",
-              "mapIds",
-              "transcripts",
-              "exons",
-              "cds",
-              "genes",
-              "transcriptsBy",
-              "exonsBy",
-              "cdsBy",
-              "dbconn",
-              "dbfile",
-              "metadata",
+exportMethods(columns,
+              keys,
+              keytypes,
+              select,
+              mapIds,
+              transcripts,
+              exons,
+              cds,
+              genes,
+              transcriptsBy,
+              exonsBy,
+              cdsBy,
+              dbconn,
+              dbfile,
+              metadata,
               seqinfo,
               getTxDbIfAvailable,
 
@@ -98,11 +98,13 @@ exportMethods("columns",
               "isActiveSeq<-",
               asBED, asGFF,
               distance,
-              mapToTranscripts
+              mapToTranscripts,
+              selectByRanges
               )
 
 export(getTxDbIfAvailable,  ## b/c the generic is here
-       "makeOrganismPackage")
+       selectByRanges,
+       makeOrganismPackage)
 
 
 

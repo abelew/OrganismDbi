@@ -1,3 +1,32 @@
+## I want to make it so that the internal object stores the path.
+## It can still store the name, but the path is the important thing that we need to stash internally.
+## And the constructor can still use named object (and I think it should), but then internally when it's setting up the object, that needs to call dbfile(object) to get the path that it needs (and error informatively if that can't be done).
+
+## The 1st decision I still have to make: keep the names or not?  I think keep them (for now), since I will have them at construction time anyways and this allows me to keep the internals generic and still have them make some human sense when testing (instead of things like object1 or 'OrgObject').
+
+## I will need a helper function for the makeXXX code to allow me to call dbfile() on all the nodes. - this may already exist for select etc.
+
+## I need to store the filepaths for these things and the data.frame that I currently am using is not really up to the task...  So probably I should make a list object with the names and the filepaths in a second spot?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Old example
 library(OrganismDbi)
 
@@ -128,3 +157,7 @@ columns(puff)
 ## gd <- list(join1 = c(GO.db="GOID", puffer="GO"),
 ##            join2 = c(puffer="ENTREZID",
 ##              TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID")) ## irrelevant TxDb
+
+
+
+

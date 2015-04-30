@@ -373,3 +373,46 @@ setMethod("mapIds", "OrganismDb", .mapIds)
 
 ## library(Homo.sapiens);  mapIds(Homo.sapiens, keys=c('1','10'), column='ALIAS', keytype='ENTREZID',  multiVals="CharacterList")
 ## TODO: add some unit tests for this.
+
+
+
+#########################################################################
+## New method (experimental) to just see if we can make it easier for
+## people who have RANGES and then want to see the associated
+## annotations.
+## Eventually, we may want to let the user choose which annotation
+## range accessor should be called to see if their ranges overlap
+## (with an 'annotFUN' argument).
+## BUT RIGHT NOW: this will just do the simplest possible thing:
+
+
+.selectByRanges <- function(x, ranges, columns){
+   gns <- genes(x, columns=columns)
+   hits <- findOverlaps(query=ranges, subject=gns)
+   results <- ranges[queryHits(hits)]
+   ## I think that this is the step I cannot safely do
+   mcols(results) <- mcols(gns[subjectHits(hits)])
+   results
+}
+
+setMethod("selectByRanges", "OrganismDb", .selectByRanges)
+
+
+
+
+## ## Some Testing
+## ## gns <- genes(Homo.sapiens)
+## si <- seqinfo(gns)
+## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),
+##                     IRanges(start=c(107899550, 108025550),
+##                             end=c(108291889, 108050000)), strand='*',
+##                     seqinfo=si)
+## selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
+
+## selectByRanges(Homo.sapiens, ranges, 'ENTREZID')
+
+## ## What if they ask for something more compex?
+## selectByRanges(Homo.sapiens, ranges, 'ALIAS')
+
+## ## What if they ask for a couple things?
+## selectByRanges(Homo.sapiens, ranges, c('ENTREZID','ALIAS'))

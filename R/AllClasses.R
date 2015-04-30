@@ -57,7 +57,7 @@ OrganismDb <-
 ## )
 
 
- 
+
 .cantFindResourceMsg <- function(pkg){
     (paste0("The '", pkg, "' object is required but not ",
             "found. Please either install it (if it's from ",

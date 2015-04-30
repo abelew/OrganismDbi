@@ -10,6 +10,8 @@
 \alias{keys,OrganismDb-method}
 \alias{select,OrganismDb-method}
 \alias{mapIds,OrganismDb-method}
+\alias{selectByRanges,OrganismDb-method}
+
 \alias{metadata,OrganismDb-method}
 \alias{dbconn,OrganismDb-method}
 \alias{dbfile,OrganismDb-method}
@@ -105,6 +107,15 @@
 	}
       }
     }
+    \item{}{
+      \code{selectByRanges(x, ranges, columns)}:
+      When all the appropriate arguments are specifiedm \code{select}
+      will return the GRanges object that you pass in (to the ranges
+      argument) that has been annotated with the data specified by the
+      columns argument. Internally this function uses the output of the
+      genes() method to extract ranges for testing overlap.
+    }
+    
   }
 }
 
@@ -137,6 +148,13 @@ res <- select(Homo.sapiens, keys, columns, keytype)
 head(res)
 res <-  mapIds(Homo.sapiens, keys=c('1','10'), column='ALIAS',
                keytype='ENTREZID',  multiVals="CharacterList")
+
+## get symbols for ranges in question:
+ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),
+                    IRanges(start=c(107899550, 108025550),
+                            end=c(108291889, 108050000)), strand='*',
+                    seqinfo=seqinfo(Homo.sapiens))
+selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
 
 ## Get the DB connections or DB file paths associated with those for
 ## each.
