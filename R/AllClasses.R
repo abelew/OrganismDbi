@@ -38,7 +38,8 @@
 OrganismDb <-
     setClass("OrganismDb",
              representation(keys="matrix",
-                            graph="graphNEL")
+                            graph="graphNEL",
+                            resources="character")
 )
 
 ## ## Reference style class that does not work
@@ -65,35 +66,35 @@ OrganismDb <-
             "search path."))
 }
 
-## helpers to get all supporting libs loaded
-## .initPkg needs to:
-## 1) see if the package is on the search path?
-## 2) if not on search path, try to see if it's installed (and load if needed).
-## 3) emit an appropriate warning in either case. 
-## NOTE:
-## This function deliberately does not use my .biocAnnPackages()
-## function because I have no way of knowing if someone else
-## has made a custom one or is using one from another repos. etc.
-.initPkg <- function(pkg, OrganismDbPkgName, ns=NULL){
-##    message("pkg is:", pkg)
-##    message("OrganismDbPkgName is:", OrganismDbPkgName)
+## ## helpers to get all supporting libs loaded
+## ## .initPkg needs to:
+## ## 1) see if the package is on the search path?
+## ## 2) if not on search path, try to see if it's installed (and load if needed).
+## ## 3) emit an appropriate warning in either case. 
+## ## NOTE:
+## ## This function deliberately does not use my .biocAnnPackages()
+## ## function because I have no way of knowing if someone else
+## ## has made a custom one or is using one from another repos. etc.
+## .initPkg <- function(pkg, OrganismDbPkgName, ns=NULL){
+## ##    message("pkg is:", pkg)
+## ##    message("OrganismDbPkgName is:", OrganismDbPkgName)
     
-    if(!exists(pkg)){ ## IOW there is no object
-        if(suppressWarnings(!library(pkg,
-                                     character.only = TRUE,
-                                     logical.return=TRUE))){
-            if(!is.null(OrganismDbPkgName)){
-##    message("The '", pkg, "' pkg is now trying to load from 'inst/extdata/'.")
-                pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
-                           package=OrganismDbPkgName)
-##    message("SEARCHING this path:", pkgPath)
-                msg <- .cantFindResourceMsg(pkg)
-                tryCatch(loadDb(pkgPath),
-                         error = function(e){stop(wmsg(msg))} )
-            }
-        }
-    }
-}
+##     if(!exists(pkg)){ ## IOW there is no object
+##         if(suppressWarnings(!library(pkg,
+##                                      character.only = TRUE,
+##                                      logical.return=TRUE))){
+##             if(!is.null(OrganismDbPkgName)){
+## ##    message("The '", pkg, "' pkg is now trying to load from 'inst/extdata/'.")
+##                 pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
+##                            package=OrganismDbPkgName)
+## ##    message("SEARCHING this path:", pkgPath)
+##                 msg <- .cantFindResourceMsg(pkg)
+##                 tryCatch(loadDb(pkgPath),
+##                          error = function(e){stop(wmsg(msg))} )
+##             }
+##         }
+##     }
+## }
 
 ## helper for extracting pkgs and cols as a vector
 .extractPkgsAndCols <- function(gd){
@@ -102,54 +103,76 @@ OrganismDb <-
 }
 
 
-## Constructor 
-OrganismDb <- function(dbType=NULL, graphData, ns=NULL, ...){
+
+## Constructor (not intended to be called by end user as it takes a
+## very specific graphInfo object) (conceptually, the graphInfo is a
+## seed object).
+
+## Eventually, we will only use this internally (and it will have a
+## differnt name like 'genericMultiDb').  And specific containers that
+## do more for end users and take less specific inputs will be exposed
+## to end users.
+
+OrganismDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
   ## make graphData into a graphNEL
   ## FIXME: validate graphData -- required columns?
-  gd <- graphData    
+  gd <- graphInfo$graphData
+  ## Then make actual graph
   graph <- ftM2graphNEL(gd[,1:2], edgemode="undirected")
   
-  ## We should try to call require on all the supporting packages.
-  pkgs <- unique(names(.extractPkgsAndCols(gd)))
-  for (pkg in pkgs)
-      .initPkg(pkg, dbType, ns=ns)
+  ## ## We should try to call require on all the supporting packages.
+  ## pkgs <- unique(names(.extractPkgsAndCols(gd)))
+  ## for (pkg in pkgs)
+  ##     .initPkg(pkg, dbType, ns=ns)
 
+  ## Then call loadDb on all unloaded resources
+  resources <- graphInfo$resources
+  for(i in seq_along(resources)){
+      name <- names(resources[i])
+      if(!exists(name)){
+          assign(name,value=loadDb(resources[i]))
+      }
+  }
+  
   ## Then make the object.
-  new("OrganismDb", ..., keys=graphData, graph=graph)
+  new("OrganismDb", ..., keys=gd, graph=graph,
+      resources=resources)
 }
 
 
-## helper that is just used for those resources that are not separate
-## packages, but which need to have loadDb called (and be sealed into
-## the namespace for the OrganismDb object)
-.addLocalPkgsToNamespace <- function(pkgname, graphData, ns){
-    pkgs <- unique(names(.extractPkgsAndCols(graphData)))
-    xsts <- sapply(pkgs, exists)
-    pkgs <- pkgs[!xsts]
-    ## then get the ones that we don't already have and seal to the namespace.
-    for(pkg in pkgs){
-        msg <- .cantFindResourceMsg(pkg)
-        pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
-                               package=pkgname)
-        tryCatch({assign(eval(pkg), loadDb(pkgPath))},
-                  error = function(e){stop(wmsg(msg))} )
-        assign(pkg, get(eval(pkg)), envir=ns)
-        namespaceExport(ns, pkg)
-    }
-}
-## TODO: namespace looks like it doesn't need to be passed around (just referrered to be name with asNamespace())
-## So instead of passing that around, just get it (as needed) and add things to it in each place.
-## lose the list (pkgVals)
-## And get sorted why I have this bug with not being able to export an OrgDb (when I was doing that just a little bit ago)...
+## ## helper that is just used for those resources that are not separate
+## ## packages, but which need to have loadDb called (and be sealed into
+## ## the namespace for the OrganismDb object)
+## .addLocalPkgsToNamespace <- function(pkgname, graphData, ns){
+##     pkgs <- unique(names(.extractPkgsAndCols(graphData)))
+##     xsts <- sapply(pkgs, exists)
+##     pkgs <- pkgs[!xsts]
+##     ## then get the ones that we don't already have and seal to the namespace.
+##     for(pkg in pkgs){
+##         msg <- .cantFindResourceMsg(pkg)
+##         pkgPath <- system.file("extdata", paste0(pkg,".sqlite"),
+##                                package=pkgname)
+##         tryCatch({assign(eval(pkg), loadDb(pkgPath))},
+##                   error = function(e){stop(wmsg(msg))} )
+##         assign(pkg, get(eval(pkg)), envir=ns)
+##         namespaceExport(ns, pkg)
+##     }
+## }
+## ## TODO: namespace looks like it doesn't need to be passed around (just referrered to be name with asNamespace())
+## ## So instead of passing that around, just get it (as needed) and add things to it in each place.
+## ## lose the list (pkgVals)
+## ## And get sorted why I have this bug with not being able to export an OrgDb (when I was doing that just a little bit ago)...
+
 
 ###########################################################
-## Convenience function that will load the package.
+## Convenience function that will load a package.
 ## IOW, there will be a call to this in zzz.R
 .loadOrganismDbiPkg <- function(pkgname,
-                                graphData){
+                                graphInfo){
   ns <- asNamespace(pkgname)
-  .addLocalPkgsToNamespace(pkgname, graphData, ns)
-  obj <- OrganismDb(pkgname, graphData, ns)
+  ## No longer any need for rules about where to find things...
+  ## .addLocalPkgsToNamespace(pkgname, graphInfo, ns)
+  obj <- OrganismDb(pkgname, graphInfo, ns)
   assign(pkgname, obj, envir=ns)
   namespaceExport(ns, pkgname) 
 }

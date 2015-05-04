@@ -13,7 +13,7 @@
 \keyword{datasets}
 \examples{
   @PKGNAME@
-  cls <- cols(@PKGNAME@)
+  cls <- columns(@PKGNAME@)
   cls
   cls <- cls[c(1,19,45)]
   kts <- keytypes(@PKGNAME@)
@@ -21,6 +21,6 @@
   kts
   ks <- head(keys(@PKGNAME@, keytype=kts[2]))
   ks
-  res <- select(@PKGNAME@, keys=ks, cols=cls, keytype=kt)
+  res <- select(@PKGNAME@, keys=ks, columns=cls, keytype=kt)
   head(res)
 }

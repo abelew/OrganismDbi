@@ -10,6 +10,7 @@
 \alias{keys,OrganismDb-method}
 \alias{select,OrganismDb-method}
 \alias{mapIds,OrganismDb-method}
+\alias{selectByRanges}
 \alias{selectByRanges,OrganismDb-method}
 
 \alias{metadata,OrganismDb-method}

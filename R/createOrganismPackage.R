@@ -44,6 +44,17 @@
     as.character(availAnns[["Package"]])
 }
 
+
+## Helper to set up to just load packages that need loading.
+.extractDbFiles <- function(gd, deps){
+    pkgs <- unique(names(.extractPkgsAndCols(gd)))
+    ## Before we can proceed, we may need to call library on the deps...
+    lapply(deps, library, character.only = TRUE)
+    files <- unlist(lapply(pkgs, function(x){dbfile(get(x))}))
+    setNames(files, pkgs)
+}
+
+
 ## We want makeOrganismPackage to be self contained (have all it needs)
 ## IOW we want to store .sqlite files in a local inst/extdata when
 ## they are not known packages.
@@ -64,7 +75,7 @@ makeOrganismPackage <- function(pkgname,
    ## Filter dependencies to make sure they are really package names
    biocPkgNames <- .biocAnnPackages()
    deps <- allDeps[allDeps %in% biocPkgNames]
-   deps <- paste(deps,collapse=", ")   
+   depsStr <- paste(deps,collapse=", ")   
    ## We need to define some symbols in order to have the
    ## template filled out correctly. 
    symvals <- list(
@@ -78,14 +89,21 @@ makeOrganismPackage <- function(pkgname,
     ORGANISM=organism,
     ORGANISMBIOCVIEW=gsub(" ","_",organism),
     PKGNAME=pkgname,
-    DEPENDENCIES=deps
+    DEPENDENCIES=depsStr
    )
    ## Check the graphData object and rename if needed
    .testGraphData(gd)
-   ## Try to call require on all the supporting packages.
-   pkgs <- unique(names(.extractPkgsAndCols(gd)))
-   for (pkg in pkgs)
-       .initPkg(pkg)
+## Try to call require on all the supporting packages.
+## pkgs <- unique(names(.extractPkgsAndCols(gd)))
+## for (pkg in pkgs)
+##     .initPkg(pkg)
+   
+   ## ######################################################################### 
+   ## Extract the dbFile information from each object and store that
+   ## into resources
+   resources <- .extractDbFiles(gd, deps)
+   ## ######################################################################### 
+   
    ## Also check that the fkeys are really columns for the graphData
    fkeys <- .extractPkgsAndCols(gd)
    .testKeys(fkeys)
@@ -109,10 +127,11 @@ makeOrganismPackage <- function(pkgname,
    ## There will already be a /data dir in the template
    ## So just save to it:
    graphData <- gd
+   graphInfo <- list(graphData=graphData, resources=resources)
    ## create data dir (because R CMD build removes empty dirs)
    ## And then save the data there.
-   dir.create(file.path(destDir,pkgname,"data"))
-   save(graphData, file=file.path(destDir,pkgname,"data","graphData.rda"))
+   dir.create(file.path(destDir,pkgname,"data"))   
+   save(graphInfo, file=file.path(destDir,pkgname,"data","graphInfo.rda"))
 
    ## Get and other things that need to be saved and stash them into
    ## /inst/extdata

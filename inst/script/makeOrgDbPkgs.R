@@ -1,6 +1,6 @@
 ## script to test my package code generator
 require(OrganismDbi)
-version = "1.1.2"
+version = "1.3.0"
 
 ## for human
 gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),

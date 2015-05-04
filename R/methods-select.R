@@ -399,20 +399,14 @@ setMethod("selectByRanges", "OrganismDb", .selectByRanges)
 
 
 
-
 ## ## Some Testing
-## ## gns <- genes(Homo.sapiens)
-## si <- seqinfo(gns)
 ## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),
 ##                     IRanges(start=c(107899550, 108025550),
 ##                             end=c(108291889, 108050000)), strand='*',
-##                     seqinfo=si)
+##                     seqinfo=seqinfo(Homo.sapiens))
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
-
 ## selectByRanges(Homo.sapiens, ranges, 'ENTREZID')
-
 ## ## What if they ask for something more compex?
 ## selectByRanges(Homo.sapiens, ranges, 'ALIAS')
-
 ## ## What if they ask for a couple things?
 ## selectByRanges(Homo.sapiens, ranges, c('ENTREZID','ALIAS'))

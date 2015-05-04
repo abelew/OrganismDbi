@@ -6,7 +6,50 @@
 
 ## I will need a helper function for the makeXXX code to allow me to call dbfile() on all the nodes. - this may already exist for select etc.
 
-## I need to store the filepaths for these things and the data.frame that I currently am using is not really up to the task...  So probably I should make a list object with the names and the filepaths in a second spot?
+## I need to store the filepaths for these things and the data.frame that I currently am using is not really up to the task...  So probably I should make a list object with the names and the filepaths in a second spot?  But (importantly), I don't need to ask the user for this information.  This is just what will be stored (as an object).  So instead of a data.frame, I will now store a list that contains 1] a data.frame and 2] a vector with the file paths...
+
+
+
+
+## TO Convert over:
+## 1- To start I will just make a modded (example object in a test package).
+## load('graphData.rda')
+## resources <- c(GO.db=dbfile(GO.db), org.Hs.eg.db=dbfile(org.Hs.eg.db), TxDb.Hsapiens.UCSC.hg19.knownGene=dbfile(TxDb.Hsapiens.UCSC.hg19.knownGene))
+## graphInfo <- list(graphData=graphData, resources=resources)
+## save(graphInfo, file='graphInfo.Rda')
+## -done
+
+## 2- Then modify the constructor to expect and load from this kind of
+## saved list object. - done
+
+
+## 3- update .loadOrganismDbiPkg?  And ALSO make a .loadOrganismDb()
+## function to create the object from a saved piece of data. - done
+## BUT not yet tested...
+
+## 4- Then change makeOrganismPackage to look up and save this data when users make a package.
+## Done but not tested.
+
+
+
+## Here is some test code:
+library(OrganismDbi)
+
+gd <- list(join1 = c(GO.db="GOID", org.Hs.eg.db="GO"),
+           join2 = c(org.Hs.eg.db="ENTREZID",
+             TxDb.Hsapiens.UCSC.hg19.knownGene="GENEID"))
+
+## debug(OrganismDbi:::.extractDbFiles)
+## debug(OrganismDbi:::makeOrganismPackage)
+
+makeOrganismPackage(pkgname = "Homo.saps",
+                    graphData = gd,
+                    organism = "Homo saps",
+                    version = "1.0.0",
+                    maintainer = "Bioconductor Package Maintainer <maintainer@bioconductor.org>",
+                    author = "Bioconductor Core Team",
+                    destDir = ".",
+                    license = "Artistic-2.0")
 
 
 
@@ -25,6 +68,15 @@
 
 
 
+
+
+
+
+
+################################################################################
+################################################################################
+################################################################################
+################################################################################
 
 
 ## Old example
