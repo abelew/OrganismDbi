@@ -38,6 +38,9 @@
     }
     res
 }
+## examples:
+## .taxIdToOrgDb(9606)
+## .taxIdToOrgDb(9986)
 
 
 
