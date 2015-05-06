@@ -1,3 +1,48 @@
+## New helper to lookup which org object or package should be used
+## based on the taxonomy ID.  It takes a tax ID and returns an appropriate OrgDb object.
+.taxIdToOrgDb <- function(taxid){
+    ## These are the packaged TaxIds
+    packageTaxIds <- c('180454'='org.Ag.eg.db',
+                       '3702'='org.At.tair.db',
+                       '9913'='org.Bt.eg.db',
+                       '9615'='org.Cf.eg.db',
+                       '9031'='org.Gg.eg.db',
+                       '9598'='org.Pt.eg.db',
+                       '511145'='org.EcK12.eg.db',
+                       '386585'='org.EcSakai.eg.db',
+                       '7227'='org.Dm.eg.db',
+                       '9606'='org.Hs.eg.db',
+                       '10090'='org.Mm.eg.db',
+                       '9823'='org.Ss.eg.db',
+                       '10116'='org.Rn.eg.db',
+                       '9544'='org.Mmu.eg.db',
+                       '6239'='org.Ce.eg.db',
+                       '8355'='org.Xl.eg.db',
+                       '559292'='org.Sc.sgd.db',
+                       '7955'='org.Dr.eg.db',
+                       '36329'='org.Pf.plasmo.db')
+    if(taxid %in% names(packageTaxIds)){
+        pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
+        library(pkg, character.only = TRUE)
+        res <- get(pkg)
+    }else{
+        ## If we don't have a package, then lets get the taxIds and AHIds
+        ## for the hub objects
+        require(AnnotationHub)
+        ah <- AnnotationHub()
+        ah <- subset(ah, ah$rdataclass=='OrgDb') 
+        mc <- mcols(ah)[,'taxonomyid', drop=FALSE]
+        ## Then just get the object
+        AHID <- rownames(mc[mc$taxonomyid==taxid,,drop=FALSE])
+        res <- ah[[AHID]]
+    }
+    res
+}
+
+
+
+#############################################################################
+
 ## simplify DB retrievals from metadata table
 .getMetaDataValue <- function(db, name){
   con <- AnnotationDbi::dbconn(db)

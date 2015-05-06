@@ -179,7 +179,6 @@ OrganismDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
 
 
 
-
 ## Some getter methods to access the slots
 setGeneric("keyFrame", function(x) standardGeneric("keyFrame"))
 setMethod("keyFrame", "OrganismDb",
