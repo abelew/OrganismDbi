@@ -18,7 +18,7 @@ importMethodsFrom("RBGL", bfs)
 importMethodsFrom("RSQLite", dbGetQuery)
 
 importFrom("AnnotationDbi", columns, keys, keytypes, select, mapIds, metadata,
-           dbconn, dbfile, loadDb, unlist2)
+           dbconn, dbfile, loadDb, unlist2, taxonomyId)
 
 importFrom("Biobase", createPackage)
 
@@ -78,6 +78,7 @@ exportMethods(columns,
               cdsBy,
               dbconn,
               dbfile,
+              taxonomyId,
               metadata,
               seqinfo,
               getTxDbIfAvailable,

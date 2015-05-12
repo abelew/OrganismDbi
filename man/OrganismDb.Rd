@@ -16,6 +16,7 @@
 \alias{metadata,OrganismDb-method}
 \alias{dbconn,OrganismDb-method}
 \alias{dbfile,OrganismDb-method}
+\alias{taxonomyId,OrganismDb-method}
 
 \alias{seqinfo,OrganismDb-method}
 % \alias{seqinfo<-,OrganismDb-method}
@@ -161,5 +162,8 @@ selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
 ## each.
 dbconn(Homo.sapiens)
 dbfile(Homo.sapiens)
+
+## extract the taxonomyId
+taxonomyId(Homo.sapiens)
 }
 

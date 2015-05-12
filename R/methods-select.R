@@ -410,3 +410,13 @@ setMethod("selectByRanges", "OrganismDb", .selectByRanges)
 ## selectByRanges(Homo.sapiens, ranges, 'ALIAS')
 ## ## What if they ask for a couple things?
 ## selectByRanges(Homo.sapiens, ranges, c('ENTREZID','ALIAS'))
+
+
+## taxonomyId for OrganismDb relies on the TxDb object.
+## this could be changed to instead check the OrgDb object.
+## but that would require adding a new helper "getOrgDbIfAvailable()"
+.taxonomyId <- function(x){
+    txdb <- getTxDbIfAvailable(x)
+    taxonomyId(txdb)
+}
+setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
