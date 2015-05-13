@@ -236,6 +236,13 @@ makeOrganismPackage <- function(pkgname,
 ## the initial versions of these will just create the object (and not
 ## a package)
 
+## Also: there are some pre-agreed upon expectations for this
+## function.  It will make a specific kind of OrganismDb object.  One
+## that contains certain specific elements (GO, OrgDb and TxDb - to
+## start).  And the expectation is that we will always have those
+## things when this function finishes.  So the contract is less
+## general than before.
+
 ## from UCSC
 makeOrganismDbFromUCSC <- function(genome="hg19",
                                    tablename="knownGene",
@@ -276,36 +283,31 @@ makeOrganismDbFromUCSC <- function(genome="hg19",
 
     #######################################################################3
     ## Process and then test the graph Data
-    gd <- .mungeGraphData(graphData)
-    .testGraphData(gd)    
+    gd <- OrganismDbi:::.mungeGraphData(graphData)
+    OrganismDbi:::.testGraphData(gd)    
     allDeps <- unique(as.vector(gd[,1:2]))
-    biocPkgNames <- .biocAnnPackages()
+    biocPkgNames <- OrganismDbi:::.biocAnnPackages()
     deps <- allDeps[allDeps %in% biocPkgNames]
-    resources <- .extractDbFiles(gd, deps)
+    resources <- OrganismDbi:::.extractDbFiles(gd, deps)
     ## Check that the fkeys are really columns for the graphData
-    fkeys <- .extractPkgsAndCols(gd)
-    .testKeys(fkeys)
-    ## Should never have duplicates
-    if (any(duplicated(names(symvals))))
-        stop("'symvals' contains duplicated symbols")
-    ## All symvals should by single strings (non-NA)
-    is_OK <- sapply(symvals, isSingleString)
-    if (!all(is_OK)) {
-        bad_syms <- paste(names(is_OK)[!is_OK], collapse="', '")
-        stop("values for symbols '", bad_syms, "' are not single strings")
-    }
+    fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
+    OrganismDbi:::.testKeys(fkeys)
     
     ## Then make the object:
     graphInfo <- list(graphData=gd, resources=resources)
-    OrganismDb(graphInfo=graphInfo)
+    OrganismDbi:::OrganismDb(graphInfo=graphInfo)
 }
 
 ## Usage/testing:
-## 
-## ODb <- makeOrganismDbFromUCSC(genome="hg19",
+## ODb <- OrganismDbi:::makeOrganismDbFromUCSC(genome="hg19",
 ##                                    tablename="knownGene",
 ##                                    transcript_ids=NULL,
 ##                                    circ_seqs=DEFAULT_CIRC_SEQS,
 ##                                    url="http://genome.ucsc.edu/cgi-bin/",
 ##                      goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
 ##                                    miRBaseBuild=NA)
+
+
+## TODO: expose and document this.
+## TODO: make one of these for BiomaRt
+## Modify the pakaging code to no longer take graphData but instead to take a graphInfo (and to *just* do core packaging).  And make a helper for it that just does the job of making a OrganismDb object...
