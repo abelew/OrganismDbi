@@ -232,7 +232,7 @@ makeOrganismPackage <- function(pkgname,
 
 ################################################################################
 ## Now for some create functions that are more specialized:
-## create from UCSC or from biomaRt
+## To create OrgansimDb objects from UCSC or from biomaRt
 ## the initial versions of these will just create the object (and not
 ## a package)
 
@@ -242,6 +242,25 @@ makeOrganismPackage <- function(pkgname,
 ## start).  And the expectation is that we will always have those
 ## things when this function finishes.  So the contract is less
 ## general than before.
+
+
+########
+## Helper to set up to just load packages that need loading.  BUT this
+## version of this function is less agressive and doesn't try to load
+## a file if it already exists.  This is a different behavior than we
+## want for packaging where things should be more strict.
+.gentlyExtractDbFiles <- function(gd, deps){
+    pkgs <- unique(names(.extractPkgsAndCols(gd)))
+    ## Before we can proceed, we may need to call library on the deps...
+    .library <- function(dep){
+        if(!exists(dep)){
+            library(dep, character.only = TRUE)
+        }
+    }
+    lapply(deps, .library)
+    files <- unlist(lapply(pkgs, function(x){dbfile(get(x))}))
+    setNames(files, pkgs)
+}
 
 ## from UCSC
 makeOrganismDbFromUCSC <- function(genome="hg19",
@@ -288,24 +307,24 @@ makeOrganismDbFromUCSC <- function(genome="hg19",
     allDeps <- unique(as.vector(gd[,1:2]))
     biocPkgNames <- OrganismDbi:::.biocAnnPackages()
     deps <- allDeps[allDeps %in% biocPkgNames]
-    resources <- OrganismDbi:::.extractDbFiles(gd, deps)
+    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)
     ## Check that the fkeys are really columns for the graphData
     fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
     OrganismDbi:::.testKeys(fkeys)
-    
     ## Then make the object:
     graphInfo <- list(graphData=gd, resources=resources)
     OrganismDbi:::OrganismDb(graphInfo=graphInfo)
 }
 
-## Usage/testing:
-ODb <- OrganismDbi:::makeOrganismDbFromUCSC(genome="hg19",
-                                   tablename="knownGene",
-                                   transcript_ids=NULL,
-                                   circ_seqs=DEFAULT_CIRC_SEQS,
-                                   url="http://genome.ucsc.edu/cgi-bin/",
-                     goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
-                                   miRBaseBuild=NA)
+## ## Usage/testing:
+## library(OrganismDbi)
+## ODb <- OrganismDbi:::makeOrganismDbFromUCSC(genome="hg19",
+##                                    tablename="knownGene",
+##                                    transcript_ids=NULL,
+##                                    circ_seqs=DEFAULT_CIRC_SEQS,
+##                                    url="http://genome.ucsc.edu/cgi-bin/",
+##                      goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
+##                                    miRBaseBuild=NA)
 
 
 ## TODO: Document this.
@@ -336,7 +355,9 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
                                 miRBaseBuild=miRBaseBuild)
     ## Then assign that object value to the appropriate name:
     txdbName <- GenomicFeatures:::.makePackageName(txdb)
-    assign(txdbName, txdb) ## txdbName still represents the correct thing
+    ## assign to global scope (b/c you need it there if you 'generated' it)
+    ## Is there a better way?
+    assign(txdbName, txdb,envir = .GlobalEnv)  
     ## Then get the tax ID:
     taxId <- taxonomyId(txdb)
     
@@ -362,11 +383,10 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
     allDeps <- unique(as.vector(gd[,1:2]))
     biocPkgNames <- OrganismDbi:::.biocAnnPackages()
     deps <- allDeps[allDeps %in% biocPkgNames]
-    resources <- OrganismDbi:::.extractDbFiles(gd, deps) ## breakage
+    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)    
     ## Check that the fkeys are really columns for the graphData
     fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
-    OrganismDbi:::.testKeys(fkeys)
-    
+    OrganismDbi:::.testKeys(fkeys)    
     ## Then make the object:
     graphInfo <- list(graphData=gd, resources=resources)
     OrganismDbi:::OrganismDb(graphInfo=graphInfo)
@@ -374,24 +394,25 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
 
 
 
-## Usage/testing:
-transcript_ids <- c(
-    "ENST00000013894",
-    "ENST00000268655",
-    "ENST00000313243",
-    "ENST00000435657",
-    "ENST00000384428",
-    "ENST00000478783"
-)
-ODb <- OrganismDbi:::makeOrganismDbFromBiomart(biomart="ensembl",
-                                            dataset="hsapiens_gene_ensembl",
-                                            transcript_ids=transcript_ids,
-                                            circ_seqs=DEFAULT_CIRC_SEQS,
-                                            filters="",
-                                            id_prefix="ensembl_",
-                                            host="www.biomart.org",
-                                            port=80,
-                                            miRBaseBuild=NA)
+## ## Usage/testing:
+## library(OrganismDbi)
+## transcript_ids <- c(
+##     "ENST00000013894",
+##     "ENST00000268655",
+##     "ENST00000313243",
+##     "ENST00000435657",
+##     "ENST00000384428",
+##     "ENST00000478783"
+## )
+## ODb <- OrganismDbi:::makeOrganismDbFromBiomart(biomart="ensembl",
+##                                             dataset="hsapiens_gene_ensembl",
+##                                             transcript_ids=transcript_ids,
+##                                             circ_seqs=DEFAULT_CIRC_SEQS,
+##                                             filters="",
+##                                             id_prefix="ensembl_",
+##                                             host="www.biomart.org",
+##                                             port=80,
+##                                             miRBaseBuild=NA)
 
 ## TxDb.Hsapiens.BioMart.ensembl.GRCh38.p2
 
