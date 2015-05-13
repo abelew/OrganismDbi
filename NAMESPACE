@@ -105,7 +105,9 @@ exportMethods(columns,
 
 export(getTxDbIfAvailable,  ## b/c the generic is here
        selectByRanges,
-       makeOrganismPackage)
+       makeOrganismPackage,
+       makeOrganismDbFromUCSC,
+       makeOrganismDbFromBiomart)
 
 
 

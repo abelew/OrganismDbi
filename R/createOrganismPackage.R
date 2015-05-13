@@ -299,15 +299,104 @@ makeOrganismDbFromUCSC <- function(genome="hg19",
 }
 
 ## Usage/testing:
-## ODb <- OrganismDbi:::makeOrganismDbFromUCSC(genome="hg19",
-##                                    tablename="knownGene",
-##                                    transcript_ids=NULL,
-##                                    circ_seqs=DEFAULT_CIRC_SEQS,
-##                                    url="http://genome.ucsc.edu/cgi-bin/",
-##                      goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
-##                                    miRBaseBuild=NA)
+ODb <- OrganismDbi:::makeOrganismDbFromUCSC(genome="hg19",
+                                   tablename="knownGene",
+                                   transcript_ids=NULL,
+                                   circ_seqs=DEFAULT_CIRC_SEQS,
+                                   url="http://genome.ucsc.edu/cgi-bin/",
+                     goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
+                                   miRBaseBuild=NA)
 
 
-## TODO: expose and document this.
-## TODO: make one of these for BiomaRt
-## Modify the pakaging code to no longer take graphData but instead to take a graphInfo (and to *just* do core packaging).  And make a helper for it that just does the job of making a OrganismDb object...
+## TODO: Document this.
+## TODO: remove all the uncessary OrganismDbi::: 's
+
+
+## TODO: make one of these for BiomaRt.
+
+makeOrganismDbFromBiomart <- function(biomart="ensembl",
+                                      dataset="hsapiens_gene_ensembl",
+                                      transcript_ids=NULL,
+                                      circ_seqs=DEFAULT_CIRC_SEQS,
+                                      filters="",
+                                      id_prefix="ensembl_",
+                                      host="www.biomart.org",
+                                      port=80,
+                                      miRBaseBuild=NA){
+
+    ## So call the function to make that TxDb
+    txdb <- makeTxDbFromBiomart(biomart=biomart,
+                                dataset=dataset,
+                                transcript_ids=transcript_ids,
+                                circ_seqs=circ_seqs,
+                                filters=filters,
+                                id_prefix=id_prefix,
+                                host=host,
+                                port=port,
+                                miRBaseBuild=miRBaseBuild)
+    ## Then assign that object value to the appropriate name:
+    txdbName <- GenomicFeatures:::.makePackageName(txdb)
+    assign(txdbName, txdb) ## txdbName still represents the correct thing
+    ## Then get the tax ID:
+    taxId <- taxonomyId(txdb)
+    
+    ## Then get the name and valued for the OrgDb object
+    orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
+    orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
+    assign(orgdbName, orgdb)
+    ## get the primary key for the OrgDb object:
+    geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
+    
+    graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
+                                       nm=c('GO.db', orgdbName)),
+                      join2 = setNames(object=c(geneKeyType, 'GENEID'),
+                                       nm=c(orgdbName, txdbName)))
+    
+    ## get the organism
+    organism <- organism(txdb)
+
+    #######################################################################
+    ## Process and then test the graph Data
+    gd <- OrganismDbi:::.mungeGraphData(graphData)
+    OrganismDbi:::.testGraphData(gd)    
+    allDeps <- unique(as.vector(gd[,1:2]))
+    biocPkgNames <- OrganismDbi:::.biocAnnPackages()
+    deps <- allDeps[allDeps %in% biocPkgNames]
+    resources <- OrganismDbi:::.extractDbFiles(gd, deps) ## breakage
+    ## Check that the fkeys are really columns for the graphData
+    fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
+    OrganismDbi:::.testKeys(fkeys)
+    
+    ## Then make the object:
+    graphInfo <- list(graphData=gd, resources=resources)
+    OrganismDbi:::OrganismDb(graphInfo=graphInfo)
+}
+
+
+
+## Usage/testing:
+transcript_ids <- c(
+    "ENST00000013894",
+    "ENST00000268655",
+    "ENST00000313243",
+    "ENST00000435657",
+    "ENST00000384428",
+    "ENST00000478783"
+)
+ODb <- OrganismDbi:::makeOrganismDbFromBiomart(biomart="ensembl",
+                                            dataset="hsapiens_gene_ensembl",
+                                            transcript_ids=transcript_ids,
+                                            circ_seqs=DEFAULT_CIRC_SEQS,
+                                            filters="",
+                                            id_prefix="ensembl_",
+                                            host="www.biomart.org",
+                                            port=80,
+                                            miRBaseBuild=NA)
+
+## TxDb.Hsapiens.BioMart.ensembl.GRCh38.p2
+
+
+## PROBLEM: OrganismDbi:::.extractDbFiles(gd, deps) requires (strictly) that all objects be available as files somewhere (no exceptions allowed)
+## This means that when I get to this stage, with biomaRt, it fails because there is not a TxDb on disc...
+
+
