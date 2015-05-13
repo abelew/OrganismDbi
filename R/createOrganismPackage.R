@@ -1,26 +1,30 @@
 ## New helper to lookup which org object or package should be used
 ## based on the taxonomy ID.  It takes a tax ID and returns an appropriate OrgDb object.
+.packageTaxIds <- function(){
+    c('180454'='org.Ag.eg.db',
+      '3702'='org.At.tair.db',
+      '9913'='org.Bt.eg.db',
+      '9615'='org.Cf.eg.db',
+      '9031'='org.Gg.eg.db',
+      '9598'='org.Pt.eg.db',
+      '511145'='org.EcK12.eg.db',
+      '386585'='org.EcSakai.eg.db',
+      '7227'='org.Dm.eg.db',
+      '9606'='org.Hs.eg.db',
+      '10090'='org.Mm.eg.db',
+      '9823'='org.Ss.eg.db',
+      '10116'='org.Rn.eg.db',
+      '9544'='org.Mmu.eg.db',
+      '6239'='org.Ce.eg.db',
+      '8355'='org.Xl.eg.db',
+      '559292'='org.Sc.sgd.db',
+      '7955'='org.Dr.eg.db',
+      '36329'='org.Pf.plasmo.db')
+}
+    
 .taxIdToOrgDb <- function(taxid){
     ## These are the packaged TaxIds
-    packageTaxIds <- c('180454'='org.Ag.eg.db',
-                       '3702'='org.At.tair.db',
-                       '9913'='org.Bt.eg.db',
-                       '9615'='org.Cf.eg.db',
-                       '9031'='org.Gg.eg.db',
-                       '9598'='org.Pt.eg.db',
-                       '511145'='org.EcK12.eg.db',
-                       '386585'='org.EcSakai.eg.db',
-                       '7227'='org.Dm.eg.db',
-                       '9606'='org.Hs.eg.db',
-                       '10090'='org.Mm.eg.db',
-                       '9823'='org.Ss.eg.db',
-                       '10116'='org.Rn.eg.db',
-                       '9544'='org.Mmu.eg.db',
-                       '6239'='org.Ce.eg.db',
-                       '8355'='org.Xl.eg.db',
-                       '559292'='org.Sc.sgd.db',
-                       '7955'='org.Dr.eg.db',
-                       '36329'='org.Pf.plasmo.db')
+    packageTaxIds <- .packageTaxIds() 
     if(taxid %in% names(packageTaxIds)){
         pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
         library(pkg, character.only = TRUE)
@@ -42,6 +46,33 @@
 ## .taxIdToOrgDb(9606)
 ## .taxIdToOrgDb(9986)
 
+
+## Need another helper to get us from taxID to the OrgDbName...
+.taxIdToOrgDbName <- function(taxid){
+    packageTaxIds <- .packageTaxIds() 
+    if(taxid %in% names(packageTaxIds)){
+        pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
+        library(pkg, character.only = TRUE)
+        obj <- get(pkg)
+        path <- dbfile(obj)
+        pathSplit <- unlist(strsplit(path, split=.Platform$file.sep))
+        res <- sub("sqlite","db", pathSplit[length(pathSplit)])
+    }else{
+        ## If we don't have a package, then lets get the taxIds and AHIds
+        ## for the hub objects
+        require(AnnotationHub)
+        ah <- AnnotationHub()
+        ah <- subset(ah, ah$rdataclass=='OrgDb') 
+        mc <- mcols(ah)[,c('taxonomyid','title'), drop=FALSE]
+        ## Then just get the object
+        data <- mc[mc$taxonomyid==taxid,,drop=FALSE]
+        res <- sub("sqlite","db", data$title) 
+    }
+    res
+}
+## examples
+## .taxIdToOrgDbName(9606)
+## .taxIdToOrgDbName(9986)
 
 
 #############################################################################
@@ -196,3 +227,85 @@ makeOrganismPackage <- function(pkgname,
 
 
 
+
+
+
+################################################################################
+## Now for some create functions that are more specialized:
+## create from UCSC or from biomaRt
+## the initial versions of these will just create the object (and not
+## a package)
+
+## from UCSC
+makeOrganismDbFromUCSC <- function(genome="hg19",
+                                   tablename="knownGene",
+                                   transcript_ids=NULL,
+                                   circ_seqs=DEFAULT_CIRC_SEQS,
+                                   url="http://genome.ucsc.edu/cgi-bin/",
+                     goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
+                                   miRBaseBuild=NA){
+
+    ## So call the function to make that TxDb
+    txdb <- makeTxDbFromUCSC(genome=genome,
+                             tablename=tablename,
+                             transcript_ids=transcript_ids,
+                             circ_seqs=circ_seqs,
+                             url=url,
+                             goldenPath_url=goldenPath_url,
+                             miRBaseBuild=miRBaseBuild)
+    ## Then assign that object value to the appropriate name:
+    txdbName <- GenomicFeatures:::.makePackageName(txdb)
+    assign(txdbName, txdb) ## txdbName still represents the correct thing
+    ## Then get the tax ID:
+    taxId <- taxonomyId(txdb)
+    
+    ## Then get the name and valued for the OrgDb object
+    orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
+    orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
+    assign(orgdbName, orgdb)
+    ## get the primary key for the OrgDb object:
+    geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
+    
+    graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
+                                       nm=c('GO.db', orgdbName)),
+                      join2 = setNames(object=c(geneKeyType, 'GENEID'),
+                                       nm=c(orgdbName, txdbName)))
+    
+    ## get the organism
+    organism <- organism(txdb)
+
+    #######################################################################3
+    ## Process and then test the graph Data
+    gd <- .mungeGraphData(graphData)
+    .testGraphData(gd)    
+    allDeps <- unique(as.vector(gd[,1:2]))
+    biocPkgNames <- .biocAnnPackages()
+    deps <- allDeps[allDeps %in% biocPkgNames]
+    resources <- .extractDbFiles(gd, deps)
+    ## Check that the fkeys are really columns for the graphData
+    fkeys <- .extractPkgsAndCols(gd)
+    .testKeys(fkeys)
+    ## Should never have duplicates
+    if (any(duplicated(names(symvals))))
+        stop("'symvals' contains duplicated symbols")
+    ## All symvals should by single strings (non-NA)
+    is_OK <- sapply(symvals, isSingleString)
+    if (!all(is_OK)) {
+        bad_syms <- paste(names(is_OK)[!is_OK], collapse="', '")
+        stop("values for symbols '", bad_syms, "' are not single strings")
+    }
+    
+    ## Then make the object:
+    graphInfo <- list(graphData=gd, resources=resources)
+    OrganismDb(graphInfo=graphInfo)
+}
+
+## Usage/testing:
+## 
+## ODb <- makeOrganismDbFromUCSC(genome="hg19",
+##                                    tablename="knownGene",
+##                                    transcript_ids=NULL,
+##                                    circ_seqs=DEFAULT_CIRC_SEQS,
+##                                    url="http://genome.ucsc.edu/cgi-bin/",
+##                      goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
+##                                    miRBaseBuild=NA)

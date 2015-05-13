@@ -2,7 +2,6 @@
 
 \alias{makeOrganismPackage}
 
-
 \title{
   Making OrganismDb packages from annotation packages.
 }
