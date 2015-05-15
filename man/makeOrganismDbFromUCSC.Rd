@@ -86,7 +86,7 @@ supportedUCSCtables()
 
 \dontrun{
 ## Retrieving a full transcript dataset for Yeast from UCSC:
-txdb1 <- makeOrganismDbFromUCSC(genome="sacCer2", tablename="ensGene")
+odb1 <- makeOrganismDbFromUCSC(genome="sacCer2", tablename="ensGene")
 }
 
 ## Retrieving an incomplete transcript dataset for Mouse from UCSC
@@ -99,7 +99,7 @@ transcript_ids <- c(
     "uc009uzj.1"
 )
 
-txdb2 <- makeOrganismDbFromUCSC(genome="mm9", tablename="knownGene",
+odb2 <- makeOrganismDbFromUCSC(genome="mm9", tablename="knownGene",
                           transcript_ids=transcript_ids)
-txdb2
+odb2
 }

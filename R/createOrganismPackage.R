@@ -274,7 +274,8 @@ makeOrganismPackage <- function(pkgname,
 ## .GlobalEnv ???  I need to know it's name for the graphData list
 ## below.
 ## The other big problem is that if my TxDb objects don't have a
-## dbfile() then they can't be saved and re-loaded later.
+## dbfile() then they can't be saved and re-loaded later.  But this
+## problem is not "new" for this object.
 makeOrganismDbFromTxDb <- function(txdb){
     ## Then assign that object value to the appropriate name:
     txdbName <- GenomicFeatures:::.makePackageName(txdb)
