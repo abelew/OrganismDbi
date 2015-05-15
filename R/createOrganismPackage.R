@@ -276,12 +276,27 @@ makeOrganismPackage <- function(pkgname,
 ## The other big problem is that if my TxDb objects don't have a
 ## dbfile() then they can't be saved and re-loaded later.  But this
 ## problem is not "new" for this object.
+## Still TODO: 1) either put the assigned functions in a special env that is accesible to these objects OR else make a subclass that can hold those objects.
+## 2) make a save method that complains if any of the objects has not had saveDb called on it before calling a constructor.  And also add a warning to the constructor when somethings dbfile() is an empty string.
+
+### Private environment for storing TxDb objects as needed (failed strategy)
+## To work I would have to make the env public.  - It was never a
+## great idea fo r this use case.
+## TxDbObjs <- new.env(hash=TRUE, parent=emptyenv())
+## I may still want to go with the other option of stashing this data
+## into a subclass...  For one thing, that option can't have name
+## clashes...
+## Also: the name this local TxDb gets assigned to cannot be the same as is used by a package.  Otherwise a shortened 'custom' TxDb can be overwritten by a name clash with a package name...  This could end up being true even if I store the TxDb locally inside of a named sub-class.
+## Also also: the name should not be made 'special' in the case where makeOrganismDbFromTxDb is called as a helper function from within makeOrganismDbFromUCSC or makeOrganismDbFromBiomart.
+
+
 makeOrganismDbFromTxDb <- function(txdb){
     ## Then assign that object value to the appropriate name:
     txdbName <- GenomicFeatures:::.makePackageName(txdb)
     ## assign to global scope (b/c you need it there if you 'generated' it)
     ## Is there a better way?
-    assign(txdbName, txdb,envir = .GlobalEnv)  
+    ## assign(txdbName, txdb, envir=TxDbObjs) #.GlobalEnv)  
+    assign(txdbName, txdb, .GlobalEnv)  
     ## Then get the tax ID:
     taxId <- taxonomyId(txdb)
     
