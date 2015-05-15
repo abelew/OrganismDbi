@@ -262,26 +262,25 @@ makeOrganismPackage <- function(pkgname,
     setNames(files, pkgs)
 }
 
-## from UCSC
-makeOrganismDbFromUCSC <- function(genome="hg19",
-                                   tablename="knownGene",
-                                   transcript_ids=NULL,
-                                   circ_seqs=DEFAULT_CIRC_SEQS,
-                                   url="http://genome.ucsc.edu/cgi-bin/",
-                     goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
-                                   miRBaseBuild=NA){
 
-    ## So call the function to make that TxDb
-    txdb <- makeTxDbFromUCSC(genome=genome,
-                             tablename=tablename,
-                             transcript_ids=transcript_ids,
-                             circ_seqs=circ_seqs,
-                             url=url,
-                             goldenPath_url=goldenPath_url,
-                             miRBaseBuild=miRBaseBuild)
+## from TxDb
+## There are some issues with this as it's currently implemented:
+## Because its not using the txdb that is passed in but is instead
+## making one up and then assigning it to the global namespace.  This
+## is what we want for makeOrgansimDbFromXXX when XXX is UCSC or
+## BiomaRt, but its *not* what we want for a simple exsting txdb.
+## It's straightforward to do something different when the txdb
+## exists().  But: how to I look up it's original name in the
+## .GlobalEnv ???  I need to know it's name for the graphData list
+## below.
+## The other big problem is that if my TxDb objects don't have a
+## dbfile() then they can't be saved and re-loaded later.
+makeOrganismDbFromTxDb <- function(txdb){
     ## Then assign that object value to the appropriate name:
     txdbName <- GenomicFeatures:::.makePackageName(txdb)
-    assign(txdbName, txdb) ## txdbName still represents the correct thing
+    ## assign to global scope (b/c you need it there if you 'generated' it)
+    ## Is there a better way?
+    assign(txdbName, txdb,envir = .GlobalEnv)  
     ## Then get the tax ID:
     taxId <- taxonomyId(txdb)
     
@@ -300,20 +299,76 @@ makeOrganismDbFromUCSC <- function(genome="hg19",
     ## get the organism
     organism <- organism(txdb)
 
-    #######################################################################3
+    #############################################################
     ## Process and then test the graph Data
     gd <- OrganismDbi:::.mungeGraphData(graphData)
     OrganismDbi:::.testGraphData(gd)    
     allDeps <- unique(as.vector(gd[,1:2]))
     biocPkgNames <- OrganismDbi:::.biocAnnPackages()
     deps <- allDeps[allDeps %in% biocPkgNames]
-    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)
+    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)    
     ## Check that the fkeys are really columns for the graphData
     fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
     OrganismDbi:::.testKeys(fkeys)
     ## Then make the object:
     graphInfo <- list(graphData=gd, resources=resources)
     OrganismDbi:::OrganismDb(graphInfo=graphInfo)
+}
+
+
+## from UCSC
+makeOrganismDbFromUCSC <- function(genome="hg19",
+                                   tablename="knownGene",
+                                   transcript_ids=NULL,
+                                   circ_seqs=DEFAULT_CIRC_SEQS,
+                                   url="http://genome.ucsc.edu/cgi-bin/",
+                     goldenPath_url="http://hgdownload.cse.ucsc.edu/goldenPath",
+                                   miRBaseBuild=NA){
+
+    ## So call the function to make that TxDb
+    txdb <- makeTxDbFromUCSC(genome=genome,
+                             tablename=tablename,
+                             transcript_ids=transcript_ids,
+                             circ_seqs=circ_seqs,
+                             url=url,
+                             goldenPath_url=goldenPath_url,
+                             miRBaseBuild=miRBaseBuild)
+    makeOrganismDbFromTxDb(txdb)
+    ## ## Then assign that object value to the appropriate name:
+    ## txdbName <- GenomicFeatures:::.makePackageName(txdb)
+    ## assign(txdbName, txdb) ## txdbName still represents the correct thing
+    ## ## Then get the tax ID:
+    ## taxId <- taxonomyId(txdb)
+    
+    ## ## Then get the name and valued for the OrgDb object
+    ## orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
+    ## orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
+    ## assign(orgdbName, orgdb)
+    ## ## get the primary key for the OrgDb object:
+    ## geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
+    
+    ## graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
+    ##                                    nm=c('GO.db', orgdbName)),
+    ##                   join2 = setNames(object=c(geneKeyType, 'GENEID'),
+    ##                                    nm=c(orgdbName, txdbName)))
+    
+    ## ## get the organism
+    ## organism <- organism(txdb)
+
+    ## #######################################################################3
+    ## ## Process and then test the graph Data
+    ## gd <- OrganismDbi:::.mungeGraphData(graphData)
+    ## OrganismDbi:::.testGraphData(gd)    
+    ## allDeps <- unique(as.vector(gd[,1:2]))
+    ## biocPkgNames <- OrganismDbi:::.biocAnnPackages()
+    ## deps <- allDeps[allDeps %in% biocPkgNames]
+    ## resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)
+    ## ## Check that the fkeys are really columns for the graphData
+    ## fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
+    ## OrganismDbi:::.testKeys(fkeys)
+    ## ## Then make the object:
+    ## graphInfo <- list(graphData=gd, resources=resources)
+    ## OrganismDbi:::OrganismDb(graphInfo=graphInfo)
 }
 
 ## ## Usage/testing:
@@ -353,43 +408,44 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
                                 host=host,
                                 port=port,
                                 miRBaseBuild=miRBaseBuild)
-    ## Then assign that object value to the appropriate name:
-    txdbName <- GenomicFeatures:::.makePackageName(txdb)
-    ## assign to global scope (b/c you need it there if you 'generated' it)
-    ## Is there a better way?
-    assign(txdbName, txdb,envir = .GlobalEnv)  
-    ## Then get the tax ID:
-    taxId <- taxonomyId(txdb)
+    makeOrganismDbFromTxDb(txdb)
+    ## ## Then assign that object value to the appropriate name:
+    ## txdbName <- GenomicFeatures:::.makePackageName(txdb)
+    ## ## assign to global scope (b/c you need it there if you 'generated' it)
+    ## ## Is there a better way?
+    ## assign(txdbName, txdb,envir = .GlobalEnv)  
+    ## ## Then get the tax ID:
+    ## taxId <- taxonomyId(txdb)
     
-    ## Then get the name and valued for the OrgDb object
-    orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
-    orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
-    assign(orgdbName, orgdb)
-    ## get the primary key for the OrgDb object:
-    geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
+    ## ## Then get the name and valued for the OrgDb object
+    ## orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
+    ## orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
+    ## assign(orgdbName, orgdb)
+    ## ## get the primary key for the OrgDb object:
+    ## geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
     
-    graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
-                                       nm=c('GO.db', orgdbName)),
-                      join2 = setNames(object=c(geneKeyType, 'GENEID'),
-                                       nm=c(orgdbName, txdbName)))
+    ## graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
+    ##                                    nm=c('GO.db', orgdbName)),
+    ##                   join2 = setNames(object=c(geneKeyType, 'GENEID'),
+    ##                                    nm=c(orgdbName, txdbName)))
     
-    ## get the organism
-    organism <- organism(txdb)
+    ## ## get the organism
+    ## organism <- organism(txdb)
 
-    #######################################################################
-    ## Process and then test the graph Data
-    gd <- OrganismDbi:::.mungeGraphData(graphData)
-    OrganismDbi:::.testGraphData(gd)    
-    allDeps <- unique(as.vector(gd[,1:2]))
-    biocPkgNames <- OrganismDbi:::.biocAnnPackages()
-    deps <- allDeps[allDeps %in% biocPkgNames]
-    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)    
-    ## Check that the fkeys are really columns for the graphData
-    fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
-    OrganismDbi:::.testKeys(fkeys)    
-    ## Then make the object:
-    graphInfo <- list(graphData=gd, resources=resources)
-    OrganismDbi:::OrganismDb(graphInfo=graphInfo)
+    ## #######################################################################
+    ## ## Process and then test the graph Data
+    ## gd <- OrganismDbi:::.mungeGraphData(graphData)
+    ## OrganismDbi:::.testGraphData(gd)    
+    ## allDeps <- unique(as.vector(gd[,1:2]))
+    ## biocPkgNames <- OrganismDbi:::.biocAnnPackages()
+    ## deps <- allDeps[allDeps %in% biocPkgNames]
+    ## resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)    
+    ## ## Check that the fkeys are really columns for the graphData
+    ## fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
+    ## OrganismDbi:::.testKeys(fkeys)    
+    ## ## Then make the object:
+    ## graphInfo <- list(graphData=gd, resources=resources)
+    ## OrganismDbi:::OrganismDb(graphInfo=graphInfo)
 }
 
 
