@@ -290,7 +290,7 @@ makeOrganismPackage <- function(pkgname,
 ## Also also: the name should not be made 'special' in the case where makeOrganismDbFromTxDb is called as a helper function from within makeOrganismDbFromUCSC or makeOrganismDbFromBiomart.
 
 
-makeOrganismDbFromTxDb <- function(txdb){
+makeOrganismDbFromTxDb <- function(txdb, keytype=NULL){
     ## Then assign that object value to the appropriate name:
     txdbName <- GenomicFeatures:::.makePackageName(txdb)
     ## assign to global scope (b/c you need it there if you 'generated' it)
@@ -305,8 +305,12 @@ makeOrganismDbFromTxDb <- function(txdb){
     orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
     assign(orgdbName, orgdb)
     ## get the primary key for the OrgDb object:
-    geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
-    
+    if(is.null(keytype)){
+        geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
+    }else{
+        geneKeyType <- keytype
+    }
+       
     graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
                                        nm=c('GO.db', orgdbName)),
                       join2 = setNames(object=c(geneKeyType, 'GENEID'),
@@ -412,7 +416,8 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
                                       id_prefix="ensembl_",
                                       host="www.biomart.org",
                                       port=80,
-                                      miRBaseBuild=NA){
+                                      miRBaseBuild=NA,
+                                      keytype="ENSEMBL"){
 
     ## So call the function to make that TxDb
     txdb <- makeTxDbFromBiomart(biomart=biomart,
@@ -424,7 +429,7 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
                                 host=host,
                                 port=port,
                                 miRBaseBuild=miRBaseBuild)
-    makeOrganismDbFromTxDb(txdb)
+    makeOrganismDbFromTxDb(txdb, keytype=keytype)
     ## ## Then assign that object value to the appropriate name:
     ## txdbName <- GenomicFeatures:::.makePackageName(txdb)
     ## ## assign to global scope (b/c you need it there if you 'generated' it)
