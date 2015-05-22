@@ -393,6 +393,18 @@ setMethod("mapIds", "OrganismDb", .mapIds)
 ## TODO: add some unit tests for this.
 
 
+## taxonomyId for OrganismDb relies on the TxDb object.
+## this could be changed to instead check the OrgDb object.
+## but that would require adding a new helper "getOrgDbIfAvailable()"
+.taxonomyId <- function(x){
+    txdb <- getTxDbIfAvailable(x)
+    taxonomyId(txdb)
+}
+setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
+
+
+
+
 
 #########################################################################
 ## New method (experimental) to just see if we can make it easier for
@@ -403,14 +415,33 @@ setMethod("mapIds", "OrganismDb", .mapIds)
 ## (with an 'annotFUN' argument).
 ## BUT RIGHT NOW: this will just do the simplest possible thing:
 
+## issues:
+## 1) exons, transcripts returns redundant results... (I really want
+## exonsBy(x, by='gene') and then collapse the result.  Unfortunately, this means that the metadata is not in the mcols.
+## 2) utrs and introns (similar issue to above)
+## 3) use transcriptsBy() for 'genes' (more accurate)
 
-.selectByRanges <- function(x, ranges, columns){
-   gns <- genes(x, columns=columns)
-   hits <- findOverlaps(query=ranges, subject=gns)
-   results <- ranges[queryHits(hits)]
-   ## I think that this is the step I cannot safely do
-   mcols(results) <- mcols(gns[subjectHits(hits)])
-   results
+.selectByRanges <- function(x, ranges, columns,
+                            overlaps=c('genes','exons','introns',
+                              '5utrs','3utrs')){
+    ## Make sure overlaps argument is kosher
+    if(missing(overlaps)) overlaps <- 'genes'
+    overlaps <- match.arg(overlaps, several.ok = TRUE)
+    subj <- switch(overlaps,
+                   genes=genes(x, columns=columns),
+                   exons=exonsBy(x, columns=columns, by='gene'),
+                   transcripts=transcriptsBy(x, columns=columns, by='gene')
+                   )
+    ## Then do the overlaps                    
+    hits <- findOverlaps(query=ranges, subject=subj)
+    results <- ranges[queryHits(hits)]
+    ## I think that this is the step I cannot safely do
+    if(class(subj)=='GRanges'){
+        mcols(results) <- mcols(subj[subjectHits(hits)])
+    }else{## otherwise it will be a GRangesList
+        subSubj <- subj[subjectHits(hits)]
+    }
+    results
 }
 
 setMethod("selectByRanges", "OrganismDb", .selectByRanges)
@@ -418,11 +449,13 @@ setMethod("selectByRanges", "OrganismDb", .selectByRanges)
 
 
 ## ## Some Testing
+## library(Homo.sapiens)
 ## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),
 ##                     IRanges(start=c(107899550, 108025550),
 ##                             end=c(108291889, 108050000)), strand='*',
 ##                     seqinfo=seqinfo(Homo.sapiens))
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
+## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'exons')
 ## selectByRanges(Homo.sapiens, ranges, 'ENTREZID')
 ## ## What if they ask for something more compex?
 ## selectByRanges(Homo.sapiens, ranges, 'ALIAS')
@@ -430,11 +463,44 @@ setMethod("selectByRanges", "OrganismDb", .selectByRanges)
 ## selectByRanges(Homo.sapiens, ranges, c('ENTREZID','ALIAS'))
 
 
-## taxonomyId for OrganismDb relies on the TxDb object.
-## this could be changed to instead check the OrgDb object.
-## but that would require adding a new helper "getOrgDbIfAvailable()"
-.taxonomyId <- function(x){
-    txdb <- getTxDbIfAvailable(x)
-    taxonomyId(txdb)
+
+## I need a way to get the inner mcols back out to the outer mcols (and quickly)
+
+
+## Herve has a helper for extracting 'inner' mcols out of a GRanges
+## list very quickly.
+makeOuterMcolFromInnerMcol <- function(x, colname)
+{
+    if (!is(x, "List"))
+        stop("'x' must be a List object")
+  ##  tmpOri <- unique(relist(mcols(unlist(x, use.names=FALSE))[[colname]], x))
+    tmp <- unique(relist(as.character(mcols(unlist(x, use.names=FALSE))[[colname]]),x))
+    if (any(elementLengths(tmp) != 1L))
+       stop(colname, " inner metadata column cannot be made an outer metadata column")
+    unlist(tmp)
 }
-setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
+
+## Let's try with the exon_rank metadata col on the object returned by
+## exonsBy() (should return an error):
+
+##   ex_by_tx <- exonsBy(txdb)
+##   mcols(ex_by_tx)[["exon_rank"]] <- makeOuterMcolFromInnerMcol(ex_by_tx, "exon_rank")
+
+## but this should work with an inner metadata column that is really
+## an attribute of the top-level list elements.
+
+
+## unfortunately, this function seems to have some bugs. (Which I think I have mostly fixed)
+
+## BUT: The function needs to extract all the viable mcols, and to format them as a DataFrame so that they can be put into the outer mcols for the results object. 
+
+## AND even if I get this function working perfectly, I need to check do one of TWO things for each column.  If the column is from the inner column level (exon_rank) then I can't return that data in the result (since it won't map back out to the gene level).  These inner columns are not lost.  You might think that there is no sensible way to map them out to the result in the function above but they can just go into a integerList object...  So things like 'EXONRANK' will have to be processed differently...  In the case there the data is actually repeated from the outer column level then I need to use a variant of this function to map it back out.  So: two different things need to happen based on whether the data is repeated or not...
+
+
+## the helpers exonsBy and transcriptsBy etc. need to be 'fixed' so that (for viable mcols) they have their outer mcols populated.  This will help since for the annotation recover, the outer mcols are the only ones I will want to use anyways.  This is still true for things like EXONRANK since for EXONRANK I will have an integerList (for example). The bottom line is: everthing in that outer mcols needs to be annotated at the 'GROUP level' regardless of what is in the inner mcols...  Once I have these base methods acting better it should be easy for my methor to do the right thing...
+
+## there appears to be another separate bug that happens with exonsBy(x, by='tx') where the extra columns are not fully populated.  This needs to be fixed but doesn't happen with by='gene'...
+
+## stash some private variables to hold the information about which columns are viable and which ones are not (for this).  This will help me to dispatch on columns that nee to be treated separately
+
+## I may need a different accessor to list 'outer' columns, or I may need to add an argument to columns (geneLevel=TRUE)
