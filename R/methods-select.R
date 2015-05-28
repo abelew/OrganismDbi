@@ -422,16 +422,16 @@ setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
 ## 3) use transcriptsBy() for 'genes' (more accurate)
 
 .selectByRanges <- function(x, ranges, columns,
-                            overlaps=c('genes','transcripts','exons','introns',
-                              '5utrs','3utrs')){
+                            overlaps=c('genes','transcripts','exons') ){
+    ##                        ,'introns','5utrs','3utrs')
     ## Make sure overlaps argument is kosher
     if(missing(overlaps)) overlaps <- 'genes'
     ##    overlaps <- match.arg(overlaps, several.ok = TRUE)
     overlaps <- match.arg(overlaps)
     subj <- switch(overlaps,
-                   genes=genes(x, columns=columns),
-##                  exons=exonsBy(x, columns=columns, by='gene'),
-                   transcripts=transcriptsBy(x, columns=columns, by='gene',
+                   genes=genes(x,columns=columns),
+                   exons=exonsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                   transcripts=transcriptsBy(x,columns=columns,by='gene',
                      outerMcols=TRUE)
                    )
     ## Then do the overlaps                    
