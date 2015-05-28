@@ -75,17 +75,24 @@ test_transcriptsBy <- function(){
     res <- transcriptsBy(h, by="gene", cols)    
     checkTrue(class(res) == "GRangesList")
     checkTrue(length(res) > 20000)
+    ## check inner mcols
+    checkTrue(all(colnames(mcols(res[[1]])) %in%
+                  c("tx_name","GENENAME","SYMBOL")))
+    ## check outer mcols
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("GENENAME","SYMBOL")))
+                  c("GENEID","GENENAME","SYMBOL")))
 
     ## extra check for case where we only have one field.
     cols = c("SYMBOL")
     res2 <- transcriptsBy(h, by="gene", cols)
     checkTrue(class(res) == "GRangesList")
     checkTrue(length(res) > 20000)
-    checkTrue(all(colnames(mcols(res)) %in%
-                  c("SYMBOL")))
-
+    ## check inner mcols
+    checkTrue(all(colnames(mcols(res2[[1]])) %in%
+                  c("tx_name","SYMBOL")))
+    ## outer mcols
+    checkTrue(all(colnames(mcols(res2)) %in%
+                  c("GENEID","SYMBOL")))
     ## 
 }
 

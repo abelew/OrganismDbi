@@ -204,6 +204,13 @@ setMethod("genes", "OrganismDb",
 ## No attempt will be made to manage the insanity of knowing which
 ## metadata types belong in which spot...
 
+.byToKeytype <- function(by){
+    switch(by,
+           'gene'='GENEID',
+           'exon'='EXONID',
+           'cds'='CDSID',
+           'tx'='TXID')
+}
 
 .transcriptsBy <- function(x, by, columns, use.names){
     ## 1st get the TxDb object.
@@ -229,9 +236,21 @@ setMethod("genes", "OrganismDb",
             names <- id2name(txdb, feature.type='tx')
             names(txby) <- names[match(names(txby), names(names))]
         }
+        ## AND ALSO put the metadata in for the 'outer' mcols...
+        k2 <- names(txby)
+        keytype <- .byToKeytype(by)
+        meta2 <- select(x, keys=k2, columns, keytype)
+        ## Step here needed to make meta2 from data.frame into DataFrame
+        f <- factor(meta2[[keytype]], levels=as.character(k2))
+        meta2 <- .compressMetadata(f, meta2, avoidID=NULL)
+        mcols(txby) <- meta2
     }
     txby
 }
+## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','ENTREZID'))
+## Then this can work too:
+## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'))
+
 
 setMethod("transcriptsBy", "OrganismDb",
           function(x, by="gene", columns=character(), use.names=FALSE){
