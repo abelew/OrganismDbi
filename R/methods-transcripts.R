@@ -212,7 +212,7 @@ setMethod("genes", "OrganismDb",
            'tx'='TXID')
 }
 
-.transcriptsBy <- function(x, by, columns, use.names){
+.transcriptsBy <- function(x, by, columns, use.names, outerMcols){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -237,27 +237,31 @@ setMethod("genes", "OrganismDb",
             names(txby) <- names[match(names(txby), names(names))]
         }
         ## AND ALSO put the metadata in for the 'outer' mcols...
-        k2 <- names(txby)
-        keytype <- .byToKeytype(by)
-        meta2 <- select(x, keys=k2, columns, keytype)
-        ## Step here needed to make meta2 from data.frame into DataFrame
-        f <- factor(meta2[[keytype]], levels=as.character(k2))
-        meta2 <- .compressMetadata(f, meta2, avoidID=NULL)
-        mcols(txby) <- meta2
+        if(outerMcols==TRUE){
+            k2 <- names(txby)
+            keytype <- .byToKeytype(by)
+            meta2 <- select(x, keys=k2, columns, keytype)
+            ## Step here needed to make meta2 from data.frame into DataFrame
+            f <- factor(meta2[[keytype]], levels=as.character(k2))
+            meta2 <- .compressMetadata(f, meta2, avoidID=keytype)
+            mcols(txby) <- meta2
+        }
     }
     txby
 }
-## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','ENTREZID'))
+## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','ENTREZID')); txm = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','ENTREZID'), outerMcols=TRUE)
 ## Then this can work too:
 ## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'))
-
+## Added outerMcols argument because the extra lookup adds an additional half a second for some things...
 
 setMethod("transcriptsBy", "OrganismDb",
-          function(x, by="gene", columns=character(), use.names=FALSE){
+          function(x, by="gene", columns=character(), use.names=FALSE,
+                   outerMcols=FALSE){
               if(missing(by) || !any(by %in% c("gene","exon","cds")) ||
                  length(by) !=1){
                   stop("You must provide a valid argument for by")}
-              .transcriptsBy(x, by, columns, use.names=use.names)})
+              .transcriptsBy(x, by, columns, use.names=use.names,
+                             outerMcols=outerMcols)})
 
 
 

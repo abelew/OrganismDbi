@@ -422,25 +422,23 @@ setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
 ## 3) use transcriptsBy() for 'genes' (more accurate)
 
 .selectByRanges <- function(x, ranges, columns,
-                            overlaps=c('genes','exons','introns',
+                            overlaps=c('genes','transcripts','exons','introns',
                               '5utrs','3utrs')){
     ## Make sure overlaps argument is kosher
     if(missing(overlaps)) overlaps <- 'genes'
-    overlaps <- match.arg(overlaps, several.ok = TRUE)
+    ##    overlaps <- match.arg(overlaps, several.ok = TRUE)
+    overlaps <- match.arg(overlaps)
     subj <- switch(overlaps,
                    genes=genes(x, columns=columns),
-                   exons=exonsBy(x, columns=columns, by='gene'),
-                   transcripts=transcriptsBy(x, columns=columns, by='gene')
+##                  exons=exonsBy(x, columns=columns, by='gene'),
+                   transcripts=transcriptsBy(x, columns=columns, by='gene',
+                     outerMcols=TRUE)
                    )
     ## Then do the overlaps                    
     hits <- findOverlaps(query=ranges, subject=subj)
     results <- ranges[queryHits(hits)]
-    ## I think that this is the step I cannot safely do
-    if(class(subj)=='GRanges'){
-        mcols(results) <- mcols(subj[subjectHits(hits)])
-    }else{## otherwise it will be a GRangesList
-        subSubj <- subj[subjectHits(hits)]
-    }
+    ## Then get the mcols
+    mcols(results) <- mcols(subj[subjectHits(hits)])
     results
 }
 
@@ -450,10 +448,8 @@ setMethod("selectByRanges", "OrganismDb", .selectByRanges)
 
 ## ## Some Testing
 ## library(Homo.sapiens)
-## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),
-##                     IRanges(start=c(107899550, 108025550),
-##                             end=c(108291889, 108050000)), strand='*',
-##                     seqinfo=seqinfo(Homo.sapiens))
+## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),IRanges(start=c(107899550, 108025550), end=c(108291889, 108050000)), strand='*', seqinfo=seqinfo(Homo.sapiens))
+
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'exons')
 ## selectByRanges(Homo.sapiens, ranges, 'ENTREZID')
@@ -462,6 +458,7 @@ setMethod("selectByRanges", "OrganismDb", .selectByRanges)
 ## ## What if they ask for a couple things?
 ## selectByRanges(Homo.sapiens, ranges, c('ENTREZID','ALIAS'))
 
+## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'transcripts')
 
 
 ## I need a way to get the inner mcols back out to the outer mcols (and quickly)
