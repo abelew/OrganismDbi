@@ -464,9 +464,14 @@ setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
                              ignore.strand=ignore.strand)
         results <- ranges[queryHits(hits)]
         mcols(results) <- mcols(subj[subjectHits(hits)])
+        ## because we mapped by TXIDs, we have to remove redundant results
+        dfRes <- as(results,'data.frame')
+        uniqueIdx = !duplicated(dfRes)
+        results <- results[uniqueIdx]
     }
     results
 }
+
 
 setMethod("selectByRanges", "OrganismDb",
           function(x,ranges,columns,overlaps,ignore.strand){
@@ -479,7 +484,7 @@ setMethod("selectByRanges", "OrganismDb",
 
 ## ## Some Testing
 ## library(Homo.sapiens);
-## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),IRanges(start=c(107899550, 108025550), end=c(108291889, 108050000)), strand='*', seqinfo=seqinfo(Homo.sapiens))
+## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),IRanges(start=c(107899550, 108025550), end=c(108291889, 108050000)), strand='+', seqinfo=seqinfo(Homo.sapiens))
 
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'exon')
@@ -494,24 +499,43 @@ setMethod("selectByRanges", "OrganismDb",
 
 ## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'tx')
 ## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'exon')
-## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'cd')
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'cds')
 
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr')
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '3utr')
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'intron')
+
+
+
+## Current troubles:
 
 ## debug(OrganismDbi:::.selectByRanges)
 ## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr')
 
 
+## 1) it doesn't currently seem to respect strand (strand is being lost somewhere?
+## 2) for UTRs/introns there is a problem where the results are 'redundant'.  I need a simple way to simplify them (considering both the contents of mcols AND the ranges) before returning them to the user.
+
+## 3) The documentation and unit tests need a big upgrade...
+
+## 4) I need an early version of Vinces complementary function still (selectRangesBy)
 
 
 
 
+## FOR LATER sticky I want to implement support for multiple values of
+## 'overlaps'
+
+## So I want to be able to do something kind of like this (to implement the geometry idea of multiple 'overlaps' arguments).  BUT: it doesn't respect the contents of mcols...
+## foo = selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr');
+## bar =  selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'tx');
+## unique(c(foo, bar))
+
+## ALTERNATIVELY: I *could* implement this by just using the transcript centered strategy that I used above (for UTRs/introns), but applying it to 'everything', THEN merging all the tx centered metadata into a tx ID'd list and then overlapping as the last step.
 
 
-
-
-
-
-
+## Older notes about this from the sticky:
+## 'overlaps' CAN be a vector (which will result in multiple ranges getting summed together). - this suggestion is going to have to be it's own entirely separate sticky b/c the standard mechanisms for combining the results do *not* currently have any mechanism for respecting the geometry.  EITHER THAT, or I am going to have to change the way that the whole function works (again), by handling everything more the way that I currently handle things for 5UTRs/3UTRs/introns.  (IOW get all the ranges, always grouped by transcript, then combine to form one transcript oriented list and *then* annotate them, and then (at the end): overlap.
 
 
 
