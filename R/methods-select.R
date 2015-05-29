@@ -508,13 +508,10 @@ setMethod("selectByRanges", "OrganismDb",
 
 
 ## Current troubles:
-
 ## debug(OrganismDbi:::.selectByRanges)
 ## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr')
 
 
-## 1) it doesn't currently seem to respect strand (strand is being lost somewhere?
-## 2) for UTRs/introns there is a problem where the results are 'redundant'.  I need a simple way to simplify them (considering both the contents of mcols AND the ranges) before returning them to the user.
 
 ## 3) The documentation and unit tests need a big upgrade...
 
@@ -523,6 +520,10 @@ setMethod("selectByRanges", "OrganismDb",
 
 
 
+
+
+
+#############################################################################
 ## FOR LATER sticky I want to implement support for multiple values of
 ## 'overlaps'
 
@@ -530,12 +531,111 @@ setMethod("selectByRanges", "OrganismDb",
 ## foo = selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr');
 ## bar =  selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'tx');
 ## unique(c(foo, bar))
+## The 'data.frame' shuffle might help here. IOW:
+## results <- c(foo,bar)
+## dfRes <- as(results,'data.frame')
+## uniqueIdx = !duplicated(dfRes)
+## results <- results[uniqueIdx]
+
+## But then: we would still have to deal with the fact that we have to 'merge' overlapping Ranges (and keep the metadata)...
+
 
 ## ALTERNATIVELY: I *could* implement this by just using the transcript centered strategy that I used above (for UTRs/introns), but applying it to 'everything', THEN merging all the tx centered metadata into a tx ID'd list and then overlapping as the last step.
 
 
 ## Older notes about this from the sticky:
 ## 'overlaps' CAN be a vector (which will result in multiple ranges getting summed together). - this suggestion is going to have to be it's own entirely separate sticky b/c the standard mechanisms for combining the results do *not* currently have any mechanism for respecting the geometry.  EITHER THAT, or I am going to have to change the way that the whole function works (again), by handling everything more the way that I currently handle things for 5UTRs/3UTRs/introns.  (IOW get all the ranges, always grouped by transcript, then combine to form one transcript oriented list and *then* annotate them, and then (at the end): overlap.
+
+
+
+## New function (inspired by Vince) that will get ranges based on IDs.
+.selectRangesById <- function(x, keys, columns=c('ENTREZID','SYMBOL'),
+                              keytype='GENEID',
+                              overlaps=c('gene','tx','exon', 'cds',
+                                'intron','5utr','3utr') ){
+    ## Argument checks
+    overlaps <- match.arg(overlaps)
+    ## 
+    rngs <- switch(overlaps,
+                  gene=genes(x,columns=columns),
+                  exon=exonsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                  cds=cdsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                  tx=transcriptsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                   ## the next three all return GRL grouped by transcripts...
+                   '5utr'=fiveUTRsByTranscript(x),
+                   '3utr'=threeUTRsByTranscript(x),
+                   intron=intronsByTranscript(x)
+                   )
+    msg <- strwrap(paste0("None of the requested features has a range of that",
+                          " type in the TxDb Database."))
+    if(overlaps %in% c('gene','tx','exon', 'cds')){
+        ## Then map the keys to GENEID (NOT ENTREZID)
+        genes <- mapIds(x, keys, 'GENEID', keytype)
+        if(any(genes %in% names(rngs))){
+            rngs <- rngs[as.character(genes)]
+        }else{
+           stop(msg)
+        }
+    }else{    
+        ## Then lookup a gene based ID from whatever they started with.
+        meta <- select(x, keys, c('TXID',columns), keytype)
+        ## Now use that information to get a match with those ranges...
+        txIds <- mapIds(x, keys, 'TXID', keytype)
+        if(any(txIds %in% names(rngs))){
+            rngs <- rngs[as.character(txIds)]
+        }else{
+            stop(msg)
+        }
+        ## Then get the mcols
+        fa <- factor(meta[['TXID']], levels=unique(as.character(txIds)))
+        ## Then attach this compressed data onto the subject
+        mcols(rngs) <- .compressMetadata(fa, meta, avoidID='TXID')
+        ## may still have redundancy? (data.frame shuffle?)
+        dfRes <- as(rngs,'data.frame')
+        uniqueIdx = !duplicated(dfRes)
+        rngs <- rngs[uniqueIdx]
+    }
+    rngs
+}
+
+
+
+setMethod("selectRangesById", "OrganismDb",
+          function(x,keys,columns,keytype,overlaps){
+              if(missing(columns)){ columns <- c('ENTREZID','SYMBOL') }
+              if(missing(keytype)){ keytype <- 'GENEID' }
+              if(missing(overlaps)){ overlaps <- 'tx' }
+       .selectRangesById(x,keys,columns,keytype,overlaps)})
+
+
+
+## library(Homo.sapiens);
+## debug(OrganismDbi:::.selectRangesById)
+## selectRangesById(Homo.sapiens, c('1','100'))
+
+## These all have the bad ENTREZID <-> GENEID error (have to fix elsewhere)
+## selectRangesById(Homo.sapiens, 'A1BG', keytype='SYMBOL')
+## selectRangesById(Homo.sapiens, keys='A1BG',columns=c('PATH','SYMBOL'), keytype='SYMBOL', 'tx' )
+## selectRangesById(Homo.sapiens, keys='A1BG',columns=c('PATH','SYMBOL'), keytype='SYMBOL', '5utr' )
+
+
+## selectRangesById(Homo.sapiens, keys='1',columns=c('PATH','SYMBOL'), keytype='GENEID', '5utr' )
+
+
+## selectRangesById(Homo.sapiens, keys=c('1','10'),columns=c('PATH','SYMBOL'), keytype='GENEID', '5utr' )
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

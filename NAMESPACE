@@ -100,11 +100,13 @@ exportMethods(columns,
               asBED, asGFF,
               distance,
               mapToTranscripts,
-              selectByRanges
+              selectByRanges,
+              selectRangesById
               )
 
 export(getTxDbIfAvailable,  ## b/c the generic is here
        selectByRanges,
+       selectRangesById,
        makeOrganismPackage,
        makeOrganismDbFromTxDb,
        makeOrganismDbFromUCSC,
