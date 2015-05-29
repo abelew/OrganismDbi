@@ -243,8 +243,8 @@ setMethod("genes", "OrganismDb",
             meta2 <- select(x, keys=k2, columns, keytype)
             ## Step here needed to make meta2 from data.frame into DataFrame
             f <- factor(meta2[[keytype]], levels=unique(as.character(k2)))
-            meta2 <- .compressMetadata(f, meta2, avoidID=keytype)
-            mcols(txby) <- meta2
+            metaC <- .compressMetadata(f, meta2, avoidID=keytype)
+            mcols(txby) <- metaC
         }
     }
     txby
@@ -305,8 +305,8 @@ setMethod("transcriptsBy", "OrganismDb",
             meta2 <- select(x, keys=k2, columns, keytype)
             ## Step here needed to make meta2 from data.frame into DataFrame
             f <- factor(meta2[[keytype]], levels=unique(as.character(k2)))
-            meta2 <- .compressMetadata(f, meta2, avoidID=keytype)
-            mcols(exby) <- meta2
+            metaC <- .compressMetadata(f, meta2, avoidID=keytype)
+            mcols(exby) <- metaC
         }
     }
     exby
@@ -330,7 +330,7 @@ setMethod("exonsBy", "OrganismDb",
 
 
 
-.cdsBy <- function(x, by, columns, use.names){
+.cdsBy <- function(x, by, columns, use.names, outerMcols){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcriptsBy with use.names set to FALSE
@@ -354,22 +354,35 @@ setMethod("exonsBy", "OrganismDb",
             names <- id2name(txdb, feature.type='cds')
             names(cdsby) <- names[match(names(cdsby), names(names))]
         }
+        ## AND ALSO put the metadata in for the 'outer' mcols...
+        if(outerMcols==TRUE){
+            k2 <- names(cdsby)
+            keytype <- .byToKeytype(by)
+            meta2 <- select(x, keys=k2, columns, keytype)
+            ## Step here needed to make meta2 from data.frame into DataFrame
+            f <- factor(meta2[[keytype]], levels=unique(as.character(k2)))
+            metaC <- .compressMetadata(f, meta2, avoidID=keytype)
+            mcols(cdsby) <- metaC
+        }
     }
     cdsby
 }
 
 setMethod("cdsBy", "OrganismDb",
-          function(x, by="tx", columns=character(), use.names=FALSE){
+          function(x, by="tx", columns=character(), use.names=FALSE,
+                   outerMcols=FALSE){
               if(missing(by) || !any(by %in% c("tx", "gene")) ||
                  length(by) !=1){
                   stop("You must provide a valid argument for by")}
-              .cdsBy(x, by, columns, use.names=use.names)})
+              .cdsBy(x, by, columns, use.names=use.names,
+                     outerMcols=outerMcols)})
 
 
 
 ## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
 ## cdsBy(h, by="tx", columns)
 
+## library(Homo.sapiens); cd = exonsBy(Homo.sapiens, columns=c('SYMBOL','PATH')); cdm = exonsBy(Homo.sapiens, columns=c('SYMBOL','PATH'), outerMcols=TRUE)
 
 
 

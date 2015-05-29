@@ -418,49 +418,113 @@ setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
 ## issues:
 ## 1) exons, transcripts returns redundant results... (I really want
 ## exonsBy(x, by='gene') and then collapse the result.  Unfortunately, this means that the metadata is not in the mcols.
-## 2) utrs and introns (similar issue to above)
-## 3) use transcriptsBy() for 'genes' (more accurate)
+## 2) use transcriptsBy() for 'genes' (more accurate) - (currently they are both offered)
 
-.selectByRanges <- function(x, ranges, columns,
-                            overlaps=c('genes','transcripts','exons') ){
-    ##                        ,'introns','5utrs','3utrs')
-    ## Make sure overlaps argument is kosher
-    if(missing(overlaps)) overlaps <- 'genes'
+## 3) utrs and introns (similar issues to #1 above)
+## 4) for utrs and introns, what you get back is grouped by transcript.  So I need to be able to re-group the results by gene OR (failing that, just call findOverlaps on *that* and the do:
+## 5) And then I also (separately) need to be able to get the columns for these genes by calling select and then compressing that result to a DataFrame that can be put into mcols.
+
+.selectByRanges <- function(x, ranges, columns=c('ENTREZID','SYMBOL'),
+                            overlaps=c('gene','tx','exon', 'cds',
+                                       'intron','5utr','3utr'),
+                            ignore.strand=FALSE){
+    ## Make sure everyone is OK with overlaps as argument name
     ##    overlaps <- match.arg(overlaps, several.ok = TRUE)
     overlaps <- match.arg(overlaps)
     subj <- switch(overlaps,
-                   genes=genes(x,columns=columns),
-                   exons=exonsBy(x,columns=columns,by='gene',outerMcols=TRUE),
-                   transcripts=transcriptsBy(x,columns=columns,by='gene',
-                     outerMcols=TRUE)
+                  gene=genes(x,columns=columns),
+                  exon=exonsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                  cds=cdsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                  tx=transcriptsBy(x,columns=columns,by='gene',outerMcols=TRUE),
+                   ## the next three all return GRL grouped by transcripts...
+                   '5utr'=fiveUTRsByTranscript(x),
+                   '3utr'=threeUTRsByTranscript(x),
+                   intron=intronsByTranscript(x)
                    )
-    ## Then do the overlaps                    
-    hits <- findOverlaps(query=ranges, subject=subj)
-    results <- ranges[queryHits(hits)]
     ## Then get the mcols
-    mcols(results) <- mcols(subj[subjectHits(hits)])
+    if(overlaps %in% c('gene','tx','exon', 'cds')){
+    ## Next do the overlaps                    
+        hits <- findOverlaps(query=ranges, subject=subj,
+                             ignore.strand=ignore.strand)
+        results <- ranges[queryHits(hits)]
+        mcols(results) <- mcols(subj[subjectHits(hits)])
+    }else{ ## then it's mapped to transcripts so:
+        ## Here we have to get our metadata set up and compressed FIRST
+        keys <- names(subj)  ## keys are NOT unique)
+        ## Get basic metadata mapped to TXID
+        meta <- select(x, keys=keys, columns=columns,
+                       keytype='TXID')
+        ## Then compress based on the TXID keytype
+        fa <- factor(meta[['TXID']], levels=unique(as.character(keys)))
+        metaC <- .compressMetadata(fa, meta, avoidID='TXID')
+        ## Then attach this compressed data onto the subject
+        mcols(subj) <- metaC
+        ## THEN we can do our overlaps
+        hits <- findOverlaps(query=ranges, subject=subj,
+                             ignore.strand=ignore.strand)
+        results <- ranges[queryHits(hits)]
+        mcols(results) <- mcols(subj[subjectHits(hits)])
+    }
     results
 }
 
-setMethod("selectByRanges", "OrganismDb", .selectByRanges)
+setMethod("selectByRanges", "OrganismDb",
+          function(x,ranges,columns,overlaps,ignore.strand){
+              if(missing(overlaps)){ overlaps <- 'tx' }
+              if(missing(columns)){ columns <- c('ENTREZID','SYMBOL') }
+              if(missing(ignore.strand)){ ignore.strand <- FALSE }
+       .selectByRanges(x,ranges,columns,overlaps,ignore.strand)})
 
 
 
 ## ## Some Testing
-## library(Homo.sapiens)
+## library(Homo.sapiens);
 ## ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),IRanges(start=c(107899550, 108025550), end=c(108291889, 108050000)), strand='*', seqinfo=seqinfo(Homo.sapiens))
 
 ## selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
-## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'exons')
+## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'exon')
 ## selectByRanges(Homo.sapiens, ranges, 'ENTREZID')
 ## ## What if they ask for something more compex?
 ## selectByRanges(Homo.sapiens, ranges, 'ALIAS')
 ## ## What if they ask for a couple things?
 ## selectByRanges(Homo.sapiens, ranges, c('ENTREZID','ALIAS'))
 
-## selectByRanges(Homo.sapiens, ranges, 'SYMBOL', 'transcripts')
+## The following should all give the same basic answer (because ranges
+## don't change)
+
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'tx')
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'exon')
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), 'cd')
 
 
+## debug(OrganismDbi:::.selectByRanges)
+## selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######################################################################
 ## I need a way to get the inner mcols back out to the outer mcols (and quickly)
 
 
