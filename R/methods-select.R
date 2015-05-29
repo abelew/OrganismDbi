@@ -551,8 +551,7 @@ setMethod("selectByRanges", "OrganismDb",
 ## New function (inspired by Vince) that will get ranges based on IDs.
 .selectRangesById <- function(x, keys, columns=c('ENTREZID','SYMBOL'),
                               keytype='GENEID',
-                              overlaps=c('gene','tx','exon', 'cds',
-                                'intron','5utr','3utr') ){
+                              overlaps=c('gene','tx','exon', 'cds') ){ 
     ## Argument checks
     overlaps <- match.arg(overlaps)
     ## 
@@ -560,40 +559,16 @@ setMethod("selectByRanges", "OrganismDb",
                   gene=genes(x,columns=columns),
                   exon=exonsBy(x,columns=columns,by='gene',outerMcols=TRUE),
                   cds=cdsBy(x,columns=columns,by='gene',outerMcols=TRUE),
-                  tx=transcriptsBy(x,columns=columns,by='gene',outerMcols=TRUE),
-                   ## the next three all return GRL grouped by transcripts...
-                   '5utr'=fiveUTRsByTranscript(x),
-                   '3utr'=threeUTRsByTranscript(x),
-                   intron=intronsByTranscript(x)
+                  tx=transcriptsBy(x,columns=columns,by='gene',outerMcols=TRUE)
                    )
     msg <- strwrap(paste0("None of the requested features has a range of that",
                           " type in the TxDb Database."))
-    if(overlaps %in% c('gene','tx','exon', 'cds')){
-        ## Then map the keys to GENEID (NOT ENTREZID)
-        genes <- mapIds(x, keys, 'GENEID', keytype)
-        if(any(genes %in% names(rngs))){
-            rngs <- rngs[as.character(genes)]
-        }else{
-           stop(msg)
-        }
-    }else{    
-        ## Then lookup a gene based ID from whatever they started with.
-        meta <- select(x, keys, c('TXID',columns), keytype)
-        ## Now use that information to get a match with those ranges...
-        txIds <- mapIds(x, keys, 'TXID', keytype)
-        if(any(txIds %in% names(rngs))){
-            rngs <- rngs[as.character(txIds)]
-        }else{
-            stop(msg)
-        }
-        ## Then get the mcols
-        fa <- factor(meta[['TXID']], levels=unique(as.character(txIds)))
-        ## Then attach this compressed data onto the subject
-        mcols(rngs) <- .compressMetadata(fa, meta, avoidID='TXID')
-        ## may still have redundancy? (data.frame shuffle?)
-        dfRes <- as(rngs,'data.frame')
-        uniqueIdx = !duplicated(dfRes)
-        rngs <- rngs[uniqueIdx]
+    ## Then map the keys to GENEID (NOT ENTREZID)
+    genes <- mapIds(x, keys, 'GENEID', keytype)
+    if(any(genes %in% names(rngs))){
+        rngs <- rngs[as.character(genes)]
+    }else{
+        stop(msg)
     }
     rngs
 }
@@ -613,21 +588,30 @@ setMethod("selectRangesById", "OrganismDb",
 ## debug(OrganismDbi:::.selectRangesById)
 ## selectRangesById(Homo.sapiens, c('1','100'))
 
+## selectRangesById(Homo.sapiens, keys='1',columns=c('PATH','SYMBOL'), keytype='GENEID', 'exon' )
+
+
+## TODO: re-test these after fixing the ENTREZID <-> GENEID problem
 ## These all have the bad ENTREZID <-> GENEID error (have to fix elsewhere)
 ## selectRangesById(Homo.sapiens, 'A1BG', keytype='SYMBOL')
 ## selectRangesById(Homo.sapiens, keys='A1BG',columns=c('PATH','SYMBOL'), keytype='SYMBOL', 'tx' )
-## selectRangesById(Homo.sapiens, keys='A1BG',columns=c('PATH','SYMBOL'), keytype='SYMBOL', '5utr' )
+## selectRangesById(Homo.sapiens, keys='A1BG',columns=c('PATH','SYMBOL'), keytype='SYMBOL', 'cds' )
 
 
-## selectRangesById(Homo.sapiens, keys='1',columns=c('PATH','SYMBOL'), keytype='GENEID', '5utr' )
 
 
+
+
+
+
+
+## Major Problems remaining for supporting UTR/introns:
+## 1) for UTR/introns I am getting back transcript centric ranges vs gene centric for everything else...  Inconsistency like this is very bad - and it does not get corrected like it did for selectByRanges because there is no call to findOverlaps here...
+
+## 2) For UTR/introns I am returning a list object, but the mcols I assign metadata into are the outer mcols (needs to be put on the inside too - at a minimum).  This all causes the following to break because the filtering at the end won't have all the metadata that it needs anymore...
 ## selectRangesById(Homo.sapiens, keys=c('1','10'),columns=c('PATH','SYMBOL'), keytype='GENEID', '5utr' )
 
-
-
-
-
+## Because of this, I think I will put the addition of UTR/introns on hold untill I have other functions that can extract these things in a 'gene centric' manner - instead of in the current transcript centered only manner.
 
 
 
