@@ -387,10 +387,16 @@ setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
                     multiVals=multiVals)
 }
 
-setMethod("mapIds", "OrganismDb", .mapIds)
+setMethod("mapIds", "OrganismDb",
+          function(x,keys,column,keytype,...,multiVals){
+              .mapIds(x,keys,column,keytype,...,multiVals)})
 
-## library(Homo.sapiens);  mapIds(Homo.sapiens, keys=c('1','10'), column='ALIAS', keytype='ENTREZID',  multiVals="CharacterList")
+## library(Homo.sapiens); debug(OrganismDbi:::.mapIds);
+
+## mapIds(Homo.sapiens, keys=c('1','10'), column='ALIAS', keytype='ENTREZID',  multiVals="CharacterList")
 ## TODO: add some unit tests for this.
+
+## mapIds(Homo.sapiens, c('1','10'), 'GENEID', 'ENTREZID') 
 
 
 ## taxonomyId for OrganismDb relies on the TxDb object.
