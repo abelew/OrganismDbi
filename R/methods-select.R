@@ -378,12 +378,14 @@ setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
 
 ## mapIds
 ## Standard methods:
-.mapIds <- function(x, keys, column, keytype, ...,
-                    multiVals=c("filter","asNA","first","list",
-                      "CharacterList")){
+.mapIds <- function(x, keys, column, keytype, ..., multiVals=multiVals){
     AnnotationDbi:::.testForValidKeytype(x, keytype)
-    db <- .lookupDbFromKeytype(x, keytype)
-    mapIds(db, keys, column, keytype, ...,
+    ## Do it this way (INSTEAD of calling the method) - this is deliberate!
+    ## because 'x' needs to use a select method that can actually work
+    ## for composite objects for argument 'x', and this will not
+    ## happen if you use the method (which is defined in
+    ## AnnotationDbi)
+    AnnotationDbi:::.mapIds(x, keys, column, keytype, ...,
                     multiVals=multiVals)
 }
 
