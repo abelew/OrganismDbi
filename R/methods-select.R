@@ -378,7 +378,7 @@ setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
 
 ## mapIds
 ## Standard methods:
-.mapIds <- function(x, keys, column, keytype, ..., multiVals=multiVals){
+.mapIds <- function(x, keys, column, keytype, ..., multiVals){
     AnnotationDbi:::.testForValidKeytype(x, keytype)
     ## Do it this way (INSTEAD of calling the method) - this is deliberate!
     ## because 'x' needs to use a select method that can actually work
@@ -391,7 +391,7 @@ setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
 
 setMethod("mapIds", "OrganismDb",
           function(x,keys,column,keytype,...,multiVals){
-              .mapIds(x,keys,column,keytype,...,multiVals)})
+              .mapIds(x,keys,column,keytype,...,multiVals=multiVals)})
 
 ## library(Homo.sapiens); debug(OrganismDbi:::.mapIds);
 
