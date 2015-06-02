@@ -203,7 +203,7 @@ setMethod("keys", "OrganismDb", .keys)
 
 ## new version of .getSelects()
 ## ## select 
-.getSelects <- function(x, keytype, keys, needCols, visitNodes, fks=NULL){
+.getSelects <- function(x, keytype, keys, needCols, visitNodes){
     ## set up an empty list with names that match what we want to fill...
     selected <- setNames(
                          vector("list", length(visitNodes)),
@@ -215,7 +215,7 @@ setMethod("keys", "OrganismDb", .keys)
                keys=as.character(keys),
                columns=needCols[[node1]],
                keytype=keytype,
-               fks=fks) ## will usually be NULL
+               skipValidKeysTest=TRUE) 
     ## but here we need to use the name and the value of visitNodes
     otherNodes <- visitNodes[-1] 
     for (i in seq_len(length(otherNodes))) {
@@ -230,8 +230,9 @@ setMethod("keys", "OrganismDb", .keys)
                    keys=as.character(fromKeys),
                    columns=needCols[[nodeName]],
                    keytype=toKey,
-                   fks=fks)
-        ## TODO: see fileWithProblemsForValidityKeys.R for more details...
+                   skipValidKeysTest=TRUE)
+        ## We don't do the validity test for keys for at the lower level
+        ## because that doesn't make sense.
     }
     selected
 }
@@ -261,16 +262,21 @@ setMethod("keys", "OrganismDb", .keys)
 ## res <- .mergeSelectResults(selected, visitNodes)
 
 ## helper to get fks when it's needed.  This returns NULL when not
-## appropriate and a compound list of keys whenever it is.
-.getFksWhenAppropriate <- function(x, keytype){
+## appropriate and a special 'compound' list of keys whenever it is.
+## .getFksWhenAppropriate <- function(x, keytype){
+##     forgnKeys<-as.data.frame(x@keys,stringsAsFactors=FALSE)[,c('xKeys','yKeys')]
+##     keysIdx<-grepl(keytype, forgnKeys)
+##     if(any(keysIdx)){
+##         getKeys <- as.character(forgnKeys[keysIdx,]) ## will always be one row
+##         res <- unique(c(keys(x, keytype=getKeys[1]),
+##                         keys(x, keytype=getKeys[2])))
+##     }else{ res <- NULL}
+##  res   
+## }
+
+.hasSynonymousKeys <- function(x, keytype){
     forgnKeys<-as.data.frame(x@keys,stringsAsFactors=FALSE)[,c('xKeys','yKeys')]
-    keysIdx<-grepl(keytype, forgnKeys)
-    if(any(keysIdx)){
-        getKeys <- as.character(forgnKeys[keysIdx,]) ## will always be one row
-        res <- unique(c(keys(x, keytype=getKeys[1]),
-                        keys(x, keytype=getKeys[2])))
-    }else{ res <- NULL}
- res   
+    any(grepl(keytype, forgnKeys))
 }
 
 .select <- function(x, keys, cols, keytype, ...){
@@ -279,10 +285,9 @@ setMethod("keys", "OrganismDb", .keys)
     if(missing(cols)){stop("You must provide columns argument")}
     if(missing(keytype)){stop("You must provide a keytype argument")}
     ## Some more argument checking
-##    fks <- .getFksWhenAppropriate(x, keytype)
-    fks <- NULL ## This returns us (temporarily) to the older bahavior...
+    skipValidKeysTest <- .hasSynonymousKeys(x, keytype) 
     AnnotationDbi:::.testSelectArgs(x, keys=keys, cols=cols, keytype=keytype,
-                                    fks)
+                                    skipValidKeysTest=skipValidKeysTest)
     ## if asked for what they have, just return that.
     if(all(cols %in% keytype)  && length(cols)==1L){
         res <- data.frame(keys=keys)
@@ -302,7 +307,7 @@ setMethod("keys", "OrganismDb", .keys)
     selectCols <- unique(c(keytype, fKeys, cols))
     needCols <- .getColsByNodes(subgr, selectCols, allCols)
     visitNodes <- .bfs(subgr, root)
-    selected <- .getSelects(x, keytype,keys,needCols, visitNodes, fks=fks)
+    selected <- .getSelects(x, keytype,keys,needCols,visitNodes)
     res <- .mergeSelectResults(x, selected, visitNodes, oriCols)
     
     ## Next we need to filter out all columns that we didn't ask for.  
