@@ -375,7 +375,40 @@ test_dbconn_and_dbfile <- function(){
 }
 
 
+test_selectByRanges <- function(){
+    ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),IRanges(start=c(107899550, 108025550), end=c(108291889, 108050000)), strand='+', seqinfo=seqinfo(Homo.sapiens))
+    
+    res <- selectByRanges(x, ranges, 'SYMBOL', 'tx')
+    checkTrue(length(res) > 2)
+    checkTrue('ACAT1' %in% res$SYMBOL[[1]])
+    ## TODO: validate features about the ranges.
+}
+
+
+
+
+
+
+
+
+
+test_selectRangesById <- function(){
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 ## TODO: add something to fix the the cosmetic bug where then the GOID is to the right of the columns that come with it (like EVIDENCE and/or ONTOLOGY.  This should really be handled in a general way (even though it ONLY happens with GOID)
+
+
