@@ -20,7 +20,8 @@ makeOrganismDbFromBiomart(biomart="ensembl",
                     id_prefix="ensembl_",
                     host="www.biomart.org",
                     port=80,
-                    miRBaseBuild=NA)
+                    miRBaseBuild=NA,
+                    keytype = "ENSEMBL")
 
 }
 \arguments{
@@ -56,6 +57,13 @@ makeOrganismDbFromBiomart(biomart="ensembl",
     learned by calling \code{supportedMiRBaseBuildValues}.  By default,
     this value will be set to \code{NA}, which will inactivate the
     \code{microRNAs} accessor.}
+  \item{keytype}{This indicates the kind of key that this database will
+    use as a foreign key between it's TxDb object and it's OrgDb
+    object. So basically whatever the column name is for the foreign key
+    from your OrgDb that your TxDb will need to map it's GENEID on to.
+    By default it is "ENSEMBL" since the GENEID's for most biomaRt based
+    TxDbs will be ensembl gene ids and therefore they will need to map
+    to ENSEMBL gene mappings from the associated OrgDb object.}
 }
 
 \details{

@@ -222,7 +222,7 @@ setMethod("keys", "OrganismDb", .keys)
         nodeName <- names(otherNodes)[i]
         fromNode <- otherNodes[i] 
         fromKey <- .mkeys(x, fromNode, nodeName, "tbl1")
-        fromKeys <- unique(selected[[fromNode]][[fromKey]])
+        fromKeys <- unique(selected[[fromNode]][[fromKey]])  ##
         fromKeys <- fromKeys[!is.na(fromKeys)]
         toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
         selected[[nodeName]] <- 
@@ -582,6 +582,9 @@ setMethod("selectByRanges", "OrganismDb",
         rngs <- rngs[as.character(genes)]
     }else{
         stop(msg)
+    }
+    if(length(keys)==length(rngs)){
+        names(rngs) <- keys
     }
     rngs
 }

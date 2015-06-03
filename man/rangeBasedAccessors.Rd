@@ -53,11 +53,12 @@
 
 \S4method{genes}{OrganismDb}(x, vals=NULL, columns="GENEID")
 
-\S4method{transcriptsBy}{OrganismDb}(x, by, columns, use.names=FALSE)
+\S4method{transcriptsBy}{OrganismDb}(x, by, columns, use.names=FALSE,
+                                     outerMcols=FALSE)
 
-\S4method{exonsBy}{OrganismDb}(x, by, columns, use.names=FALSE)
+\S4method{exonsBy}{OrganismDb}(x, by, columns, use.names=FALSE, outerMcols=FALSE)
 
-\S4method{cdsBy}{OrganismDb}(x, by, columns, use.names=FALSE)
+\S4method{cdsBy}{OrganismDb}(x, by, columns, use.names=FALSE, outerMcols=FALSE)
 
 \S4method{getTxDbIfAvailable}{OrganismDb}(x, ...)
 % \S4method{columns}{OrganismDb}(x)
@@ -180,6 +181,14 @@
   \item{ignore.strand}{
     A \code{logical} indicating if the strand of the ranges
     should be ignored. When \code{TRUE}, strand is set to \code{'+'}.
+  }
+  \item{outerMcols}{
+    A \code{logical} indicating if the the 'outer' mcols (metadata
+    columns) should be populated for some range based accesors which
+    return a GRangesList object.  By default this is FALSE, but if TRUE
+    then the outer list object will also have it's metadata columns
+    (mcols) populated as well as the mcols for the 'inner' GRanges
+    objects.
   }
   \item{transcripts}{
     An object representing the exon ranges of each transcript to extract.

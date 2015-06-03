@@ -10,8 +10,12 @@
 \alias{keys,OrganismDb-method}
 \alias{select,OrganismDb-method}
 \alias{mapIds,OrganismDb-method}
+% special select enhancers for OrganismDb objects
 \alias{selectByRanges}
 \alias{selectByRanges,OrganismDb-method}
+\alias{selectRangesById}
+\alias{selectRangesById,OrganismDb-method}
+
 
 \alias{metadata,OrganismDb-method}
 \alias{dbconn,OrganismDb-method}
@@ -46,8 +50,7 @@
 }
 
 \section{Methods}{
-  In the code snippets below, \code{x} is a OrganismDb object. For the
-  metadata and show methods, there is also support for FeatureDb objects.
+  In the code snippets below, \code{x} is a OrganismDb object.
 
   \describe{
     \item{}{
@@ -110,14 +113,41 @@
       }
     }
     \item{}{
-      \code{selectByRanges(x, ranges, columns)}:
-      When all the appropriate arguments are specifiedm \code{select}
-      will return the GRanges object that you pass in (to the ranges
-      argument) that has been annotated with the data specified by the
-      columns argument. Internally this function uses the output of the
-      genes() method to extract ranges for testing overlap.
+      \code{selectByRanges(x, ranges, columns, overlaps,
+      ignore.strand)}: When all the appropriate arguments are specified,
+      \code{selectByRanges} will return an annotated GRanges object that
+      has been generated based on what you passed in to the ranges
+      argument and whether that overlapped with what you specified in
+      the overlaps argument. Internally this function will get
+      annotation features and overlaps by calling the appropriate
+      annotation methods indicated by the overlaps argument.  The value
+      for overlaps can be any of: gene, tx, exons, cds, 5utr, introns or
+      3utr.  The default value is 'tx' which will return to you, your
+      annotated ranges based on whether the overlapped with the
+      transcript ranges of any gene in the associated TxDb object based
+      on the gene models it contains.  Also: the number of ranges
+      returned to you will match the number of genes that your ranges
+      argument overlapped for the type of overlap that you specified.
+      So if some of your ranges are large and overlap several features
+      then you will get many duplicated ranges returned with one for
+      each gene that has an overlapping feature.  The columns values
+      that you request will be returned in the mcols for the annotated
+      GRanges object that is the return value for this function.
+      Finally, the ignore.strand argument is provided to indicate
+      whether or not findOverlaps should ignore or respect the strand.
     }
-    
+    \item{}{
+      \code{selectRangesById(x, keys, columns, keytype, overlaps)}: When
+      all the appropriate arguments are specified,
+      \code{selectRangesById} will return a GRangesList object that
+      correspond to gene models GRanges for the keys that you specify
+      with the keys and keytype arguments. The annotations retrieved for
+      this will be specified by the overlaps argument and can be: gene,
+      tx, exon or cds.  The default is 'tx' which will return the
+      transcript ranges for each gene as a GRanges object in the list.
+      Extra data can also be returned in the mcols values for those
+      GRanges by using the columns argument.
+    }
   }
 }
 
@@ -157,6 +187,10 @@ ranges <-  GRanges(seqnames=Rle(c('chr11'), c(2)),
                             end=c(108291889, 108050000)), strand='*',
                     seqinfo=seqinfo(Homo.sapiens))
 selectByRanges(Homo.sapiens, ranges, 'SYMBOL')
+
+## Or extract the gene model for the 'A1BG' gene:
+selectRangesById(Homo.sapiens, 'A1BG', keytype='SYMBOL')
+
 
 ## Get the DB connections or DB file paths associated with those for
 ## each.
