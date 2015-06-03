@@ -5,5 +5,5 @@ setGeneric("selectByRanges", signature="x",
            standardGeneric("selectByRanges"))
 
 setGeneric("selectRangesById", signature="x",
-           function(x, keys, columns, keytype, overlaps)
+           function(x, keys, columns, keytype, feature)
            standardGeneric("selectRangesById"))

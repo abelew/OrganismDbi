@@ -381,19 +381,18 @@ test_selectByRanges <- function(){
     res <- selectByRanges(x, ranges, 'SYMBOL', 'tx')
     checkTrue(length(res) > 2)
     checkTrue('ACAT1' %in% res$SYMBOL[[1]])
-    ## TODO: validate features about the ranges.
+    checkTrue(class(res)=="GRanges")
 }
 
 
-
-
-
-
-
-
-
 test_selectRangesById <- function(){
-
+    ## notice one of my keys is 'bad' (but things still work)
+    res <- selectRangesById(x, c('bob','A1BG'), keytype='SYMBOL')
+    checkTrue(length(res[[1]]) > 1)
+    checkTrue('A1BG' %in% res[[1]]$SYMBOL[[1]])
+    checkTrue('A1BG' %in% names(res))
+    ## TODO: validate features about the ranges.
+    checkTrue(class(res[[1]])=="GRanges")
 }
 
 

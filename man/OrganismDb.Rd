@@ -137,16 +137,16 @@
       whether or not findOverlaps should ignore or respect the strand.
     }
     \item{}{
-      \code{selectRangesById(x, keys, columns, keytype, overlaps)}: When
+      \code{selectRangesById(x, keys, columns, keytype, feature)}: When
       all the appropriate arguments are specified,
       \code{selectRangesById} will return a GRangesList object that
       correspond to gene models GRanges for the keys that you specify
-      with the keys and keytype arguments. The annotations retrieved for
-      this will be specified by the overlaps argument and can be: gene,
-      tx, exon or cds.  The default is 'tx' which will return the
-      transcript ranges for each gene as a GRanges object in the list.
-      Extra data can also be returned in the mcols values for those
-      GRanges by using the columns argument.
+      with the keys and keytype arguments. The annotation ranges
+      retrieved for this will be specified by the feature argument and
+      can be: gene, tx, exon or cds.  The default is 'tx' which will
+      return the transcript ranges for each gene as a GRanges object in
+      the list.  Extra data can also be returned in the mcols values for
+      those GRanges by using the columns argument.
     }
   }
 }

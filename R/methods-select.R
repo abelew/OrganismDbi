@@ -564,27 +564,33 @@ setMethod("selectByRanges", "OrganismDb",
 ## New function (inspired by Vince) that will get ranges based on IDs.
 .selectRangesById <- function(x, keys, columns=c('ENTREZID','SYMBOL'),
                               keytype='GENEID',
-                              overlaps=c('gene','tx','exon', 'cds') ){ 
+                              feature=c('gene','tx','exon', 'cds') ){ 
     ## Argument checks
-    overlaps <- match.arg(overlaps)
-    ## 
-    rngs <- switch(overlaps,
+    feature <- match.arg(feature)
+    ## Then map the keys to GENEID (NOT ENTREZID)
+    genes <- mapIds(x, keys, 'GENEID', keytype)
+    ## Then filter the genes (because remember that not all keys will
+    ## have a gene model in the TxDb)
+    genes <- genes[genes %in% keys(x,'GENEID')]
+    ## Stop if there are no keys remaining.
+    if(length(genes) <1){
+        msg <- strwrap(paste0("None of the requested features has a gene ",
+                              "model in the TxDb Database."))
+        stop(msg)
+    }        
+    ## then get the gene models
+    rngs <- switch(feature,
                   gene=genes(x,columns=columns),
                   exon=exonsBy(x,columns=columns,by='gene',outerMcols=TRUE),
                   cds=cdsBy(x,columns=columns,by='gene',outerMcols=TRUE),
                   tx=transcriptsBy(x,columns=columns,by='gene',outerMcols=TRUE)
                    )
-    msg <- strwrap(paste0("None of the requested features has a range of that",
-                          " type in the TxDb Database."))
-    ## Then map the keys to GENEID (NOT ENTREZID)
-    genes <- mapIds(x, keys, 'GENEID', keytype)
-    if(any(genes %in% names(rngs))){
-        rngs <- rngs[as.character(genes)]
-    }else{
-        stop(msg)
-    }
-    if(length(keys)==length(rngs)){
-        names(rngs) <- keys
+    ## Then subset those with the genes ids
+    rngs <- rngs[genes]
+    ## Only rename if we can safely do so
+    keyNames <- mapIds(x, genes, column=keytype, 'GENEID')
+    if(length(keyNames)==length(rngs)){
+        names(rngs) <- keyNames
     }
     rngs
 }
@@ -592,11 +598,11 @@ setMethod("selectByRanges", "OrganismDb",
 
 
 setMethod("selectRangesById", "OrganismDb",
-          function(x,keys,columns,keytype,overlaps){
+          function(x,keys,columns,keytype,feature){
               if(missing(columns)){ columns <- c('ENTREZID','SYMBOL') }
               if(missing(keytype)){ keytype <- 'GENEID' }
-              if(missing(overlaps)){ overlaps <- 'tx' }
-       .selectRangesById(x,keys,columns,keytype,overlaps)})
+              if(missing(feature)){ feature <- 'tx' }
+       .selectRangesById(x,keys,columns,keytype,feature)})
 
 
 
@@ -614,9 +620,10 @@ setMethod("selectRangesById", "OrganismDb",
 ## selectRangesById(Homo.sapiens, keys='A1BG',columns=c('PATH','SYMBOL'), keytype='SYMBOL', 'cds' )
 
 
-
-
-
+## This should error out:
+##  selectRangesById(Homo.sapiens, "11", columns=c('SYMBOL','TXNAME','TXID'), keytype='ENTREZID', feature='tx')
+## But this should work:
+##  selectRangesById(Homo.sapiens, c("1","11"), columns=c('SYMBOL','TXNAME','TXID'), keytype='ENTREZID', feature='tx')
 
 
 
