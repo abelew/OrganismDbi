@@ -562,7 +562,7 @@ setMethod("selectByRanges", "OrganismDb",
 
 
 ## New function (inspired by Vince) that will get ranges based on IDs.
-.selectRangesById <- function(x, keys, columns=c('ENTREZID','SYMBOL'),
+.selectRangesById <- function(x, keys, columns=character(),
                               keytype='GENEID',
                               feature=c('gene','tx','exon', 'cds') ){ 
     ## Argument checks
@@ -599,7 +599,7 @@ setMethod("selectByRanges", "OrganismDb",
 
 setMethod("selectRangesById", "OrganismDb",
           function(x,keys,columns,keytype,feature){
-              if(missing(columns)){ columns <- c('ENTREZID','SYMBOL') }
+              if(missing(columns)){ columns <- character() }
               if(missing(keytype)){ keytype <- 'GENEID' }
               if(missing(feature)){ feature <- 'tx' }
        .selectRangesById(x,keys,columns,keytype,feature)})
@@ -625,7 +625,12 @@ setMethod("selectRangesById", "OrganismDb",
 ## But this should work:
 ##  selectRangesById(Homo.sapiens, c("1","11"), columns=c('SYMBOL','TXNAME','TXID'), keytype='ENTREZID', feature='tx')
 
+## selectRangesById(Homo.sapiens, keys(Homo.sapiens,'SYMBOL'), columns=c('SYMBOL','TXNAME','TXID'), keytype='SYMBOL', feature='tx')
 
+## perf test
+## system.time(res <- selectRangesById(Homo.sapiens, c("1","11"), keytype='ENTREZID', feature='tx'))
+## VS
+## system.time(res <- selectRangesById(Homo.sapiens, c("1","11"), columns=c('SYMBOL','TXNAME','TXID'), keytype='ENTREZID', feature='tx'))
 
 
 ## Major Problems remaining for supporting UTR/introns:

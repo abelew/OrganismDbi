@@ -249,6 +249,7 @@ setMethod("genes", "OrganismDb",
     }
     txby
 }
+
 ## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH')); txm = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'), outerMcols=TRUE)
 ## Then this can work too:
 ## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'))
