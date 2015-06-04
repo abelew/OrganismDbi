@@ -382,17 +382,32 @@ test_selectByRanges <- function(){
     checkTrue(length(res) > 2)
     checkTrue('ACAT1' %in% res$SYMBOL[[1]])
     checkTrue(class(res)=="GRanges")
+
+    res2 <- selectByRanges(Homo.sapiens, ranges, c('SYMBOL','PATH'), '5utr')
+    checkTrue(length(res2) > 1)
+    checkTrue('ACAT1' %in% res2$SYMBOL[[1]])
+    checkTrue('04110' %in% res2$PATH[[2]])
+    checkTrue(length(res2$PATH[[2]]) > 1)
+    checkTrue(class(res2)=="GRanges")
 }
 
 
 test_selectRangesById <- function(){
     ## notice one of my keys is 'bad' (but things still work)
-    res <- selectRangesById(x, c('bob','A1BG'), keytype='SYMBOL')
+    res <- selectRangesById(x, c('bob','A1BG'), columns='SYMBOL',
+                            keytype='SYMBOL')
     checkTrue(length(res[[1]]) > 1)
     checkTrue('A1BG' %in% res[[1]]$SYMBOL[[1]])
     checkTrue('A1BG' %in% names(res))
-    ## TODO: validate features about the ranges.
     checkTrue(class(res[[1]])=="GRanges")
+    
+    ##In the case of bad keys it should still work, but some will be filtered
+    symbols <- keys(x, 'SYMBOL')
+    res2 <- selectRangesById(x,keys=symbols,keytype='SYMBOL')
+    checkTrue(length(res2) > 20000)
+    checkTrue(length(res2) < length(symbols))
+    checkTrue(class(res2[[1]])=="GRanges")
+    checkTrue('A1BG' %in% names(res2))
 }
 
 
