@@ -231,11 +231,6 @@ setMethod("genes", "OrganismDb",
                                       joinID="tx_id", columns=columns) 
         ## now cram it back in there.
         txby@unlistData <- gr
-        ## then put the names back (if available)
-        if(use.names==TRUE){
-            names <- id2name(txdb, feature.type='tx')
-            names(txby) <- names[match(names(txby), names(names))]
-        }
         ## AND ALSO put the metadata in for the 'outer' mcols...
         if(outerMcols==TRUE){
             k2 <- names(txby)
@@ -247,8 +242,16 @@ setMethod("genes", "OrganismDb",
             mcols(txby) <- metaC
         }
     }
+    ## then put the names back (if available)
+    if(use.names==TRUE){
+        txby <- GenomicFeatures:::.set.group.names(txby, use.names, txdb, by)
+        ## names <- id2name(txdb, feature.type='tx')
+        ## names(txby) <- names[match(names(txby), names(names))]  
+    }
     txby
 }
+
+## library(Homo.sapiens);transcriptsBy(Homo.sapiens, by='exon', use.names=TRUE)
 
 ## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH')); txm = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'), outerMcols=TRUE)
 ## Then this can work too:
@@ -294,11 +297,6 @@ setMethod("transcriptsBy", "OrganismDb",
                                       joinID="exon_id", columns=columns) 
         ## now cram it back in there.
         exby@unlistData <- gr
-        ## then put the names back (if available)
-        if(use.names==TRUE){
-            names <- id2name(txdb, feature.type='exon')
-            names(exby) <- names[match(names(exby), names(names))]
-        }
         ## AND ALSO put the metadata in for the 'outer' mcols...
         if(outerMcols==TRUE){
             k2 <- names(exby)
@@ -309,6 +307,12 @@ setMethod("transcriptsBy", "OrganismDb",
             metaC <- .compressMetadata(f, meta2, avoidID=keytype)
             mcols(exby) <- metaC
         }
+    }
+    ## then put the names back (if available)
+    if(use.names==TRUE){
+        exby <- GenomicFeatures:::.set.group.names(exby, use.names, txdb, by)
+        ## names <- id2name(txdb, feature.type='exon')
+        ## names(exby) <- names[match(names(exby), names(names))]
     }
     exby
 }
@@ -350,11 +354,6 @@ setMethod("exonsBy", "OrganismDb",
                                       joinID="cds_id", columns=columns) 
         ## now cram it back in there.
         cdsby@unlistData <- gr
-        ## then put the names back (if available)
-        if(use.names==TRUE){
-            names <- id2name(txdb, feature.type='cds')
-            names(cdsby) <- names[match(names(cdsby), names(names))]
-        }
         ## AND ALSO put the metadata in for the 'outer' mcols...
         if(outerMcols==TRUE){
             k2 <- names(cdsby)
@@ -365,6 +364,12 @@ setMethod("exonsBy", "OrganismDb",
             metaC <- .compressMetadata(f, meta2, avoidID=keytype)
             mcols(cdsby) <- metaC
         }
+    }
+    ## then put the names back (if available)
+    if(use.names==TRUE){
+        cdsby <- GenomicFeatures:::.set.group.names(cdsby, use.names, txdb, by)
+        ## names <- id2name(txdb, feature.type='cds')
+        ## names(cdsby) <- names[match(names(cdsby), names(names))]
     }
     cdsby
 }
