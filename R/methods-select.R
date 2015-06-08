@@ -210,12 +210,14 @@ setMethod("keys", "OrganismDb", .keys)
                          names(visitNodes))
     ## in 1st case we only need the name
     node1 <- names(visitNodes)[[1]]
-    selected[[node1]] <- 
-        select(.makeReal(node1),
-               keys=as.character(keys),
-               columns=needCols[[node1]],
-               keytype=keytype,
-               skipValidKeysTest=TRUE) 
+    suppressMessages(
+       selected[[node1]] <- 
+                     select(.makeReal(node1),
+                            keys=as.character(keys),
+                            columns=needCols[[node1]],
+                            keytype=keytype,
+                            skipValidKeysTest=TRUE)
+                     )
     ## but here we need to use the name and the value of visitNodes
     otherNodes <- visitNodes[-1] 
     for (i in seq_len(length(otherNodes))) {
@@ -225,12 +227,14 @@ setMethod("keys", "OrganismDb", .keys)
         fromKeys <- unique(selected[[fromNode]][[fromKey]])  ##
         fromKeys <- fromKeys[!is.na(fromKeys)]
         toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
-        selected[[nodeName]] <- 
-            select(.makeReal(nodeName),
-                   keys=as.character(fromKeys),
-                   columns=needCols[[nodeName]],
-                   keytype=toKey,
-                   skipValidKeysTest=TRUE)
+        suppressMessages(
+            selected[[nodeName]] <- 
+                         select(.makeReal(nodeName),
+                                keys=as.character(fromKeys),
+                                columns=needCols[[nodeName]],
+                                keytype=toKey,
+                                skipValidKeysTest=TRUE)
+                         )
         ## We don't do the validity test for keys for at the lower level
         ## because that doesn't make sense.
     }
@@ -390,6 +394,9 @@ setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
     ## for composite objects for argument 'x', and this will not
     ## happen if you use the method (which is defined in
     ## AnnotationDbi)
+    ## In case you are wondering how this works: the function in
+    ## AnnotationDbi calls a select method (and there is such a method
+    ## defined for OrganismDb objects)
     AnnotationDbi:::.mapIds(x, keys, column, keytype, ...,
                     multiVals=multiVals)
 }
