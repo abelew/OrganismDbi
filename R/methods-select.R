@@ -11,7 +11,7 @@
     unique(unlist(lapply(dbs, keytypes)))
 }
 
-setMethod("keytypes", "OrganismDb", .keytypes)
+setMethod("keytypes", "MultiDb", .keytypes)
 
 ## Usage:
 ## keytypes(Homo.sapiens)
@@ -21,7 +21,7 @@ setMethod("keytypes", "OrganismDb", .keytypes)
     unique(unlist(lapply(dbs, columns)))
 }
 
-setMethod("columns", "OrganismDb", function(x){.cols(x)})
+setMethod("columns", "MultiDb", function(x){.cols(x)})
 
 ## Usage:
 ## columns(Homo.sapiens)
@@ -58,7 +58,7 @@ setMethod("columns", "OrganismDb", function(x){.cols(x)})
     as.character(keys(db, keytype, ...))
 }
 
-setMethod("keys", "OrganismDb", .keys)
+setMethod("keys", "MultiDb", .keys)
 
 
 ## Usage: 
@@ -338,25 +338,8 @@ setMethod("keys", "OrganismDb", .keys)
 }
 
 
-## ##  Remove this select warning function after 2.13 has released
-## .selectWarnOrganismDb <- function(x, keys, columns, keytype, ...){
-##     extraArgs <- list(...)
-##     if("cols" %in% names(extraArgs)){ 
-##         ## warn the user about the old argument
-##         AnnotationDbi:::.colsArgumentWarning()
-##         ## then call it using cols in place of columns
-##         ## YES keytype=columns.  Really!, but ONLY when keytype is null...
-##         ## if(missing(keytype)){
-##         ##     .select(x, keys, extraArgs[["cols"]], keytype = columns, ...)
-##         ## }else{
-##         ##     .select(x, keys, extraArgs[["cols"]], keytype = keytype, ...)
-##         ## }
-##     }else{
-##         .select(x, keys, columns, keytype, ...)
-##     }
-## }
 
-setMethod("select", "OrganismDb",
+setMethod("select", "MultiDb",
           function(x, keys, columns, keytype, ...){
             ## .selectWarnOrganismDb(x, keys, columns, keytype, ...)
             .select(x, keys, columns, keytype, ...)
@@ -374,7 +357,7 @@ setMethod("select", "OrganismDb",
     names(res) <- names(dbs)
     res
 }
-setMethod("dbconn", "OrganismDb", function(x){.dbconn(x)})
+setMethod("dbconn", "MultiDb", function(x){.dbconn(x)})
 
 .dbfile <- function(x){
     dbs <- .getDbObjs(x)
@@ -382,7 +365,7 @@ setMethod("dbconn", "OrganismDb", function(x){.dbconn(x)})
     names(res) <- names(dbs)
     res
 }
-setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
+setMethod("dbfile", "MultiDb", function(x){.dbfile(x)})
 
 
 ## mapIds
@@ -396,12 +379,12 @@ setMethod("dbfile", "OrganismDb", function(x){.dbfile(x)})
     ## AnnotationDbi)
     ## In case you are wondering how this works: the function in
     ## AnnotationDbi calls a select method (and there is such a method
-    ## defined for OrganismDb objects)
+    ## defined for MultiDb objects)
     AnnotationDbi:::.mapIds(x, keys, column, keytype, ...,
                     multiVals=multiVals)
 }
 
-setMethod("mapIds", "OrganismDb",
+setMethod("mapIds", "MultiDb",
           function(x,keys,column,keytype,...,multiVals){
               .mapIds(x,keys,column,keytype,...,multiVals=multiVals)})
 
@@ -413,14 +396,14 @@ setMethod("mapIds", "OrganismDb",
 ## mapIds(Homo.sapiens, c('1','10'), 'GENEID', 'ENTREZID') 
 
 
-## taxonomyId for OrganismDb relies on the TxDb object.
+## taxonomyId for MultiDb relies on the TxDb object.
 ## this could be changed to instead check the OrgDb object.
 ## but that would require adding a new helper "getOrgDbIfAvailable()"
 .taxonomyId <- function(x){
     txdb <- getTxDbIfAvailable(x)
     taxonomyId(txdb)
 }
-setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
+setMethod("taxonomyId", "MultiDb", function(x){.taxonomyId(x)})
 
 
 
@@ -493,7 +476,7 @@ setMethod("taxonomyId", "OrganismDb", function(x){.taxonomyId(x)})
 }
 
 
-setMethod("selectByRanges", "OrganismDb",
+setMethod("selectByRanges", "MultiDb",
           function(x,ranges,columns,overlaps,ignore.strand){
               if(missing(overlaps)){ overlaps <- 'tx' }
               if(missing(columns)){ columns <- c('ENTREZID','SYMBOL') }
@@ -604,7 +587,7 @@ setMethod("selectByRanges", "OrganismDb",
 
 
 
-setMethod("selectRangesById", "OrganismDb",
+setMethod("selectRangesById", "MultiDb",
           function(x,keys,columns,keytype,feature){
               if(missing(columns)){ columns <- character() }
               if(missing(keytype)){ keytype <- 'GENEID' }

@@ -11,7 +11,7 @@
 
 
 ## ## For consistency, the helper columns just wraps around cols method...
-## setMethod("columns", "OrganismDb", function(x){.cols(x)})
+## setMethod("columns", "MultiDb", function(x){.cols(x)})
 
 
 .getTxDb <- function(x){
@@ -25,7 +25,7 @@
 }
 
 ## expose method for gettting A TxDb (if there is one)
-setMethod("getTxDbIfAvailable", "OrganismDb", function(x, ...){.getTxDb(x)})
+setMethod("getTxDbIfAvailable", "MultiDb", function(x, ...){.getTxDb(x)})
 
 
 
@@ -92,7 +92,7 @@ setMethod("getTxDbIfAvailable", "OrganismDb", function(x, ...){.getTxDb(x)})
     txs
 }
 
-setMethod("transcripts", "OrganismDb",
+setMethod("transcripts", "MultiDb",
           function(x, vals=NULL, columns=c("TXID", "TXNAME")){
               .transcripts(x, vals, columns)} )
 
@@ -120,7 +120,7 @@ setMethod("transcripts", "OrganismDb",
     exs
 }
 
-setMethod("exons", "OrganismDb",
+setMethod("exons", "MultiDb",
           function(x, vals=NULL, columns="EXONID"){
               .exons(x, vals, columns)})
 
@@ -148,7 +148,7 @@ setMethod("exons", "OrganismDb",
     cds
 }
 
-setMethod("cds", "OrganismDb",
+setMethod("cds", "MultiDb",
           function(x, vals=NULL, columns="CDSID"){
               .cds(x, vals, columns)})
 
@@ -181,7 +181,7 @@ setMethod("cds", "OrganismDb",
     genes
 }
 
-setMethod("genes", "OrganismDb",
+setMethod("genes", "MultiDb",
           function(x, vals=NULL, columns="GENEID"){
               .genes(x, vals, columns)})
 
@@ -258,7 +258,7 @@ setMethod("genes", "OrganismDb",
 ## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'))
 ## Added outerMcols argument because the extra lookup adds an additional half a second for some things...
 
-setMethod("transcriptsBy", "OrganismDb",
+setMethod("transcriptsBy", "MultiDb",
           function(x, by="gene", columns=character(), use.names=FALSE,
                    outerMcols=FALSE){
               if(missing(by) || !any(by %in% c("gene","exon","cds")) ||
@@ -317,7 +317,7 @@ setMethod("transcriptsBy", "OrganismDb",
     exby
 }
 
-setMethod("exonsBy", "OrganismDb",
+setMethod("exonsBy", "MultiDb",
           function(x, by="tx", columns=character(), use.names=FALSE,
                    outerMcols=FALSE){
               if(missing(by) || !any(by %in% c("tx", "gene")) ||
@@ -374,7 +374,7 @@ setMethod("exonsBy", "OrganismDb",
     cdsby
 }
 
-setMethod("cdsBy", "OrganismDb",
+setMethod("cdsBy", "MultiDb",
           function(x, by="tx", columns=character(), use.names=FALSE,
                    outerMcols=FALSE){
               if(missing(by) || !any(by %in% c("tx", "gene")) ||
@@ -414,25 +414,25 @@ setMethod("cdsBy", "OrganismDb",
 
 
 
-setMethod(promoters, 'OrganismDb',
+setMethod(promoters, 'MultiDb',
           function(x, upstream=2000, downstream=200, ...){
               promoters(getTxDbIfAvailable(x), upstream,
                         downstream, ...)})
 
-setMethod(disjointExons, 'OrganismDb',
+setMethod(disjointExons, 'MultiDb',
           function(x, aggregateGenes=FALSE, includeTranscripts=TRUE, ...){
               disjointExons(getTxDbIfAvailable(x), aggregateGenes,
                         includeTranscripts,  ...)})
 
-setMethod(microRNAs, 'OrganismDb',
+setMethod(microRNAs, 'MultiDb',
           function(x){microRNAs(getTxDbIfAvailable(x))})
 
-setMethod(tRNAs, 'OrganismDb',
+setMethod(tRNAs, 'MultiDb',
           function(x){tRNAs(getTxDbIfAvailable(x))})
 
 ## Deliberately leaving these out for now (should probably just deprecate them)
 ## So commented for now.  If someone wants them we can discuss their fate.
-## setMethod(transcriptsByOverlaps, 'OrganismDb',
+## setMethod(transcriptsByOverlaps, 'MultiDb',
 ##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
 ##                    type = c("any", "start", "end"),
 ##                    columns = c("tx_id", "tx_name"), ...){
@@ -442,7 +442,7 @@ setMethod(tRNAs, 'OrganismDb',
 ##                                     type = type,
 ##                                     columns = columns, ...)})
 
-## setMethod(exonsByOverlaps, 'OrganismDb',
+## setMethod(exonsByOverlaps, 'MultiDb',
 ##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
 ##                    type = c("any", "start", "end"),
 ##                    columns = "exon_id"){
@@ -451,7 +451,7 @@ setMethod(tRNAs, 'OrganismDb',
 ##                               type = type,
 ##                               columns = columns)})
 
-## setMethod(cdsByOverlaps, 'OrganismDb',
+## setMethod(cdsByOverlaps, 'MultiDb',
 ##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
 ##                    type = c("any", "start", "end"),
 ##                    columns = "cds_id"){
@@ -460,22 +460,22 @@ setMethod(tRNAs, 'OrganismDb',
 ##                             type = type,
 ##                             columns = columns)})
 
-setMethod(intronsByTranscript, 'OrganismDb',
+setMethod(intronsByTranscript, 'MultiDb',
           function(x, use.names=FALSE){
               intronsByTranscript(getTxDbIfAvailable(x),
                                   use.names=use.names)})
 
-setMethod(fiveUTRsByTranscript, 'OrganismDb',
+setMethod(fiveUTRsByTranscript, 'MultiDb',
           function(x, use.names=FALSE){
               fiveUTRsByTranscript(getTxDbIfAvailable(x),
                                    use.names=use.names)})
 
-setMethod(threeUTRsByTranscript, 'OrganismDb',
+setMethod(threeUTRsByTranscript, 'MultiDb',
           function(x, use.names=FALSE){
               threeUTRsByTranscript(getTxDbIfAvailable(x),
                                     use.names=use.names)})
 
-setMethod(extractUpstreamSeqs, 'OrganismDb',
+setMethod(extractUpstreamSeqs, 'MultiDb',
           function(x, genes, width=1000, exclude.seqlevels=NULL){
               extractUpstreamSeqs(x, getTxDbIfAvailable(genes),
                                   width=width,
@@ -488,7 +488,7 @@ setMethod(extractUpstreamSeqs, 'OrganismDb',
 ## is temporary.
 ## setMethod(extractTranscriptSeqs, 'BSgenome',
 ##           function(x, transcripts, strand="+"){
-##               if(class(transcripts)=='OrganismDb'){
+##               if(class(transcripts)=='MultiDb'){
 ##                   transcripts<-getTxDbIfAvailable(transcripts)
 ##               }
 ##               extractTranscriptSeqs(x, transcripts, strand=strand)})
@@ -497,10 +497,10 @@ setMethod(extractUpstreamSeqs, 'OrganismDb',
 ## library(Homo.sapiens);library(BSgenome.Hsapiens.UCSC.hg19);genome <- BSgenome.Hsapiens.UCSC.hg19;debug(GenomicFeatures:::.normarg_transcripts);tx_seqs <- extractTranscriptSeqs(genome, Homo.sapiens)
 
 
-setMethod(isActiveSeq, 'OrganismDb',
+setMethod(isActiveSeq, 'MultiDb',
           function(x){isActiveSeq(getTxDbIfAvailable(x))})
 
-setReplaceMethod('isActiveSeq', 'OrganismDb',
+setReplaceMethod('isActiveSeq', 'MultiDb',
           function(x, value){
               ## This will change the val in 'x' as well...
               txdb <- getTxDbIfAvailable(x)
@@ -508,17 +508,17 @@ setReplaceMethod('isActiveSeq', 'OrganismDb',
               x
           })
 
-setMethod(asBED, 'OrganismDb', function(x){asBED(getTxDbIfAvailable(x))})
-setMethod(asGFF, 'OrganismDb', function(x){asGFF(getTxDbIfAvailable(x))})
+setMethod(asBED, 'MultiDb', function(x){asBED(getTxDbIfAvailable(x))})
+setMethod(asGFF, 'MultiDb', function(x){asGFF(getTxDbIfAvailable(x))})
 
 ## These ones dispatch on compound types (not just TxDbs):
-setMethod(distance, c('GenomicRanges','OrganismDb'),
+setMethod(distance, c('GenomicRanges','MultiDb'),
           function(x, y, ignore.strand=FALSE, ..., id, 
                    type=c("gene", "tx", "exon", "cds")){
               distance(x, getTxDbIfAvailable(y), ignore.strand=ignore.strand,
                        ..., id=id, type=type)})
 
-setMethod(mapToTranscripts, c('ANY', 'OrganismDb'),
+setMethod(mapToTranscripts, c('ANY', 'MultiDb'),
           function(x, transcripts, ignore.strand=TRUE, 
                    extractor.fun = GenomicFeatures::transcripts, ...){
               mapToTranscripts(x, transcripts=getTxDbIfAvailable(transcripts),

@@ -7,12 +7,12 @@
     if("TXID" %in% columns(x)){
         return(.getTxDb(x))
     }else{
-        stop("The OrganismDb object does not have an embedded TxDb.")
+        stop("The MultiDb object does not have an embedded TxDb.")
     }
 }
 
 ## with the exception of seqnames (which doesn't make sense, this
-## whole family will work for OrganismDb objects (even though I have
+## whole family will work for MultiDb objects (even though I have
 ## not defined them all explicitely (because they all call seqinfo()
 ## and have ANY methods)
 
@@ -24,7 +24,7 @@
 
 ## To get all these functions, I ONLY need to make this setter and getter work
 
-setMethod("seqinfo","OrganismDb", 
+setMethod("seqinfo","MultiDb", 
           function(x){
               txdb <- .safelyGetTxDb(x)
               seqinfo(txdb)		
@@ -33,7 +33,7 @@ setMethod("seqinfo","OrganismDb",
 
 ## This can work once I have a local object that I can modify?
 
-## setReplaceMethod("seqinfo", "OrganismDb",
+## setReplaceMethod("seqinfo", "MultiDb",
 ##           function(x, new2old=NULL, force=FALSE, value){
 ##               txdb <- .safelyGetTxDb(x)
 ##               seqinfo(txdb, new2old=NULL, force=FALSE) <- value	
@@ -43,57 +43,57 @@ setMethod("seqinfo","OrganismDb",
 
 ## #############################################################################
 
-## setMethod("seqlevels","OrganismDb", 
+## setMethod("seqlevels","MultiDb", 
 ##           function(x){ seqlevels(.safelyGetTxDb(x))		
 ## })
 
-## setReplaceMethod("seqlevels", "OrganismDb",
+## setReplaceMethod("seqlevels", "MultiDb",
 ##                  function(x, force=FALSE, value){
 ##                      seqlevels(.safelyGetTxDb(x), force=FALSE) <- value	
 ## })
 
 ## #############################################################################
 
-## setMethod("seqlengths","OrganismDb", 
+## setMethod("seqlengths","MultiDb", 
 ##           function(x){ seqlengths(.safelyGetTxDb(x))		
 ## })
 
-## setReplaceMethod("seqlengths", "OrganismDb",
+## setReplaceMethod("seqlengths", "MultiDb",
 ##                  function(x, value){
 ##                      seqlengths(.safelyGetTxDb(x)) <- value		
 ## })
 
 ## #############################################################################
 
-## setMethod("isCircular","OrganismDb", 
+## setMethod("isCircular","MultiDb", 
 ##           function(x){ isCircular(.safelyGetTxDb(x))		
 ## })
 
-## setReplaceMethod("isCircular", "OrganismDb",
+## setReplaceMethod("isCircular", "MultiDb",
 ##                  function(x, value){
 ##                      isCircular(.safelyGetTxDb(x)) <- value		
 ## })
 
 ## #############################################################################
 
-## setMethod("genome","OrganismDb", 
+## setMethod("genome","MultiDb", 
 ##           function(x){ genome(.safelyGetTxDb(x))		
 ## })
 
-## setReplaceMethod("genome", "OrganismDb",
+## setReplaceMethod("genome", "MultiDb",
 ##                  function(x, value){
 ##                      genome(.safelyGetTxDb(x)) <- value		
 ## })
 
 #############################################################################
 
-## setMethod("seqnameStyle","OrganismDb", 
+## setMethod("seqnameStyle","MultiDb", 
 ##           function(x){
 ##               txdb <- .safelyGetTxDb(x)
 ##               seqnameStyle(txdb)	
 ## })
 
-## setReplaceMethod("seqnameStyle", "OrganismDb",
+## setReplaceMethod("seqnameStyle", "MultiDb",
 ##                  function(x, value){
 ##                      txdb <- .safelyGetTxDb(x)
 ##                      seqnameStyle(txdb) <- value
