@@ -28,8 +28,76 @@
 setMethod("getTxDbIfAvailable", "MultiDb", function(x, ...){.getTxDb(x)})
 
 
+## And actually, just make a setter / getter for TxDbs on OrganismDb objects
+## In this case, these methods are exclusive to OrganismDb objects.
+## getter
+setMethod("TxDb", "OrganismDb", function(x, ...){.getTxDb(x)})
 
 
+## TxDb setter method
+## .updateTxDb() helper makes graphInfo from mdb, modifies it to use new
+## txdb info and then calls MultiDb() constructor...
+.updateTxDb <- function(x, value){
+    ## Here I need to work out what needs an update and update it...
+    ## I need to find the TxDb in the object and replace it with
+    ## the one in value
+    if(class(value) != 'TxDb') stop('Replacement value must be a TxDb object.')
+    
+    ## 1st get the current TxDbs name
+    txDbName <- OrganismDbi:::.lookupDbNameFromKeytype(x, 'TXID')
+    ## we will use a generated name for internals when user does this.
+    newTxDbName <- GenomicFeatures:::.makePackageName(txdb)
+    
+    ## To modify the TxDb value rebuild the MultiDb
+    ## 1) Extract/modify the keys/graphData
+    gd <- x@keys
+    gd[gd %in% txDbName] <- newTxDbName
+    ## 2) Extract/modify the resources
+    resources <- x@resources
+    resources[names(resources) %in% txDbName] <- dbfile(value)
+    names(resources)[names(resources) %in% txDbName] <- newTxDbName
+    ## 3) rebuild 
+    graphInfo <- list(graphData=gd, resources=resources)
+    x <- OrganismDbi:::OrganismDb(graphInfo=graphInfo)
+    ## then return the new MultiDb object.
+    x
+}
+setReplaceMethod("TxDb", "OrganismDb", function(x, value) .updateTxDb(x, value))
+
+## test for setter:
+## library(OrganismDbi); example(makeOrganismDbFromTxDb); odb;
+## saveDb(txdbMouse, file='myTxDb.sqlite')
+
+## library(TxDb.Mmusculus.UCSC.mm9.knownGene); txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene;
+
+## library(OrganismDbi); txdbMouse <- loadDb('myTxDb.sqlite'); odb <- makeOrganismDbFromTxDb(txdb=txdbMouse)
+## debug(OrganismDbi:::.updateTxDb) ## works!
+## debug(OrganismDbi:::.getTxDb)
+## TxDb(odb) <- txdb;       odb; odb@resources
+
+## OK.  It looks like setter is working, but for this particular
+## example, my getter is still grabbing from global scope sometimes?
+## (like in this example) - all because the names are being used too
+## much by things like getters for the object.  So in this example, I
+## am at the mercy of the last thing that was loaded...  :/
+
+## This can be more robust if instead I put an actual TxDb and OrgDb
+## object into custom slots (with custom getter methods for each that
+## act only for OrganismDb objects).  That way I can insulate my
+## object from external interference from name clashes.
+
+## OR: maybe I can make the getter method a bit more picky???
+
+
+
+
+
+
+
+
+
+
+########################################################################
 ## TODO: .compressMetadata() might be useful to move into IRanges, as
 ## a complement to expand() methods?  - Discuss this with Val (who
 ## apparently may have similar issues in vcf...

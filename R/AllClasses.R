@@ -90,9 +90,12 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
   resources <- graphInfo$resources
   for(i in seq_along(resources)){
       name <- names(resources[i])
-      if(!exists(name)){
+      if(resources[i] != ""){
           assign(name,value=loadDb(resources[i]))
       }
+      ## if(!exists(name)){
+      ##     assign(name,value=loadDb(resources[i]))
+      ## }
   }
   
   ## Then make the object.
@@ -102,7 +105,8 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
 
 ## TODO: add to this so that we populate the TxDb slot (which we also need to add)
 OrganismDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
-    MultiDb(dbType=NULL, graphInfo, ns=NULL, ...)
+    mdb <- MultiDb(dbType=NULL, graphInfo, ns=NULL, ...)
+    new("OrganismDb", mdb, ...)    
 }
 
 

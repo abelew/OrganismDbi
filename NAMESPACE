@@ -82,7 +82,9 @@ exportMethods(columns,
               metadata,
               seqinfo,
               getTxDbIfAvailable,
-
+              TxDb, ## formal getter 
+              "TxDb<-", ## formal setter
+              
               ## Below are methods that we are 'just wrapping' from TxDbs
               ## transcriptsByOverlaps,
               ## exonsByOverlaps,
@@ -105,6 +107,8 @@ exportMethods(columns,
               )
 
 export(getTxDbIfAvailable,  ## b/c the generic is here
+       TxDb, ## formal getter 
+       "TxDb<-", ## formal setter
        selectByRanges,
        selectRangesById,
        makeOrganismPackage,
