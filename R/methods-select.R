@@ -1,8 +1,19 @@
 # This will just hold code for the initial implementation of select and friends
 
 ## helper to convert text strings (Db pkgs names) into real objects
-.makeReal <- function(x){
-    eval(parse(text=x))
+## x is an OrgDb object, and str is the name we want made into an object...
+.makeReal <- function(x, str){
+    resource <- x@resources[names(x@resources) %in% str]
+    if(length(resource)==1){
+        if(resource != ""){
+            res <- loadDb(resource)
+        }else{ ## otherwise use the local name
+            res <- get(str)
+        }
+    }else{
+        stop(paste0("object does not contain resource named ",str) )
+    }
+    res
 }
 
 ## Standard methods:
@@ -47,8 +58,7 @@ setMethod("columns", "MultiDb", function(x){.cols(x)})
 }
 
 .lookupDbFromKeytype <- function(x, keytype){
-    db <- .lookupDbNameFromKeytype(x, keytype)
-    eval(parse(text=db))
+    .makeReal(x, str=.lookupDbNameFromKeytype(x, keytype))
 }
 
 .keys <- function(x, keytype, ...){
@@ -135,7 +145,8 @@ setMethod("keys", "MultiDb", .keys)
 ## helper for getting all cols by all nodes
 .colsByNodes <- function(x){
     gr <- dbGraph(x)
-    allCols <- lapply(nodes(gr), function(elt) columns(.makeReal(elt)))
+    allCols <- lapply(nodes(gr), function(elt, x){columns(.makeReal(x, elt))},
+                      x=x)
     names(allCols) <- nodes(gr)
     allCols
 }
@@ -212,7 +223,7 @@ setMethod("keys", "MultiDb", .keys)
     node1 <- names(visitNodes)[[1]]
     suppressMessages(
        selected[[node1]] <- 
-                     select(.makeReal(node1),
+                     select(.makeReal(x, node1),
                             keys=as.character(keys),
                             columns=needCols[[node1]],
                             keytype=keytype,
@@ -229,7 +240,7 @@ setMethod("keys", "MultiDb", .keys)
         toKey <- .mkeys(x, fromNode, nodeName, "tbl2")
         suppressMessages(
             selected[[nodeName]] <- 
-                         select(.makeReal(nodeName),
+                         select(.makeReal(x, nodeName),
                                 keys=as.character(fromKeys),
                                 columns=needCols[[nodeName]],
                                 keytype=toKey,

@@ -146,7 +146,7 @@ setMethod("dbGraph", "MultiDb",
 
 .getDbObjs <- function(x){
   dbs <- .getDbObjNames(x)
-  setNames(lapply(dbs, .makeReal), dbs)
+  setNames(lapply(dbs, .makeReal, x=x), dbs)
 }
 
 

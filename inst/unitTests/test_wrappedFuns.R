@@ -100,3 +100,24 @@ test_isActiveSeq <- function(){
     isActiveSeq(x)[seqlevels(x)] <- TRUE
 }
 
+## TODO: OK I can't win. :/ This unit test proves that I really do
+## require the storage of an actual TxDb in a slot (IOW just
+## preferentially pulling these object from storage is not enough to
+## solve all my problems since that will only resolve the read only
+## issues).
+## The reason is because if I just always get things from the source
+## files then the resource effectively becomes a 'read only' object.
+## So in order to have functioning activeSeq values I need to store
+## the object dujour somewhere (and swap/change it when the TxDb<- is
+## used)
+## Changes to fix from here:
+## 1) add slot to OrganismDb
+## 2) .getTxDb needs to pull from that slot
+## 3) .updateTxDb needs to put an actual TxDb into that slot
+## 4) constructor for OrganismDb needs to also populate that slot (maybe tricky since it needs to know which thing is a TxDb - instantiate and check class ?)
+## 5) All 'other' access cases (like select etc. are fine to use the loadDb 1st approach of getting the TxDb (And in fact this is preferred)
+
+## PROBLEM: the above only solves this for OrganismDb (not MultiDb) UNLESS I add a slot to MultiDb called what? TxDbIfPresent?
+
+## IF I do that (add a slot for TxDb to MultiDb), then my instructions remain basically the same (except for 1&4) but it will work better overall I think.
+

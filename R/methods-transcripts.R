@@ -75,18 +75,25 @@ setReplaceMethod("TxDb", "OrganismDb", function(x, value) .updateTxDb(x, value))
 ## debug(OrganismDbi:::.getTxDb)
 ## TxDb(odb) <- txdb;       odb; odb@resources
 
+
 ## OK.  It looks like setter is working, but for this particular
 ## example, my getter is still grabbing from global scope sometimes?
 ## (like in this example) - all because the names are being used too
 ## much by things like getters for the object.  So in this example, I
 ## am at the mercy of the last thing that was loaded...  :/
 
-## This can be more robust if instead I put an actual TxDb and OrgDb
-## object into custom slots (with custom getter methods for each that
-## act only for OrganismDb objects).  That way I can insulate my
-## object from external interference from name clashes.
 
-## OR: maybe I can make the getter method a bit more picky???
+## Actually, what I want to do is to make sure that any time I get DB
+## resource, I first try to do loadDb on the matching thing from the
+## resources slot AND THEN try to call get() on an existing name (but
+## as a backup plan!).  - and this seems to work, but there is a bad fail in one unit test that I have to check into now...
+
+
+## And if I can't solve the problem in that way:
+## Then this can also be made more robust if instead I put an actual
+## TxDb and OrgDb object into custom slots (with custom getter methods
+## for each that act only for OrganismDb objects).  That way I can
+## insulate my object from external interference from name clashes.
 
 
 
@@ -568,13 +575,27 @@ setMethod(extractUpstreamSeqs, 'MultiDb',
 setMethod(isActiveSeq, 'MultiDb',
           function(x){isActiveSeq(getTxDbIfAvailable(x))})
 
+.updateTxDbSeqMultiDb <-function(x, value){
+    ## This will change the val in 'x' as well...
+    txdb <- getTxDbIfAvailable(x)
+    if(!is.na(txdb)){ ## will be NA if there isn't one.
+        isActiveSeq(txdb) <- value
+    }else{
+        stop('This object does not contain a TxDb object')
+    }
+    x
+}
 setReplaceMethod('isActiveSeq', 'MultiDb',
-          function(x, value){
-              ## This will change the val in 'x' as well...
-              txdb <- getTxDbIfAvailable(x)
-              isActiveSeq(txdb) <- value
-              x
-          })
+          function(x, value){.updateTxDbSeqMultiDb(x, value)})
+
+## I don't think I need this:
+## .updateTxDbSeqOrganismDb <-function(x, value){
+##     ## This will change the val in 'x' as well...
+##     isActiveSeq(TxDb(x)) <- value
+##     x
+## } 
+## setReplaceMethod('isActiveSeq', 'OrganismDb',
+##                  function(x, value){.updateTxDbSeqOrganismDb(x, value)})
 
 setMethod(asBED, 'MultiDb', function(x){asBED(getTxDbIfAvailable(x))})
 setMethod(asGFF, 'MultiDb', function(x){asGFF(getTxDbIfAvailable(x))})

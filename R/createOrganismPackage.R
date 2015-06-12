@@ -103,9 +103,11 @@
       stop("'graphData' must contain exactly 4 columns.")
 }
 
-## test keys for graphData 
+## test keys for graphData BEFORE we make any objects (which just
+## means that we are not going to use data from the @resources slot
+## for this function)
 .testKeys <- function(fkeys){
-  pkgs <- unlist(lapply(names(fkeys), .makeReal))
+  pkgs <- unlist(lapply(names(fkeys), get))
   res <- logical(length(pkgs))
   for(i in seq_len(length(pkgs))){
     res[i] <- fkeys[i] %in% columns(pkgs[[i]]) 
@@ -354,41 +356,6 @@ makeOrganismDbFromUCSC <- function(genome="hg19",
                              goldenPath_url=goldenPath_url,
                              miRBaseBuild=miRBaseBuild)
     makeOrganismDbFromTxDb(txdb)
-    ## ## Then assign that object value to the appropriate name:
-    ## txdbName <- GenomicFeatures:::.makePackageName(txdb)
-    ## assign(txdbName, txdb) ## txdbName still represents the correct thing
-    ## ## Then get the tax ID:
-    ## taxId <- taxonomyId(txdb)
-    
-    ## ## Then get the name and valued for the OrgDb object
-    ## orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
-    ## orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
-    ## assign(orgdbName, orgdb)
-    ## ## get the primary key for the OrgDb object:
-    ## geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
-    
-    ## graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
-    ##                                    nm=c('GO.db', orgdbName)),
-    ##                   join2 = setNames(object=c(geneKeyType, 'GENEID'),
-    ##                                    nm=c(orgdbName, txdbName)))
-    
-    ## ## get the organism
-    ## organism <- organism(txdb)
-
-    ## #######################################################################3
-    ## ## Process and then test the graph Data
-    ## gd <- OrganismDbi:::.mungeGraphData(graphData)
-    ## OrganismDbi:::.testGraphData(gd)    
-    ## allDeps <- unique(as.vector(gd[,1:2]))
-    ## biocPkgNames <- OrganismDbi:::.biocAnnPackages()
-    ## deps <- allDeps[allDeps %in% biocPkgNames]
-    ## resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)
-    ## ## Check that the fkeys are really columns for the graphData
-    ## fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
-    ## OrganismDbi:::.testKeys(fkeys)
-    ## ## Then make the object:
-    ## graphInfo <- list(graphData=gd, resources=resources)
-    ## OrganismDbi:::OrganismDb(graphInfo=graphInfo)
 }
 
 ## ## Usage/testing:
@@ -430,43 +397,6 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
                                 port=port,
                                 miRBaseBuild=miRBaseBuild)
     makeOrganismDbFromTxDb(txdb, keytype=keytype)
-    ## ## Then assign that object value to the appropriate name:
-    ## txdbName <- GenomicFeatures:::.makePackageName(txdb)
-    ## ## assign to global scope (b/c you need it there if you 'generated' it)
-    ## ## Is there a better way?
-    ## assign(txdbName, txdb,envir = .GlobalEnv)  
-    ## ## Then get the tax ID:
-    ## taxId <- taxonomyId(txdb)
-    
-    ## ## Then get the name and valued for the OrgDb object
-    ## orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
-    ## orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
-    ## assign(orgdbName, orgdb)
-    ## ## get the primary key for the OrgDb object:
-    ## geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
-    
-    ## graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
-    ##                                    nm=c('GO.db', orgdbName)),
-    ##                   join2 = setNames(object=c(geneKeyType, 'GENEID'),
-    ##                                    nm=c(orgdbName, txdbName)))
-    
-    ## ## get the organism
-    ## organism <- organism(txdb)
-
-    ## #######################################################################
-    ## ## Process and then test the graph Data
-    ## gd <- OrganismDbi:::.mungeGraphData(graphData)
-    ## OrganismDbi:::.testGraphData(gd)    
-    ## allDeps <- unique(as.vector(gd[,1:2]))
-    ## biocPkgNames <- OrganismDbi:::.biocAnnPackages()
-    ## deps <- allDeps[allDeps %in% biocPkgNames]
-    ## resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)    
-    ## ## Check that the fkeys are really columns for the graphData
-    ## fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
-    ## OrganismDbi:::.testKeys(fkeys)    
-    ## ## Then make the object:
-    ## graphInfo <- list(graphData=gd, resources=resources)
-    ## OrganismDbi:::OrganismDb(graphInfo=graphInfo)
 }
 
 
