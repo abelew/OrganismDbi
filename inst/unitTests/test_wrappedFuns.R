@@ -111,13 +111,17 @@ test_isActiveSeq <- function(){
 ## the object dujour somewhere (and swap/change it when the TxDb<- is
 ## used)
 ## Changes to fix from here:
-## 1) add slot to OrganismDb
-## 2) .getTxDb needs to pull from that slot
-## 3) .updateTxDb needs to put an actual TxDb into that slot
-## 4) constructor for OrganismDb needs to also populate that slot (maybe tricky since it needs to know which thing is a TxDb - instantiate and check class ?)
-## 5) All 'other' access cases (like select etc. are fine to use the loadDb 1st approach of getting the TxDb (And in fact this is preferred)
+## 1) add slot to OrganismDb (maybe MultiDb instead)?  - done
+## 2) .getTxDb needs to pull from that slot - done
+## 3) .updateTxDb needs to put an actual TxDb into that slot - automatic
+## 4) constructor for OrganismDb needs to also populate that slot (maybe tricky since it needs to know which thing is a TxDb - instantiate and check class ?) - done
+
+## 5) All 'other' access cases (like select etc. are fine to use the loadDb 1st approach of getting the TxDb (And in fact this is preferred) - nothing to do but test?
 
 ## PROBLEM: the above only solves this for OrganismDb (not MultiDb) UNLESS I add a slot to MultiDb called what? TxDbIfPresent?
 
-## IF I do that (add a slot for TxDb to MultiDb), then my instructions remain basically the same (except for 1&4) but it will work better overall I think.
+## IF I do that (add a slot for TxDb to MultiDb), then my instructions remain basically the same (except for 1&4) but it will work better overall.  I think I want to do it this way for TxDbs (because they should work correctly for MultiDbs too (without having leaky scope issues)
 
+
+## BUT adding it to MultiDb means adding an Herve style Union class
+## examples in: S4Vectors, grep for 'orNull'

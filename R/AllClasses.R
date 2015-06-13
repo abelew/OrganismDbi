@@ -37,11 +37,15 @@
 ## I need an initialize method just to allow me to do things like
 ## require(GO.db) etc.
 
+## class union so that I can have TxDb OR a null value
+setClassUnion("TxDbORNULL", c("TxDb", "NULL"))
+
 ## Original class
 MultiDb <-
     setClass("MultiDb",
              representation(keys="matrix",
                             graph="graphNEL",
+                            txdbSlot="TxDbORNULL", ## optional slot
                             resources="character")
 )
 
@@ -88,10 +92,13 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
 
   ## Then call loadDb on all unloaded resources
   resources <- graphInfo$resources
+  txdb <- NULL
   for(i in seq_along(resources)){
       name <- names(resources[i])
       if(resources[i] != ""){
-          assign(name,value=loadDb(resources[i]))
+          obj <- loadDb(resources[i])
+          if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's the TxDb
+          assign(name,value=obj)
       }
       ## if(!exists(name)){
       ##     assign(name,value=loadDb(resources[i]))
@@ -99,7 +106,7 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
   }
   
   ## Then make the object.
-  new("MultiDb", ..., keys=gd, graph=graph,
+  new("MultiDb", ..., keys=gd, graph=graph, txdbSlot=txdb,
       resources=resources)
 }
 

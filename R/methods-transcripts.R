@@ -14,15 +14,25 @@
 ## setMethod("columns", "MultiDb", function(x){.cols(x)})
 
 
+## .getTxDb <- function(x){
+##     ## trick: there will *always* be a TXID
+##     res <- .lookupDbFromKeytype(x, "TXID")
+##     if(!is.null(res)){
+##         return(res)
+##     }else{
+##         return(NA)
+##     }
+## }
+
 .getTxDb <- function(x){
-    ## trick: there will *always* be a TXID
-    res <- .lookupDbFromKeytype(x, "TXID")
+    res <- x@txdbSlot
     if(!is.null(res)){
         return(res)
     }else{
         return(NA)
     }
 }
+
 
 ## expose method for gettting A TxDb (if there is one)
 setMethod("getTxDbIfAvailable", "MultiDb", function(x, ...){.getTxDb(x)})
@@ -56,7 +66,7 @@ setMethod("TxDb", "OrganismDb", function(x, ...){.getTxDb(x)})
     resources <- x@resources
     resources[names(resources) %in% txDbName] <- dbfile(value)
     names(resources)[names(resources) %in% txDbName] <- newTxDbName
-    ## 3) rebuild 
+    ## 3) rebuild (which should populate any slots etc.)
     graphInfo <- list(graphData=gd, resources=resources)
     x <- OrganismDbi:::OrganismDb(graphInfo=graphInfo)
     ## then return the new MultiDb object.
