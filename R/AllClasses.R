@@ -92,12 +92,12 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
 
   ## Then call loadDb on all unloaded resources
   resources <- graphInfo$resources
-  txdb <- NULL
+  txdb <- NULL ## default value is NULL 
   for(i in seq_along(resources)){
       name <- names(resources[i])
       if(resources[i] != ""){
           obj <- loadDb(resources[i])
-          if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's the TxDb
+          if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's a TxDb
           assign(name,value=obj)
       }
       ## if(!exists(name)){
@@ -165,13 +165,117 @@ setMethod("show", "MultiDb",
         cat("Annotation resources:\n")
         objs <- .getDbObjNames(object)
         show(objs)
-        cat("Annotation relationships:\n")
+        cat("Annotation resource relationships:\n")
         kf <- keyFrame(object)
         show(kf)
-        cat("For more details, please see the show methods for the component objects listed above.\n")
+        cat("Listed resources should each have their own show methods.\n")
     }
 )
 
+##############################################################
+## Better show method
+
+## library(Homo.sapiens);Homo.sapiens
+
+## helpers for displaying kinds of objects
+.showGODb <- function(obj,name){
+    meta <- metadata(obj)
+    cat('# Includes GODb Object: ', name,'\n')
+    cat('# With data about: ', meta[meta$name=='GOSOURCENAME',2],'\n')
+    ##    cat('GO data last updated: ', meta[meta$name=='GOSOURCEDATE',2],'\n')
+    ## cat('\n')
+}
+
+.showOrgDb <- function(obj,name){
+    
+    meta <- metadata(obj)
+    cat('# Includes OrgDb Object: ', name,'\n')
+    cat('# Gene data about: ', meta[meta$name=='ORGANISM',2],'\n')
+    cat('# Taxonomy Id: ', meta[meta$name=='TAXID',2],'\n')
+    
+    ##    cat(': ', meta[meta$name=='GOSOURCEDATE',2],'\n')
+    ##    cat(': ', meta[meta$name=='GOSOURCEDATE',2],'\n')
+    ##    cat(': ', meta[meta$name=='GOSOURCEDATE',2],'\n')
+    ## cat('\n')
+}
+
+.showTxDb <- function(obj,name){
+    meta <- metadata(obj)
+    cat('# Includes TxDb Object: ', name,'\n')
+    cat('# Transcriptome data about: ', meta[meta$name=='Organism',2],'\n')
+    cat('# Based on genome: ', meta[meta$name=='Genome',2],'\n')
+    ##   cat(': ', meta[meta$name=='GOSOURCEDATE',2],'\n')
+    ## cat('\n')
+}
+
+
+
+## helper for choosing display for correct subObjects
+.showGeneralSubObject <- function(obj, name){
+    cls <- class(obj)
+    switch(cls,
+           'TxDb'=.showTxDb(obj,name),
+           'OrgDb'=.showOrgDb(obj,name),
+           'GODb'=.showGODb(obj,name))
+}
+
+.getOrgDbByClass <- function(objs){
+    objs[lapply(objs, class) %in% 'OrgDb']  
+}
+.getTxDbByClass <- function(objs){
+    objs[lapply(objs, class) %in% 'TxDb']  
+}
+
+.getKeyRowWithOrgDbAndTxDb <- function(objs, odb){
+    orgDbName <- names(.getOrgDbByClass(objs))
+    txDbName <- names(.getTxDbByClass(objs))
+    fKeys <- odb@keys
+    orgIdx <- grepl(orgDbName, fKeys[,1]) | grepl(orgDbName, fKeys[,2])
+    txIdx <- grepl(txDbName, fKeys[,1]) | grepl(txDbName, fKeys[,2])
+    idx <- orgIdx & txIdx
+    fKeys[idx,]
+}
+
+.showOrganismDbSpecificItems <- function(objs, odb){
+    ## extract foreign gene keys for OrgDb and TxDb:
+    keyRow <- .getKeyRowWithOrgDbAndTxDb(objs, odb)
+    ## match names with keys like this:
+    orgDbName <- names(.getOrgDbByClass(objs))
+    if(grep(orgDbName, keyRow)==1){
+        orgKey <- keyRow[c(1,3)]
+        txKey <- keyRow[c(2,4)]
+    }else if(grep(orgDbName, keyRow)==2){
+        orgKey <- keyRow[c(2,4)]
+        txKey <- keyRow[c(1,3)]
+    }
+    cat('# The OrgDb gene id',orgKey[2],'is mapped to the TxDb gene id',
+        txKey[2],'.\n')
+}
+
+## This could become the method for MultiDb objects too.
+## But in that case I might want more general elements.
+## A better plan is probably to just reuse some of these helpers in
+## the other method (when you can)
+setMethod("show", "OrganismDb",
+    function(object)
+    {
+        cat(class(object),'Object:\n')
+        ## 1st get the objects
+        objs <- .getDbObjs(object)
+        ## loop along and switch the display based on the class
+        mapply(.showGeneralSubObject, objs, names(objs))
+        ## This is the part that is truly OrganismDb specific (right now)
+        .showOrganismDbSpecificItems(objs, odb=object)
+    }
+)
+
+
+
+
+
+
+
+## For people who need ALL the metadata:
 setMethod("metadata", "MultiDb",
     function(x)
     {
@@ -188,9 +292,41 @@ setMethod("metadata", "MultiDb",
         message("Only unique values are returned by this metadata method.  For individual metadata values that may share a key, such as the Db type, be sure to call metadata on the individual objects. \n")
         show(res)
     }
-)         
+)
 
 
+
+## resources returns the contents of the resources slot (simple accessor)
+.resources <- function(x){
+    x@resources
+}
+setMethod("resources", "MultiDb", function(x){.resources(x)})
+
+
+
+
+## this is for MultiDb (I should be able to save everything)
+## And I just want a saveDb and loadDb methods as I am
+## Specifically: they should both have readable
+## databases in hand for all resources (and error if not) and they
+## should save the object (not the data it depends on) while making
+## sure that the database info is present (if needed).
+##
+## saveDb/loadDb methods which checks to the constructor etc. so that
+## we always build the object and save it correctly.  Martin proposed
+## that I tell users to do TxDb(odb) <- saveDb(TxDb,
+## file='TxDb.sqlite').  Martins idea kind of already happens (but
+## without the friendly check/warnings if you call save() on the
+## object...
+##
+## And Herve proposed this (which I think is even more user friendly
+## (I suspect martin will agree): saveDb(odb, file=<dir>), where 'dir'
+## is the name of a directory where all the relevant sqlite files will
+## be saved alongside of an object.Rda file (which will contain a
+## MultiDb with corrected paths).  This object will then get found by
+## loadDb and allow absolute saving no matter what...
+
+## setMethod("saveDb", "MultiDb", function(..., file){ .saveMultDb(x, file)})
 
 
 

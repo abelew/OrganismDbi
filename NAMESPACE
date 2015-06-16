@@ -108,7 +108,9 @@ exportMethods(columns,
 
 export(getTxDbIfAvailable,  ## b/c the generic is here
        TxDb, ## formal getter 
-       "TxDb<-", ## formal setter
+       "TxDb<-", ## formal setter,
+       resources,
+##       saveDb,
        selectByRanges,
        selectRangesById,
        makeOrganismPackage,

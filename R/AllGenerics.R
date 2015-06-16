@@ -12,3 +12,6 @@ setGeneric("selectByRanges", signature="x",
 setGeneric("selectRangesById", signature="x",
            function(x, keys, columns, keytype, feature)
            standardGeneric("selectRangesById"))
+
+
+setGeneric("resources", function(x) standardGeneric("resources"))
