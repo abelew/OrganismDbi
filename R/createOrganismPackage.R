@@ -291,23 +291,36 @@ makeOrganismPackage <- function(pkgname,
 ## Also: the name this local TxDb gets assigned to cannot be the same as is used by a package.  Otherwise a shortened 'custom' TxDb can be overwritten by a name clash with a package name...  This could end up being true even if I store the TxDb locally inside of a named sub-class.
 ## Also also: the name should not be made 'special' in the case where makeOrganismDbFromTxDb is called as a helper function from within makeOrganismDbFromUCSC or makeOrganismDbFromBiomart.
 
-
-makeOrganismDbFromTxDb <- function(txdb, keytype=NULL){
+makeOrganismDbFromTxDb <- function(txdb, keytype=NA, orgdb=NA){
+    if(class(txdb) != 'TxDb') stop("'txdb' must be A TxDb object")
+    if(class(orgdb) != 'OrgDb' && !is.na(orgdb)) stop(
+              "'orgdb' must be an OrgDb object or NA")
+    if (!isSingleStringOrNA(keytype))
+        stop("'keytype' must be a single string or NA")
+    
     ## Then assign that object value to the appropriate name:
     txdbName <- GenomicFeatures:::.makePackageName(txdb)
-    ## assign to global scope (b/c you need it there if you 'generated' it)
-    ## Is there a better way?
-    ## assign(txdbName, txdb, envir=TxDbObjs) #.GlobalEnv)  
+    ## We temp assign to global scope
+    ## (b/c you need it there if you 'generated' it)
+    ## After we can remove it? (will be stored in the object)
     assign(txdbName, txdb, .GlobalEnv)  
     ## Then get the tax ID:
     taxId <- taxonomyId(txdb)
     
     ## Then get the name and valued for the OrgDb object
-    orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
-    orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
-    assign(orgdbName, orgdb)
+    if(is.na(orgdb)){
+        orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
+        orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
+        assign(orgdbName, orgdb)
+    }else{
+        org <- metadata(orgdb)[metadata(orgdb)$name=='ORGANISM',2]
+        org <- sub(" ", "_", org)
+        orgdbName <- paste0('org.',org,'.db')
+        orgdb <- orgdb
+        assign(orgdbName, orgdb)
+    }
     ## get the primary key for the OrgDb object:
-    if(is.null(keytype)){
+    if(is.na(keytype)){
         geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
     }else{
         geneKeyType <- keytype
