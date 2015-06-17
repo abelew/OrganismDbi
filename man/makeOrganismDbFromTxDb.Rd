@@ -9,20 +9,25 @@
   to make a \link{OrganismDb} object from an existing TxDb object.
 }
 \usage{
-makeOrganismDbFromTxDb(txdb, keytype = NULL)
+makeOrganismDbFromTxDb(txdb, keytype=NA, orgdb=NA)
 }
 \arguments{
   \item{txdb}{a \code{TxDb} object}.
   \item{keytype}{By default, \code{makeOrganismDbFromTxDb} will try to
-  guess this information based on the OrgDb object that is inferred to
-  go with your TxDb object...  But in some instances, you may need to
-  supply an over-ride and that is what this argument is for.  It is the
-  column name of the ID type that your OrgDb will use as a foreign key
-  when connecting to the data from the associated TxDb.  So for example,
-  if you looked at the Homo.sapiens package the keytype for
-  \code{org.Hs.eg.db}, would be 'ENTREZID' because that is the kind of
-  ID that matches up with it's TxDb GENEID. (Because the GENEID for that
-  specific TxDb is from UCSC and uses entrez gene IDs)}.
+    guess this information based on the OrgDb object that is inferred to
+    go with your TxDb object...  But in some instances, you may need to
+    supply an over-ride and that is what this argument is for.  It is the
+    column name of the ID type that your OrgDb will use as a foreign key
+    when connecting to the data from the associated TxDb.  So for example,
+    if you looked at the Homo.sapiens package the keytype for
+    \code{org.Hs.eg.db}, would be 'ENTREZID' because that is the kind of
+    ID that matches up with it's TxDb GENEID. (Because the GENEID for that
+    specific TxDb is from UCSC and uses entrez gene IDs)}.
+  \item{orgdb}{By default, \code{makeOrganismDbFromTxDb} will use the
+    taxonomyID from your txdb to lookup an appropriate matching
+    \code{OrgDb} object but using this you can supply a different
+    \code{OrgDb} object.}
+
 }
 \details{
   \code{makeOrganismDbFromTxDb} is a convenience function that processes

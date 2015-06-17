@@ -97,6 +97,7 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
       name <- names(resources[i])
       if(resources[i] != ""){
           obj <- loadDb(resources[i])
+          message("Now loading: ", class(obj), " Object.")
           if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's a TxDb
           assign(name,value=obj)
       }

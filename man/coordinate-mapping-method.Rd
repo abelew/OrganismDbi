@@ -1,6 +1,6 @@
 \name{mapToTranscripts}
 
-\alias{mapToTranscripts,ANY,OrganismDb-method}
+\alias{mapToTranscripts,ANY,MultiDb-method}
 
 \title{Map range coordinates between transcripts and genome space}
 
@@ -14,7 +14,7 @@
 }
 
 \usage{
-\S4method{mapToTranscripts}{ANY,OrganismDb}(x, transcripts,
+\S4method{mapToTranscripts}{ANY,MultiDb}(x, transcripts,
           ignore.strand = TRUE,
           extractor.fun = GenomicFeatures::transcripts, ...) 
 }

@@ -28,3 +28,30 @@ test_testKeys <- function(){
   ## (and earlier)
 }
 
+test_TxDb <- function(){
+    txdbMouse <- loadDb(system.file('extdata','myTxDb.sqlite',
+                                    package='OrganismDbi'))
+    library(TxDb.Mmusculus.UCSC.mm9.knownGene)
+    txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
+    odb <- makeOrganismDbFromTxDb(txdb=txdbMouse)
+    res <- resources(odb)
+    checkTrue(res[['TxDb.Mmusculus.UCSC.mm9.knownGene']] == dbfile(txdbMouse))
+    ## NOW change it:
+    TxDb(odb) <- txdb
+    res <- resources(odb)
+    checkTrue(res[['TxDb.Mmusculus.UCSC.mm9.knownGene']] == dbfile(txdb))
+}
+
+
+## Above stuff works BUT: this does NOT work:
+##  transcript_ids <- c(
+##      "uc009uzf.1",
+##      "uc009uzg.1",
+##      "uc009uzh.1",
+##      "uc009uzi.1",
+##      "uc009uzj.1"
+##  )
+##  txdbMouse <- makeTxDbFromUCSC(genome="mm9", tablename="knownGene",
+##                            transcript_ids=transcript_ids)
+## odb <- makeOrganismDbFromTxDb(txdb=txdbMouse)
+## TxDb(odb)

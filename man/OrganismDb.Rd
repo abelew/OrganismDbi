@@ -1,33 +1,43 @@
-\name{OrganismDb-class}
+\name{MultiDb-class}
+
+\alias{MultiDb-class}
+\alias{class:MultiDb}
+\alias{MultiDb}
 
 \alias{OrganismDb-class}
 \alias{class:OrganismDb}
 \alias{OrganismDb}
 
 % select and select related methods
-\alias{columns,OrganismDb-method}
-\alias{keytypes,OrganismDb-method}
-\alias{keys,OrganismDb-method}
-\alias{select,OrganismDb-method}
-\alias{mapIds,OrganismDb-method}
-% special select enhancers for OrganismDb objects
+\alias{columns,MultiDb-method}
+\alias{keytypes,MultiDb-method}
+\alias{keys,MultiDb-method}
+\alias{select,MultiDb-method}
+\alias{mapIds,MultiDb-method}
+% special select enhancers for MultiDb objects
 \alias{selectByRanges}
-\alias{selectByRanges,OrganismDb-method}
+\alias{selectByRanges,MultiDb-method}
 \alias{selectRangesById}
-\alias{selectRangesById,OrganismDb-method}
+\alias{selectRangesById,MultiDb-method}
 
 
-\alias{metadata,OrganismDb-method}
-\alias{dbconn,OrganismDb-method}
-\alias{dbfile,OrganismDb-method}
-\alias{taxonomyId,OrganismDb-method}
+\alias{metadata,MultiDb-method}
+\alias{dbconn,MultiDb-method}
+\alias{dbfile,MultiDb-method}
+\alias{taxonomyId,MultiDb-method}
 
-\alias{seqinfo,OrganismDb-method}
-% \alias{seqinfo<-,OrganismDb-method}
-% \alias{seqnameStyle,OrganismDb-method}
-% \alias{seqnameStyle<-,OrganismDb-method}
+\alias{seqinfo,MultiDb-method}
 
-\title{OrganismDb objects}
+\alias{TxDb}
+\alias{TxDb,OrganismDb-method}
+\alias{TxDb<-}
+\alias{TxDb<-,OrganismDb-method}
+\alias{resources}
+\alias{resources,MultiDb-method}
+
+
+
+\title{MultiDb and OrganismDb objects}
 
 \description{
   The OrganismDb class is a container for storing knowledge
@@ -148,6 +158,23 @@
       the list.  Extra data can also be returned in the mcols values for
       those GRanges by using the columns argument.
     }
+    \item{}{
+      \code{resources(x)}: shows where the db files are for resources
+      that are used to store the data for the \code{OrganismDb} object.
+    }
+    \item{}{
+      \code{TxDb(x)}: Accessor for the TxDb object of a
+      \code{OrganismDb} object.  
+    }
+    \item{}{
+      \code{TxDb(x) <- value}: Allows you to swap in an alternative TxDb
+      for a given \code{OrganismDb} object.  This is most often useful
+      when combined with \code{saveDb(TxDb, file)}, which returns the
+      saved TxDb, so that you can save a TxDb to disc and then assign
+      the saved version right into your \code{OrganismDb} object.
+    }
+
+    
   }
 }
 
@@ -199,5 +226,8 @@ dbfile(Homo.sapiens)
 
 ## extract the taxonomyId
 taxonomyId(Homo.sapiens)
+
+##extract the resources
+resources(Homo.sapiens)
 }
 

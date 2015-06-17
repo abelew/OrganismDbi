@@ -1,38 +1,38 @@
 \name{rangeBasedAccessors}
 
-\alias{transcripts,OrganismDb-method}
-\alias{exons,OrganismDb-method}
-\alias{cds,OrganismDb-method}
-\alias{genes,OrganismDb-method}
+\alias{transcripts,MultiDb-method}
+\alias{exons,MultiDb-method}
+\alias{cds,MultiDb-method}
+\alias{genes,MultiDb-method}
 
-\alias{transcriptsBy,OrganismDb-method}
-\alias{exonsBy,OrganismDb-method}
-\alias{cdsBy,OrganismDb-method}
+\alias{transcriptsBy,MultiDb-method}
+\alias{exonsBy,MultiDb-method}
+\alias{cdsBy,MultiDb-method}
 
 \alias{getTxDbIfAvailable}
-\alias{getTxDbIfAvailable,OrganismDb-method}
+\alias{getTxDbIfAvailable,MultiDb-method}
 
 % new stuff:
-\alias{asBED,OrganismDb-method}
-\alias{asGFF,OrganismDb-method}
+\alias{asBED,MultiDb-method}
+\alias{asGFF,MultiDb-method}
 
-\alias{disjointExons,OrganismDb-method}
-\alias{microRNAs,OrganismDb-method}
-\alias{tRNAs,OrganismDb-method}
-\alias{promoters,OrganismDb-method}
+\alias{disjointExons,MultiDb-method}
+\alias{microRNAs,MultiDb-method}
+\alias{tRNAs,MultiDb-method}
+\alias{promoters,MultiDb-method}
 
-\alias{distance,GenomicRanges,OrganismDb-method}
+\alias{distance,GenomicRanges,MultiDb-method}
 
 \alias{extractTranscriptSeqs,BSgenome-method}
 
-\alias{extractUpstreamSeqs,OrganismDb-method}
+\alias{extractUpstreamSeqs,MultiDb-method}
 
-\alias{intronsByTranscript,OrganismDb-method}
-\alias{fiveUTRsByTranscript,OrganismDb-method}
-\alias{threeUTRsByTranscript,OrganismDb-method}
+\alias{intronsByTranscript,MultiDb-method}
+\alias{fiveUTRsByTranscript,MultiDb-method}
+\alias{threeUTRsByTranscript,MultiDb-method}
 
-\alias{isActiveSeq,OrganismDb-method}
-\alias{isActiveSeq<-,OrganismDb-method}
+\alias{isActiveSeq,MultiDb-method}
+\alias{isActiveSeq<-,MultiDb-method}
 
 
 \title{
@@ -45,53 +45,53 @@
 }
 
 \usage{
-\S4method{transcripts}{OrganismDb}(x, vals=NULL, columns=c("TXID", "TXNAME"))
+\S4method{transcripts}{MultiDb}(x, vals=NULL, columns=c("TXID", "TXNAME"))
 
-\S4method{exons}{OrganismDb}(x, vals=NULL, columns="EXONID")
+\S4method{exons}{MultiDb}(x, vals=NULL, columns="EXONID")
 
-\S4method{cds}{OrganismDb}(x, vals=NULL, columns="CDSID")
+\S4method{cds}{MultiDb}(x, vals=NULL, columns="CDSID")
 
-\S4method{genes}{OrganismDb}(x, vals=NULL, columns="GENEID")
+\S4method{genes}{MultiDb}(x, vals=NULL, columns="GENEID")
 
-\S4method{transcriptsBy}{OrganismDb}(x, by, columns, use.names=FALSE,
+\S4method{transcriptsBy}{MultiDb}(x, by, columns, use.names=FALSE,
                                      outerMcols=FALSE)
 
-\S4method{exonsBy}{OrganismDb}(x, by, columns, use.names=FALSE, outerMcols=FALSE)
+\S4method{exonsBy}{MultiDb}(x, by, columns, use.names=FALSE, outerMcols=FALSE)
 
-\S4method{cdsBy}{OrganismDb}(x, by, columns, use.names=FALSE, outerMcols=FALSE)
+\S4method{cdsBy}{MultiDb}(x, by, columns, use.names=FALSE, outerMcols=FALSE)
 
-\S4method{getTxDbIfAvailable}{OrganismDb}(x, ...)
-% \S4method{columns}{OrganismDb}(x)
+\S4method{getTxDbIfAvailable}{MultiDb}(x, ...)
+% \S4method{columns}{MultiDb}(x)
 
-% new stuff: (replace TxDb with OrganismDb)
-\S4method{asBED}{OrganismDb}(x)
-\S4method{asGFF}{OrganismDb}(x)
+% new stuff: (replace TxDb with MultiDb)
+\S4method{asBED}{MultiDb}(x)
+\S4method{asGFF}{MultiDb}(x)
 
-\S4method{disjointExons}{OrganismDb}(x, aggregateGenes=FALSE, 
+\S4method{disjointExons}{MultiDb}(x, aggregateGenes=FALSE, 
               includeTranscripts=TRUE, ...) 
-\S4method{microRNAs}{OrganismDb}(x)
-\S4method{tRNAs}{OrganismDb}(x)
-\S4method{promoters}{OrganismDb}(x, upstream=2000, downstream=200, ...)
+\S4method{microRNAs}{MultiDb}(x)
+\S4method{tRNAs}{MultiDb}(x)
+\S4method{promoters}{MultiDb}(x, upstream=2000, downstream=200, ...)
 
-\S4method{distance}{GenomicRanges,OrganismDb}(x, y, ignore.strand=FALSE,
+\S4method{distance}{GenomicRanges,MultiDb}(x, y, ignore.strand=FALSE,
     ..., id, type=c("gene", "tx", "exon", "cds"))
 
 \S4method{extractTranscriptSeqs}{BSgenome}(x, transcripts, strand = "+")
 
-\S4method{extractUpstreamSeqs}{OrganismDb}(x, genes, width=1000, exclude.seqlevels=NULL)
+\S4method{extractUpstreamSeqs}{MultiDb}(x, genes, width=1000, exclude.seqlevels=NULL)
 
-\S4method{intronsByTranscript}{OrganismDb}(x, use.names=FALSE)
-\S4method{fiveUTRsByTranscript}{OrganismDb}(x, use.names=FALSE)
-\S4method{threeUTRsByTranscript}{OrganismDb}(x, use.names=FALSE)
+\S4method{intronsByTranscript}{MultiDb}(x, use.names=FALSE)
+\S4method{fiveUTRsByTranscript}{MultiDb}(x, use.names=FALSE)
+\S4method{threeUTRsByTranscript}{MultiDb}(x, use.names=FALSE)
 
-\S4method{isActiveSeq}{OrganismDb}(x)
+\S4method{isActiveSeq}{MultiDb}(x)
 }
 
 \arguments{ 
   \item{x}{
-    A \link{OrganismDb} object. Except for the extractTranscriptSeqs
+    A \link{MultiDb} object. Except for the extractTranscriptSeqs
   method.  In that case it's a \link[BSgenome]{BSgenome} object and the
-  second argument is an \link{OrganismDb} object.
+  second argument is an \link{MultiDb} object.
   }
   \item{...}{
     Arguments to be passed to or from methods.
@@ -166,12 +166,12 @@
     (default) a \code{tx_name} metadata column is included that 
     lists all transcript names that overlap the exon fragment. 
   }
-  \item{y}{For \code{distance}, a \link{OrganismDb} instance. The
-   \code{id} is used to extract ranges from the \link{OrganismDb}
+  \item{y}{For \code{distance}, a \link{MultiDb} instance. The
+   \code{id} is used to extract ranges from the \link{MultiDb}
    which are then used to compute the distance from \code{x}.
   }
   \item{id}{A \code{character} vector the same length as \code{x}.
-    The \code{id} must be identifiers in the \link{OrganismDb} object.
+    The \code{id} must be identifiers in the \link{MultiDb} object.
     \code{type} indicates what type of identifier \code{id} is. 
   }
   \item{type}{A \code{character(1)} describing the \code{id}. 
@@ -192,7 +192,7 @@
   }
   \item{transcripts}{
     An object representing the exon ranges of each transcript to extract.
-    It must be a \link[GenomicRanges]{GRangesList} or \link{OrganismDb}
+    It must be a \link[GenomicRanges]{GRangesList} or \link{MultiDb}
     object while the \code{x} is a \link[BSgenome]{BSgenome} object.
     Internally, it's turned into a \link[GenomicRanges]{GRangesList}
     object with \code{\link{exonsBy}(transcripts, by="tx", use.names=TRUE)}.
@@ -222,9 +222,9 @@
   \item{genes}{
     An object containing the locations (i.e. chromosome name, start, end, and
     strand) of the genes or transcripts with respect to the reference genome.
-    Only \link[GenomicRanges]{GenomicRanges} and \link{OrganismDb} objects
+    Only \link[GenomicRanges]{GenomicRanges} and \link{MultiDb} objects
     are supported at the moment. If the latter, the gene locations are obtained
-    by calling the \code{\link{genes}} function on the \link{OrganismDb}
+    by calling the \code{\link{genes}} function on the \link{MultiDb}
     object internally.
   }
   \item{width}{
@@ -232,14 +232,14 @@
   }
   \item{exclude.seqlevels}{
     A character vector containing the chromosome names (a.k.a. sequence levels)
-    to exclude when the genes are obtained from a \link{OrganismDb} object.
+    to exclude when the genes are obtained from a \link{MultiDb} object.
   }
 
 }
 
 \details{
   These are the range based functions for extracting transcript information
-  from a \link{OrganismDb} object. 
+  from a \link{MultiDb} object. 
 }
 
 \value{ a GRanges or GRangesList object }
@@ -250,9 +250,9 @@
 
 \seealso{
   \itemize{
-    \item \link[OrganismDbi]{OrganismDb-class} for how to use the
+    \item \link[OrganismDbi]{MultiDb-class} for how to use the
           simple "select" interface to extract information from a
-          \code{OrganismDb} object.
+          \code{MultiDb} object.
     \item \link[GenomicFeatures]{transcripts} for the original
           \code{transcripts} method and related methods.
     \item \link[GenomicFeatures]{transcriptsBy} for the original
@@ -273,7 +273,7 @@ res <- transcriptsBy(Homo.sapiens, by="gene", columns=cols)
 ## list possible values for columns argument:
 columns(Homo.sapiens)
 
-## Get the TxDb from an OrganismDb object (if it's available)
+## Get the TxDb from an MultiDb object (if it's available)
 getTxDbIfAvailable(Homo.sapiens)
 
 ## Other functions listed above should work in way similar to their TxDb
