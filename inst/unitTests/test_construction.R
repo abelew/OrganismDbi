@@ -29,29 +29,48 @@ test_testKeys <- function(){
 }
 
 test_TxDb <- function(){
-    txdbMouse <- loadDb(system.file('extdata','myTxDb.sqlite',
+    require("Homo.sapiens")
+    txdbMan <- loadDb(system.file('extdata','myTxDb.sqlite',
                                     package='OrganismDbi'))
-    library(TxDb.Mmusculus.UCSC.mm9.knownGene)
-    txdb <- TxDb.Mmusculus.UCSC.mm9.knownGene
-    odb <- makeOrganismDbFromTxDb(txdb=txdbMouse)
+    ## I have to be explicit here.
+    txdbFull <- loadDb(system.file('extdata',
+                                   'TxDb.Hsapiens.UCSC.hg19.knownGene.sqlite',
+                                   package='TxDb.Hsapiens.UCSC.hg19.knownGene'))
+    odb <- makeOrganismDbFromTxDb(txdb=txdbMan)
     res <- resources(odb)
-    checkTrue(res[['TxDb.Mmusculus.UCSC.mm9.knownGene']] == dbfile(txdbMouse))
+    checkTrue(res[['TxDb.Hsapiens.UCSC.hg19.knownGene']] == dbfile(txdbMan))
+    m1 <- metadata(TxDb(odb))
+    checkTrue(as.integer(m1[m1$name=='transcript_nrow','value']) < 10)
+    
     ## NOW change it:
-    TxDb(odb) <- txdb
+    TxDb(odb) <- txdbFull
     res <- resources(odb)
-    checkTrue(res[['TxDb.Mmusculus.UCSC.mm9.knownGene']] == dbfile(txdb))
+    checkTrue(res[['TxDb.Hsapiens.UCSC.hg19.knownGene']] == dbfile(txdbFull))
+    m2 <- metadata(TxDb(odb))
+    checkTrue(as.integer(m2[m2$name=='transcript_nrow','value']) > 82000)
+
+    ## check that a TxDb made on the fly (stored in local RAM) also works OK
+    transcript_ids <- c(
+                        "uc001aaa.3",
+                        "uc010nxq.1",
+                        "uc010nxr.1",
+                        "uc001aal.1",
+                        "uc001aaq.2"
+                        )
+    txdbInstant <- makeTxDbFromUCSC(genome="hg19", tablename="knownGene",
+                                    transcript_ids=transcript_ids)
+    TxDb(odb) <- txdbInstant
+    res <- resources(odb)
+    checkTrue(res[['TxDb.Hsapiens.UCSC.hg19.knownGene']] == dbfile(txdbInstant))
+    checkTrue(res[['TxDb.Hsapiens.UCSC.hg19.knownGene']] == "")
+    m3 <- metadata(TxDb(odb))
+    checkTrue(as.integer(m3[m3$name=='transcript_nrow','value']) < 10)
 }
 
+## Fast testing (AWESOME):
+## BiocGenerics:::testPackage(pattern="^test_construction.*\\.R$")
 
-## Above stuff works BUT: this does NOT work:
-##  transcript_ids <- c(
-##      "uc009uzf.1",
-##      "uc009uzg.1",
-##      "uc009uzh.1",
-##      "uc009uzi.1",
-##      "uc009uzj.1"
-##  )
-##  txdbMouse <- makeTxDbFromUCSC(genome="mm9", tablename="knownGene",
-##                            transcript_ids=transcript_ids)
-## odb <- makeOrganismDbFromTxDb(txdb=txdbMouse)
-## TxDb(odb)
+
+## Slower testing that requires installation (Not so awesome):
+## BiocGenerics:::testPackage("OrganismDbi", pattern="^test_construction.*\\.R$")
+

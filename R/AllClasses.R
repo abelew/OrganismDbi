@@ -95,15 +95,14 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
   txdb <- NULL ## default value is NULL 
   for(i in seq_along(resources)){
       name <- names(resources[i])
-      if(resources[i] != ""){
+      if(resources[i] == ""){
+          obj <- get(name)
+      }else{
           obj <- loadDb(resources[i])
-          message("Now loading: ", class(obj), " Object.")
-          if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's a TxDb
+          message("Now loading the ", class(obj), " Object from disc")
           assign(name,value=obj)
       }
-      ## if(!exists(name)){
-      ##     assign(name,value=loadDb(resources[i]))
-      ## }
+      if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's a TxDb
   }
   
   ## Then make the object.

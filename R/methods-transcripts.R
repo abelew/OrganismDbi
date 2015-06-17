@@ -56,7 +56,7 @@ setMethod("TxDb", "OrganismDb", function(x, ...){.getTxDb(x)})
     ## 1st get the current TxDbs name
     txDbName <- OrganismDbi:::.lookupDbNameFromKeytype(x, 'TXID')
     ## we will use a generated name for internals when user does this.
-    newTxDbName <- GenomicFeatures:::.makePackageName(txdb)
+    newTxDbName <- GenomicFeatures:::.makePackageName(value)
     
     ## To modify the TxDb value rebuild the MultiDb
     ## 1) Extract/modify the keys/graphData
