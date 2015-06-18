@@ -182,7 +182,16 @@ makeOrganismPackage <- function(pkgname,
    ## ######################################################################### 
    ## Extract the dbFile information from each object and store that
    ## into resources
+
+   ## EXCEPT Don't: (I can't really do this for 'packages' as the data
+   ## is system specific)
+
+   ## TODO: change this so that it isn't getting a bunch of dbFiles
+   ## and then throwing them aways (or so that it's optional with a
+   ## parameter or whatever seems appropriate for this function)
+   
    resources <- .extractDbFiles(gd, deps)
+   resources <- unlist(lapply(resources, function(x){return("")}))
    ## ######################################################################### 
    
    ## Also check that the fkeys are really columns for the graphData

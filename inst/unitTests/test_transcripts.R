@@ -13,7 +13,7 @@ txdb <- OrganismDbi:::.getTxDb(x)
 ## some internal testing (make sure helpers work as expected)
 
 test_compressMetadata <- function(){
-    cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
+    cols <- c("SYMBOL","GENENAME", "TXCHROM", "PMID")
     txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
     meta <- select(x, keys=as.character(mcols(txs)$tx_id), cols, "TXID") 
     f <- factor(meta[["TXID"]],levels=mcols(txs)[["tx_id"]])
@@ -26,7 +26,7 @@ test_compressMetadata <- function(){
 
 ## .combineMetadata is an important helper function.
 test_combineMetadata <- function(){
-    cols <- c("SYMBOL","GENENAME", "CHR", "PMID")
+    cols <- c("SYMBOL","GENENAME", "TXCHROM", "PMID")
     txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
     meta <- select(x, keys=as.character(mcols(txs)$tx_id), cols, "TXID") 
     res <- OrganismDbi:::.combineMetadata(txs,meta,avoidID="TXID",
@@ -49,12 +49,12 @@ test_transcripts <- function(){
 }
 
 test_exons <- function(){
-    library(Homo.sapiens); h = Homo.sapiens; cols = c("CHR","REFSEQ")
+    library(Homo.sapiens); h = Homo.sapiens; cols = c("TXCHROM","REFSEQ")
     res <- exons(h, columns=cols)
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) > 200000)
     checkTrue(all(colnames(mcols(res)) %in%
-                  c("CHR","REFSEQ")))
+                  c("TXCHROM","REFSEQ")))
 }
 
 test_cds <- function(){
@@ -141,13 +141,16 @@ test_rangeMethods_for_JoinFailures <- function(){
 
 test_valsArg <- function(){
     ## this works:
-    res <- exons(Homo.sapiens, vals=list(gene_id="100"))
+    res <- exons(Homo.sapiens, vals=list(gene_id="1"))
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) < 20)  ## small
 
     ## so does this! 
-    res <- exons(Homo.sapiens, vals=list(gene_id="100") , columns="SYMBOL")
+    res <- exons(Homo.sapiens, vals=list(gene_id="1") , columns="SYMBOL")
     checkTrue("SYMBOL" %in% names(mcols(res)))
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) < 20)  ## small
 }
+
+
+## Fast testing: BiocGenerics:::testPackage(pattern="^test_transcripts.*\\.R$")

@@ -164,17 +164,16 @@ test_mergeSelectResults <- function(){
 
 ## MANY more tests
 test_select <- function(){
-  cls <- c("GO","ALIAS","CHR","CHRLOC")
+  cls <- c("GO","ALIAS")
   keys <- head(keys(x, "ENTREZID"))
   keytype <- "ENTREZID"
   res <- OrganismDbi:::.select(x, keys, cls, keytype)  
   checkTrue(dim(res)[1] >0)
-  checkTrue(dim(res)[2]==8)
+  checkTrue(dim(res)[2]==5)
   checkTrue(class(res)=="data.frame")
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("EVIDENCE" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res)) 
-  checkTrue("CHRLOCCHR" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
 
   cls <- c("IPI", "ALIAS", "CDSSTART") 
@@ -193,7 +192,7 @@ test_select <- function(){
   checkTrue("GOID" %in% colnames(res)) 
   checkTrue("ENTREZID" %in% colnames(res))
  
-  cls <- c("ALIAS","CHR","EXONNAME")
+  cls <- c("ALIAS","TXCHROM","EXONNAME")
   res <- OrganismDbi:::.select(x, keys, cls, keytype) 
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==4) 
@@ -274,74 +273,73 @@ test_select <- function(){
 ## Also need to test a species with other keys to join DBs
 
 test_rattus <- function(){ 
-  cls <- c("GO","ALIAS","CHR") 
+  cls <- c("GO","ALIAS") 
   k <- head(keys(r, "ENTREZID")) 
   keytype <- "ENTREZID" 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
-  checkTrue(dim(res)[2]==6) 
+  checkTrue(dim(res)[2]==5) 
   checkTrue("ENTREZID" %in% colnames(res)) 
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ONTOLOGY" %in% colnames(res)) 
-  checkTrue("CHR" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
 
-  cls <- c("GO","ALIAS","CHR","TXNAME") 
+  cls <- c("GO","ALIAS","TXCHROM","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==7) 
   checkTrue("ENTREZID" %in% colnames(res)) 
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
-  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXCHROM" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res)) 
 
-  cls <- c("CHR","TXNAME") 
+  cls <- c("TXCHROM","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==3) 
   checkTrue("ENTREZID" %in% colnames(res)) 
-  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXCHROM" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res)) 
 
   ## now test different keytype
   k <- head(keys(r, keytype="ENSEMBL"))
   keytype <- "ENSEMBL"
-  cls <- c("GO","ALIAS","CHR","TXNAME") 
+  cls <- c("GO","ALIAS","TXCHROM","TXNAME") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==7) 
   checkTrue("ENSEMBL" %in% colnames(res)) 
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("ONTOLOGY" %in% colnames(res)) 
-  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXCHROM" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
   checkTrue("TXNAME" %in% colnames(res)) 
 
   ## now test key that starts us from TxDb
   k <- head(keys(r, keytype="TXNAME"))
   keytype <- "TXNAME"
-  cls <- c("GO","ALIAS","CHR") 
+  cls <- c("GO","ALIAS","TXCHROM") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==6) 
   checkTrue("TXNAME" %in% colnames(res)) 
   checkTrue("GO" %in% colnames(res)) 
   checkTrue("EVIDENCE" %in% colnames(res)) 
-  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXCHROM" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res)) 
 
   ## now test key that starts us from Go
   ## TODO: A cleanup bug??? <- Row of NAs in 1st line
   k <- head(keys(r, keytype="GOID"))
   keytype <- "GOID"
-  cls <- c("GOID","ALIAS","CHR") 
+  cls <- c("GOID","ALIAS","TXCHROM") 
   res <- OrganismDbi:::.select(r, k, cls, keytype) 
   checkTrue(dim(res)[1] >0)
   checkTrue(dim(res)[2]==5) 
   checkTrue("GOID" %in% colnames(res)) 
   checkTrue("ONTOLOGY" %in% colnames(res)) 
-  checkTrue("CHR" %in% colnames(res)) 
+  checkTrue("TXCHROM" %in% colnames(res)) 
   checkTrue("ALIAS" %in% colnames(res))
 
 
@@ -420,7 +418,7 @@ test_selectRangesById <- function(){
 
 
 
-
+## Fast testing: BiocGenerics:::testPackage(pattern="^test_select.*\\.R$")
 
 
 ## TODO: add something to fix the the cosmetic bug where then the GOID is to the right of the columns that come with it (like EVIDENCE and/or ONTOLOGY.  This should really be handled in a general way (even though it ONLY happens with GOID)

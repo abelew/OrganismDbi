@@ -96,10 +96,12 @@ MultiDb <- function(dbType=NULL, graphInfo, ns=NULL, ...){
   for(i in seq_along(resources)){
       name <- names(resources[i])
       if(resources[i] == ""){
+          ## library(name, character.only=TRUE) (should be loaded by deps/user)
           obj <- get(name)
+          message("Now loading the ", class(obj), " Object from a package")
       }else{
           obj <- loadDb(resources[i])
-          message("Now loading the ", class(obj), " Object from disc")
+          message("Now loading the ", class(obj), " Object from local disc")
           assign(name,value=obj)
       }
       if(class(obj)=='TxDb'){txdb <- obj} ## stash it if it's a TxDb
