@@ -450,3 +450,81 @@ makeOrganismDbFromBiomart <- function(biomart="ensembl",
 ## This means that when I get to this stage, with biomaRt, it fails because there is not a TxDb on disc...
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################
+################################################################################
+
+
+.getMaxEns <- function(srcUrl){
+    release <- sub("^ftp://ftp.ensembl.org/pub/release-","",srcUrl)
+    release <- unique(sub("/gtf/.*gtf.gz$","", release))
+    max(release)
+}
+
+## I need a function that will list the GTFs that end users can use to
+## make into TxDbs (will probably not overlap perfectly with available
+## OrgDbs)
+available.GTFsForTxDbs <- function(){
+    require("AnnotationHub")
+    ah <-  AnnotationHub()
+    ## get OrgDb species
+    aho <- subset(ah, ah$rdataclass=='OrgDb')
+    oTaxids <-unique(aho$taxonomyid)
+        
+    ## get GTF species from ensembl
+    ahg <- subset(ah, grepl('gtf.gz$',ah$sourceurl))
+    ahg <- subset(ahg, ahg$dataprovider=='Ensembl')
+    max <- .getMaxEns(ahg$sourceurl)
+    maxStr <- paste0("ftp://ftp.ensembl.org/pub/release-",max)
+    ahg <- subset(ahg, grepl(maxStr,ahg$sourceurl))
+    gTaxids <-unique(ahg$taxonomyid)
+    
+    ## intersect of taxIds
+    taxInt <- intersect(oTaxids, gTaxids)
+    ## subset down to just the ahgs that can work...
+    ahg <- subset(ahg, ahg$taxonomyid %in% taxInt)
+    ## for now return the subsetted annotationHubObject
+    ahg
+}
+
+
+## And I need a function that will make the transformation for them
+makeHubGTFIntoTxDb <- function(ahg){
+    if(length(ahg) > 1){
+        stop('This function expects only one hub object at a time.')}
+    ## get the available GTFs.
+    ahgs <- available.GTFsForTxDbs()
+    ## Is this one of those? If so, then make it happen
+    if(names(ahg) %in%  names(ahgs)){
+        require(GenomicFeatures)
+        txMeta <- data.frame(name='Data source', value='Ensembl GTF')
+        txdb <- makeTxDbFromGRanges(ahg[[1]],
+                                    metadata= txMeta,
+                                    taxonomyId=ahg$taxonomyid)
+        require(OrganismDbi)
+        ## requires using the 'ENSEMBL' keytype (for these TxDbs)
+        odb <- makeOrganismDbFromTxDb(txdb, keytype='ENSEMBL')        
+    }else{
+        stop('No OrgDb information for ', ahg$species)
+    }
+    odb
+}
