@@ -320,13 +320,13 @@ makeOrganismDbFromTxDb <- function(txdb, keytype=NA, orgdb=NA){
     if(is.na(orgdb)){
         orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
         orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
-        assign(orgdbName, orgdb)
+        assign(orgdbName, orgdb, .GlobalEnv)
     }else{
         org <- metadata(orgdb)[metadata(orgdb)$name=='ORGANISM',2]
         org <- sub(" ", "_", org)
         orgdbName <- paste0('org.',org,'.db')
         orgdb <- orgdb
-        assign(orgdbName, orgdb)
+        assign(orgdbName, orgdb, .GlobalEnv)
     }
     ## get the primary key for the OrgDb object:
     if(is.na(keytype)){
@@ -522,9 +522,40 @@ makeHubGTFIntoTxDb <- function(ahg){
                                     taxonomyId=ahg$taxonomyid)
         require(OrganismDbi)
         ## requires using the 'ENSEMBL' keytype (for these TxDbs)
-        odb <- makeOrganismDbFromTxDb(txdb, keytype='ENSEMBL')        
+        ## odb <- makeOrganismDbFromTxDb(txdb, keytype='ENSEMBL')        
+        odb <- makeOrganismDbFromTxDb(txdb)        
     }else{
         stop('No OrgDb information for ', ahg$species)
     }
     odb
 }
+
+
+## testing:
+## ahgs <- OrganismDbi:::available.GTFsForTxDbs()
+## ahg <-  ahgs[1]
+## odb <- OrganismDbi:::makeHubGTFIntoTxDb(ahg)
+
+## debug(OrganismDbi:::makeHubGTFIntoTxDb)
+## debug(OrganismDbi:::makeOrganismDbFromTxDb)
+## debug(OrganismDbi:::.gentlyExtractDbFiles)
+
+## 1st bad problem is that it basically can't find this:
+## org.Ailuropoda_melanoleuca.eg.db.  This is bad since it is one more
+## thing that I have to put into the global namespace (temp hack).
+## This will need to be done a different way!
+
+## 2nd bad problem (even worse if you can believe it), is that these
+## orgDbs don't have ensembl IDs in them.  This is bad because that
+## basically means that none of these organisms can be supported for
+## these TxDbs (which will use ensembl based gene identifiers.  I can
+## update the OrgDbs, it's just a crucial missing piece that has to be
+## retrieved before I can proceed.
+
+## 3rd problem this uncovered is that I had to use AH cars for the
+## object just to get easy access to the metadata.  It seems like we
+## could benefit from a universal application of that metadata to the
+## contents that come out of these cars...  Then it would be
+## straightforward to write a method like I wanted to here.
+
+
