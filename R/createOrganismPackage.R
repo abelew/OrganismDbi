@@ -540,10 +540,17 @@ makeHubGTFIntoTxDb <- function(ahg){
 ## debug(OrganismDbi:::makeOrganismDbFromTxDb)
 ## debug(OrganismDbi:::.gentlyExtractDbFiles)
 
+
 ## 1st bad problem is that it basically can't find this:
 ## org.Ailuropoda_melanoleuca.eg.db.  This is bad since it is one more
 ## thing that I have to put into the global namespace (temp hack).
-## This will need to be done a different way!
+## This will need to be done a different way!  Should I use a special
+## package environment?  Will it help if I put a slot in that can hold
+## an OrdDb?  Or should I find a way to make the resources vector more
+## generic by having it only apply to hub items (IOW combine a generic
+## character vector with hubcache information). - It is clear that the
+## resources vector cannot work for all kinds of paths and situations
+## though.  Since people can put objects ANYWHERE.
 
 ## 2nd bad problem (even worse if you can believe it), is that these
 ## orgDbs don't have ensembl IDs in them.  This is bad because that
