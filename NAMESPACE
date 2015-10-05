@@ -1,10 +1,12 @@
 import(methods)
 
+import(BiocGenerics)
+
 importClassesFrom("graph", graphNEL)
 
 importClassesFrom("GenomicRanges", "GenomicRanges")
 
-importMethodsFrom("AnnotationDbi", saveDb)
+importMethodsFrom("AnnotationDbi", saveDb, dbconn, dbfile)
 
 importMethodsFrom("GenomicRanges", mcols, "mcols<-")
 
@@ -18,7 +20,7 @@ importMethodsFrom("RBGL", bfs)
 importMethodsFrom("RSQLite", dbGetQuery)
 
 importFrom("AnnotationDbi", columns, keys, keytypes, select, mapIds, metadata,
-           dbconn, dbfile, loadDb, unlist2, taxonomyId)
+           loadDb, unlist2, taxonomyId)
 
 importFrom("Biobase", createPackage)
 
