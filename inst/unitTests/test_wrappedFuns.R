@@ -14,6 +14,7 @@ test_microRNAs <- function(){
     .testPopulatedGranges(res)
 }
 
+require("FDb.UCSC.tRNAs")
 test_tRNAs <- function(){
     res <- tRNAs(x)
     .testPopulatedGranges(res)

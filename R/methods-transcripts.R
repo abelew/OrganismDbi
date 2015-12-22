@@ -329,7 +329,7 @@ setMethod("genes", "MultiDb",
     }
     ## then put the names back (if available)
     if(use.names==TRUE){
-        txby <- GenomicFeatures:::.set.group.names(txby, use.names, txdb, by)
+        txby <- GenomicFeatures:::.set_group_names(txby, use.names, txdb, by)
         ## names <- id2name(txdb, feature.type='tx')
         ## names(txby) <- names[match(names(txby), names(names))]  
     }
@@ -395,7 +395,7 @@ setMethod("transcriptsBy", "MultiDb",
     }
     ## then put the names back (if available)
     if(use.names==TRUE){
-        exby <- GenomicFeatures:::.set.group.names(exby, use.names, txdb, by)
+        exby <- GenomicFeatures:::.set_group_names(exby, use.names, txdb, by)
         ## names <- id2name(txdb, feature.type='exon')
         ## names(exby) <- names[match(names(exby), names(names))]
     }
@@ -452,7 +452,7 @@ setMethod("exonsBy", "MultiDb",
     }
     ## then put the names back (if available)
     if(use.names==TRUE){
-        cdsby <- GenomicFeatures:::.set.group.names(cdsby, use.names, txdb, by)
+        cdsby <- GenomicFeatures:::.set_group_names(cdsby, use.names, txdb, by)
         ## names <- id2name(txdb, feature.type='cds')
         ## names(cdsby) <- names[match(names(cdsby), names(names))]
     }

@@ -8,7 +8,7 @@ importClassesFrom("GenomicRanges", "GenomicRanges")
 
 importMethodsFrom("AnnotationDbi", saveDb, dbconn, dbfile)
 
-importMethodsFrom("GenomicRanges", mcols, "mcols<-")
+importMethodsFrom("S4Vectors", mcols, "mcols<-")
 
 importMethodsFrom("graph", edgeNames, edges, nodes, show, subGraph,
                   union)

@@ -400,10 +400,8 @@ test_selectRangesById <- function(){
     checkTrue(class(res[[1]])=="GRanges")
     
     ##In the case of bad keys it should still work, but some will be filtered
-    symbols <- keys(x, 'SYMBOL')
+    symbols <- keys(x, 'SYMBOL')[1:10]
     res2 <- selectRangesById(x,keys=symbols,keytype='SYMBOL')
-    checkTrue(length(res2) > 20000)
-    checkTrue(length(res2) < length(symbols))
     checkTrue(class(res2[[1]])=="GRanges")
     checkTrue('A1BG' %in% names(res2))
 }

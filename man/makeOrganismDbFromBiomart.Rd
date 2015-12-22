@@ -12,13 +12,13 @@
   a TxDb, plus an associated OrgDb and GODb object.
 }
 \usage{
-makeOrganismDbFromBiomart(biomart="ensembl",
+makeOrganismDbFromBiomart(biomart="ENSEMBL_MART_ENSEMBL",
                     dataset="hsapiens_gene_ensembl",
                     transcript_ids=NULL,
                     circ_seqs=DEFAULT_CIRC_SEQS,
                     filters="",
                     id_prefix="ensembl_",
-                    host="www.biomart.org",
+                    host="www.ensembl.org",
                     port=80,
                     miRBaseBuild=NA,
                     keytype = "ENSEMBL")
@@ -46,7 +46,7 @@ makeOrganismDbFromBiomart(biomart="ensembl",
     should be marked as circular.}
   \item{filters}{Additional filters to use in the BioMart query. Must be
     a named list. An example is \code{filters=as.list(c(source="entrez"))}}
-  \item{host}{The host URL of the BioMart. Defaults to www.biomart.org.}
+  \item{host}{The host URL of the BioMart. Defaults to www.ensembl.org.}
   \item{port}{The port to use in the HTTP communication with the host.}
   \item{id_prefix}{Specifies the prefix used in BioMart attributes. For
     example, some BioMarts may have an attribute specified as
@@ -157,8 +157,8 @@ listMarts(host="uswest.ensembl.org")
 ## argument thusly:
 try(
     odb <- makeOrganismDbFromBiomart(biomart="ENSEMBL_MART_ENSEMBL",
-                                transcript_ids=transcript_ids,
-                                host="uswest.ensembl.org")	    
+                                     transcript_ids=transcript_ids,
+                                     host="uswest.ensembl.org")	    
 )
 odb
 }
