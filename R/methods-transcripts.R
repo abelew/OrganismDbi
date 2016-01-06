@@ -515,36 +515,6 @@ setMethod(microRNAs, 'MultiDb',
 setMethod(tRNAs, 'MultiDb',
           function(x){tRNAs(getTxDbIfAvailable(x))})
 
-## Deliberately leaving these out for now (should probably just deprecate them)
-## So commented for now.  If someone wants them we can discuss their fate.
-## setMethod(transcriptsByOverlaps, 'MultiDb',
-##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
-##                    type = c("any", "start", "end"),
-##                    columns = c("tx_id", "tx_name"), ...){
-##               transcriptsByOverlaps(getTxDbIfAvailable(x),
-##                                     ranges=ranges, maxgap = maxgap,
-##                                     minoverlap = minoverlap,
-##                                     type = type,
-##                                     columns = columns, ...)})
-
-## setMethod(exonsByOverlaps, 'MultiDb',
-##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
-##                    type = c("any", "start", "end"),
-##                    columns = "exon_id"){
-##               exonsByOverlaps(getTxDbIfAvailable(x), ranges=ranges,
-##                               maxgap = maxgap, minoverlap = minoverlap,
-##                               type = type,
-##                               columns = columns)})
-
-## setMethod(cdsByOverlaps, 'MultiDb',
-##           function(x, ranges, maxgap = 0L, minoverlap = 1L,
-##                    type = c("any", "start", "end"),
-##                    columns = "cds_id"){
-##               cdsByOverlaps(getTxDbIfAvailable(x), ranges=ranges,
-##                             maxgap = maxgap, minoverlap = minoverlap,
-##                             type = type,
-##                             columns = columns)})
-
 setMethod(intronsByTranscript, 'MultiDb',
           function(x, use.names=FALSE){
               intronsByTranscript(getTxDbIfAvailable(x),
@@ -597,15 +567,6 @@ setMethod(isActiveSeq, 'MultiDb',
 }
 setReplaceMethod('isActiveSeq', 'MultiDb',
           function(x, value){.updateTxDbSeqMultiDb(x, value)})
-
-## I don't think I need this:
-## .updateTxDbSeqOrganismDb <-function(x, value){
-##     ## This will change the val in 'x' as well...
-##     isActiveSeq(TxDb(x)) <- value
-##     x
-## } 
-## setReplaceMethod('isActiveSeq', 'OrganismDb',
-##                  function(x, value){.updateTxDbSeqOrganismDb(x, value)})
 
 setMethod(asBED, 'MultiDb', function(x){asBED(getTxDbIfAvailable(x))})
 setMethod(asGFF, 'MultiDb', function(x){asGFF(getTxDbIfAvailable(x))})
