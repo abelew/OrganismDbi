@@ -673,7 +673,7 @@ makeOuterMcolFromInnerMcol <- function(x, colname)
         stop("'x' must be a List object")
   ##  tmpOri <- unique(relist(mcols(unlist(x, use.names=FALSE))[[colname]], x))
     tmp <- unique(relist(as.character(mcols(unlist(x, use.names=FALSE))[[colname]]),x))
-    if (any(elementLengths(tmp) != 1L))
+    if (any(elementNROWS(tmp) != 1L))
        stop(colname, " inner metadata column cannot be made an outer metadata column")
     unlist(tmp)
 }

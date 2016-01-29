@@ -1,14 +1,13 @@
 import(methods)
 
 import(BiocGenerics)
+import(S4Vectors)
 
 importClassesFrom("graph", graphNEL)
 
 importClassesFrom("GenomicRanges", "GenomicRanges")
 
 importMethodsFrom("AnnotationDbi", saveDb, dbconn, dbfile)
-
-importMethodsFrom("S4Vectors", mcols, "mcols<-")
 
 importMethodsFrom("graph", edgeNames, edges, nodes, show, subGraph,
                   union)
@@ -57,8 +56,6 @@ importFrom("GenomicFeatures",
            )
 
 importFrom("graph", ftM2graphNEL)
-
-importFrom("S4Vectors", isSingleString, wmsg)
 
 importFrom("stats", setNames)
 
