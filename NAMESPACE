@@ -25,35 +25,7 @@ importFrom("Biobase", createPackage)
 
 importFrom("BiocInstaller", biocinstallRepos)
 
-importFrom("GenomicFeatures",
-           id2name,
-           transcripts,
-           exons,
-           cds,
-           genes,
-           transcriptsBy,
-           exonsBy,
-           cdsBy,
-           seqinfo,  ## Import this from GenomicFeatures b/c we need txdb vers.
-
-           ## Below are methods that we are 'just wrapping' from TxDbs
-           ## transcriptsByOverlaps,
-           ## exonsByOverlaps,
-           ## cdsByOverlaps,
-           promoters,
-           disjointExons,
-           microRNAs,
-           tRNAs,
-           intronsByTranscript,
-           fiveUTRsByTranscript,
-           threeUTRsByTranscript,
-           extractUpstreamSeqs,
-           isActiveSeq ,
-           "isActiveSeq<-",
-           asBED, asGFF,
-           distance,
-           mapToTranscripts
-           )
+import(GenomicFeatures)
 
 importFrom("graph", ftM2graphNEL)
 

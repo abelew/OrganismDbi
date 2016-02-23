@@ -32,7 +32,7 @@
     }else{
         ## If we don't have a package, then lets get the taxIds and AHIds
         ## for the hub objects
-        require(AnnotationHub)
+        requireNamespace("AnnotationHub")
         ah <- AnnotationHub()
         ah <- subset(ah, ah$rdataclass=='OrgDb') 
         mc <- mcols(ah)[,'taxonomyid', drop=FALSE]
@@ -60,7 +60,7 @@
     }else{
         ## If we don't have a package, then lets get the taxIds and AHIds
         ## for the hub objects
-        require(AnnotationHub)
+        requireNamespace("AnnotationHub")
         ah <- AnnotationHub()
         ah <- subset(ah, ah$rdataclass=='OrgDb') 
         mc <- mcols(ah)[,c('taxonomyid','title'), drop=FALSE]
@@ -442,7 +442,7 @@ makeOrganismDbFromBiomart <- function(biomart="ENSEMBL_MART_ENSEMBL",
 ## make into TxDbs (will probably not overlap perfectly with available
 ## OrgDbs)
 available.GTFsForTxDbs <- function(){
-    require("AnnotationHub")
+    requireNamespace("AnnotationHub")
     ah <-  AnnotationHub()
     ## get OrgDb species
     aho <- subset(ah, ah$rdataclass=='OrgDb')
@@ -473,7 +473,6 @@ makeHubGTFIntoTxDb <- function(ahg){
     ahgs <- available.GTFsForTxDbs()
     ## Is this one of those? If so, then make it happen
     if(names(ahg) %in%  names(ahgs)){
-        require(GenomicFeatures)
         txMeta <- data.frame(name='Data source', value='Ensembl GTF')
         txdb <- makeTxDbFromGRanges(ahg[[1]],
                                     metadata= txMeta,

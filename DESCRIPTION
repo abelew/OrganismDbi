@@ -5,7 +5,7 @@ Description: The package enables a simple unified interface to several
 	annotation packages each of which has its own schema by taking
 	advantage of the fact that each of these packages implements a 
 	select methods.
-Version: 1.13.4
+Version: 1.13.5
 Author: Marc Carlson, Herve Pages, Martin Morgan, Valerie Obenchain
 Maintainer: Biocore Data Team <maintainer@bioconductor.org>
 Depends: R (>= 2.14.0), methods, BiocGenerics (>= 0.15.10),
@@ -13,7 +13,7 @@ Depends: R (>= 2.14.0), methods, BiocGenerics (>= 0.15.10),
 Imports: Biobase, BiocInstaller, GenomicRanges, graph,
         IRanges, RBGL, RSQLite, S4Vectors (>= 0.9.25), stats
 Suggests: Homo.sapiens, Rattus.norvegicus, BSgenome.Hsapiens.UCSC.hg19, 
-        FDb.UCSC.tRNAs, rtracklayer, biomaRt, RUnit
+        AnnotationHub, FDb.UCSC.tRNAs, rtracklayer, biomaRt, RUnit
 Collate: AllGenerics.R AllClasses.R methods-select.R
         methods-transcripts.R createOrganismPackage.R seqinfo.R
         test_OrganismDbi_package.R
