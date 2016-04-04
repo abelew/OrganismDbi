@@ -45,13 +45,13 @@
 }
 
 \usage{
-\S4method{transcripts}{MultiDb}(x, vals=NULL, columns=c("TXID", "TXNAME"))
+\S4method{transcripts}{MultiDb}(x, columns=c("TXID", "TXNAME"), filter=NULL)
 
-\S4method{exons}{MultiDb}(x, vals=NULL, columns="EXONID")
+\S4method{exons}{MultiDb}(x, columns="EXONID", filter=NULL)
 
-\S4method{cds}{MultiDb}(x, vals=NULL, columns="CDSID")
+\S4method{cds}{MultiDb}(x, columns="CDSID", filter=NULL)
 
-\S4method{genes}{MultiDb}(x, vals=NULL, columns="GENEID")
+\S4method{genes}{MultiDb}(x, columns="GENEID", filter=NULL)
 
 \S4method{transcriptsBy}{MultiDb}(x, by, columns, use.names=FALSE,
                                      outerMcols=FALSE)
@@ -105,6 +105,17 @@
     database.  All possible columns are returned by using the \code{columns}
     method.
   }
+  \item{filter}{
+    Either \code{NULL} or a named list of vectors to be used to
+    restrict the output. Valid names for this list are:
+    \code{"gene_id"},
+    \code{"tx_id"}, \code{"tx_name"},
+    \code{"tx_chrom"}, \code{"tx_strand"},
+    \code{"exon_id"}, \code{"exon_name"},
+    \code{"exon_chrom"}, \code{"exon_strand"},
+    \code{"cds_id"}, \code{"cds_name"},
+    \code{"cds_chrom"}, \code{"cds_strand"} and \code{"exon_rank"}.
+  }
   \item{use.names}{Controls how to set the names of the returned
     \link[GenomicRanges]{GRangesList} object.
     These functions return all the features of a given type (e.g.
@@ -133,17 +144,6 @@
     other features, the gene ids are external ids (e.g. Entrez
     Gene or Ensembl ids) so the db doesn't have a \code{"gene_name"}
     column for storing alternate gene names.
-  }
-  \item{vals}{
-    Either \code{NULL} or a named list of vectors to be used to
-    restrict the output. Valid names for this list are:
-    \code{"gene_id"},
-    \code{"tx_id"}, \code{"tx_name"},
-    \code{"tx_chrom"}, \code{"tx_strand"},
-    \code{"exon_id"}, \code{"exon_name"},
-    \code{"exon_chrom"}, \code{"exon_strand"},
-    \code{"cds_id"}, \code{"cds_name"},
-    \code{"cds_chrom"}, \code{"cds_strand"} and \code{"exon_rank"}.
   }
     \item{upstream}{
     For \code{promoters} : An \code{integer(1)} value indicating the

@@ -14,7 +14,7 @@ txdb <- OrganismDbi:::.getTxDb(x)
 
 test_compressMetadata <- function(){
     cols <- c("SYMBOL","GENENAME", "TXCHROM", "PMID")
-    txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
+    txs <- transcripts(txdb, columns="tx_id")[1:100]  ## shortened
     meta <- select(x, keys=as.character(mcols(txs)$tx_id), cols, "TXID") 
     f <- factor(meta[["TXID"]],levels=mcols(txs)[["tx_id"]])
     res <- OrganismDbi:::.compressMetadata(f, meta, "TXID")
@@ -27,7 +27,7 @@ test_compressMetadata <- function(){
 ## .combineMetadata is an important helper function.
 test_combineMetadata <- function(){
     cols <- c("SYMBOL","GENENAME", "TXCHROM", "PMID")
-    txs <- transcripts(txdb, vals=NULL, columns="tx_id")[1:100]  ## shortened
+    txs <- transcripts(txdb, columns="tx_id")[1:100]  ## shortened
     meta <- select(x, keys=as.character(mcols(txs)$tx_id), cols, "TXID") 
     res <- OrganismDbi:::.combineMetadata(txs,meta,avoidID="TXID",
                                           joinID="tx_id", columns=cols)
@@ -137,16 +137,16 @@ test_rangeMethods_for_JoinFailures <- function(){
 
 
 
-## Other Bug: for exons() vals argument does not work on Homo.sapiens objects...
+## Other Bug: for exons() 'filter' argument does not work on Homo.sapiens objects...
 
-test_valsArg <- function(){
+test_filterArg <- function(){
     ## this works:
-    res <- exons(Homo.sapiens, vals=list(gene_id="1"))
+    res <- exons(Homo.sapiens, filter=list(gene_id="1"))
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) < 20)  ## small
 
     ## so does this! 
-    res <- exons(Homo.sapiens, vals=list(gene_id="1") , columns="SYMBOL")
+    res <- exons(Homo.sapiens, columns="SYMBOL", filter=list(gene_id="1"))
     checkTrue("SYMBOL" %in% names(mcols(res)))
     checkTrue(class(res) == "GRanges")
     checkTrue(length(res) < 20)  ## small

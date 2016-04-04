@@ -2,6 +2,7 @@ import(methods)
 
 import(BiocGenerics)
 import(S4Vectors)
+import(IRanges)
 
 importClassesFrom("graph", graphNEL)
 
@@ -11,8 +12,6 @@ importMethodsFrom("AnnotationDbi", saveDb, dbconn, dbfile)
 
 importMethodsFrom("graph", edgeNames, edges, nodes, show, subGraph,
                   union)
-
-importMethodsFrom("IRanges", splitAsList)
 
 importMethodsFrom("RBGL", bfs)
 

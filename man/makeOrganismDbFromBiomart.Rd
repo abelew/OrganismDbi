@@ -16,7 +16,7 @@ makeOrganismDbFromBiomart(biomart="ENSEMBL_MART_ENSEMBL",
                     dataset="hsapiens_gene_ensembl",
                     transcript_ids=NULL,
                     circ_seqs=DEFAULT_CIRC_SEQS,
-                    filters="",
+                    filter="",
                     id_prefix="ensembl_",
                     host="www.ensembl.org",
                     port=80,
@@ -44,8 +44,8 @@ makeOrganismDbFromBiomart(biomart="ENSEMBL_MART_ENSEMBL",
     will be embedded in the resulting \link{OrganismDb} object.}
   \item{circ_seqs}{a character vector to list out which chromosomes
     should be marked as circular.}
-  \item{filters}{Additional filters to use in the BioMart query. Must be
-    a named list. An example is \code{filters=as.list(c(source="entrez"))}}
+  \item{filter}{Additional filters to use in the BioMart query. Must be
+    a named list. An example is \code{filter=as.list(c(source="entrez"))}}
   \item{host}{The host URL of the BioMart. Defaults to www.ensembl.org.}
   \item{port}{The port to use in the HTTP communication with the host.}
   \item{id_prefix}{Specifies the prefix used in BioMart attributes. For

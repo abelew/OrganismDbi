@@ -4,7 +4,7 @@
 ## new argument: columns here can be any legit value for columns. (not just
 ## tx_id and tx_name etc.)
 
-## vals will just pass through to the internal transcripts call.
+## filter will just pass through to the internal transcripts call.
 
 ## columns arg is just for b/c support and will just pass through to
 ## the internal transcripts call
@@ -164,11 +164,11 @@ setReplaceMethod("TxDb", "OrganismDb", function(x, value) .updateTxDb(x, value))
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.transcripts <- function(x, vals, columns){
+.transcripts <- function(x, columns, filter){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     ## call transcripts method (on the TxDb)
-    txs <- transcripts(txdb, vals, columns="tx_id")  
+    txs <- transcripts(txdb, columns="tx_id", filter=filter)  
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=as.character(mcols(txs)$tx_id), columns, "TXID")    
     ## assemble it all together.
@@ -178,8 +178,8 @@ setReplaceMethod("TxDb", "OrganismDb", function(x, value) .updateTxDb(x, value))
 }
 
 setMethod("transcripts", "MultiDb",
-          function(x, vals=NULL, columns=c("TXID", "TXNAME")){
-              .transcripts(x, vals, columns)} )
+          function(x, columns=c("TXID", "TXNAME"), filter=NULL){
+              .transcripts(x, columns, filter)} )
 
 
 ## test usage:
@@ -189,12 +189,12 @@ setMethod("transcripts", "MultiDb",
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.exons <- function(x, vals, columns){
+.exons <- function(x, columns, filter){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    exs <- exons(txdb, vals, columns="exon_id")
+    exs <- exons(txdb, columns="exon_id", filter=filter)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=as.character(mcols(exs)$exon_id), columns, "EXONID")
@@ -206,8 +206,8 @@ setMethod("transcripts", "MultiDb",
 }
 
 setMethod("exons", "MultiDb",
-          function(x, vals=NULL, columns="EXONID"){
-              .exons(x, vals, columns)})
+          function(x, columns="EXONID", filter=NULL){
+              .exons(x, columns, filter)})
 
 
 ## test usage:
@@ -217,12 +217,12 @@ setMethod("exons", "MultiDb",
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.cds <- function(x, vals, columns){
+.cds <- function(x, columns, filter){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    cds <- cds(txdb, vals, columns="cds_id")
+    cds <- cds(txdb, columns="cds_id", filter=filter)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=as.character(mcols(cds)$cds_id), columns, "CDSID")
@@ -234,8 +234,8 @@ setMethod("exons", "MultiDb",
 }
 
 setMethod("cds", "MultiDb",
-          function(x, vals=NULL, columns="CDSID"){
-              .cds(x, vals, columns)})
+          function(x, columns="CDSID", filter=NULL){
+              .cds(x, columns, filter)})
 
 
 ## test usage:
@@ -248,12 +248,12 @@ setMethod("cds", "MultiDb",
 
 ## How will we merge the results from select() and transcripts()?  We
 ## will join on tx_id (for transcripts)
-.genes <- function(x, vals, columns){
+.genes <- function(x, columns, filter){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
     
     ## call transcripts method (on the TxDb)
-    genes <- genes(txdb, vals, columns="gene_id")
+    genes <- genes(txdb, columns="gene_id", filter=filter)
     
     ## call select on the rest and use tx_id as keys 
     meta <- select(x, keys=as.character(mcols(genes)$gene_id), columns,
@@ -267,8 +267,8 @@ setMethod("cds", "MultiDb",
 }
 
 setMethod("genes", "MultiDb",
-          function(x, vals=NULL, columns="GENEID"){
-              .genes(x, vals, columns)})
+          function(x, columns="GENEID", filter=NULL){
+              .genes(x, columns, filter)})
 
 
 ## test usage:
