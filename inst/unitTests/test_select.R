@@ -1,6 +1,7 @@
 ## unit tests for the "meta-select"
 ## These tests are testing the software and not the indiv. packages
 ## Will base testing on humans for now
+require(RSQLite)
 require("Homo.sapiens")
 x <- Homo.sapiens
 ## debug(OrganismDbi:::.select)
