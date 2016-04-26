@@ -308,7 +308,7 @@ makeOrganismDbFromTxDb <- function(txdb, keytype=NA, orgdb=NA){
         stop("'keytype' must be a single string or NA")
     
     ## Then assign that object value to the appropriate name:
-    txdbName <- GenomicFeatures:::.makePackageName(txdb)
+    txdbName <- makePackageName(txdb)
     ## We temp assign to global scope
     ## (b/c you need it there if you 'generated' it)
     ## After we can remove it? (will be stored in the object)
@@ -330,7 +330,7 @@ makeOrganismDbFromTxDb <- function(txdb, keytype=NA, orgdb=NA){
     }
     ## get the primary key for the OrgDb object:
     if(is.na(keytype)){
-        geneKeyType <- AnnotationDbi:::.chooseCentralOrgPkgSymbol(orgdb)
+        geneKeyType <- chooseCentralOrgPkgSymbol(orgdb)
     }else{
         geneKeyType <- keytype
     }

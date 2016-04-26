@@ -1,14 +1,13 @@
 import(methods)
-
 import(BiocGenerics)
+import(AnnotationDbi)
+import(GenomicFeatures)
 import(S4Vectors)
 import(IRanges)
 
 importClassesFrom("graph", graphNEL)
 
 importClassesFrom("GenomicRanges", "GenomicRanges")
-
-importMethodsFrom("AnnotationDbi", saveDb, dbconn, dbfile)
 
 importMethodsFrom("graph", edgeNames, edges, nodes, show, subGraph,
                   union)
@@ -17,14 +16,9 @@ importMethodsFrom("RBGL", bfs)
 
 importMethodsFrom("RSQLite", dbGetQuery)
 
-importFrom("AnnotationDbi", columns, keys, keytypes, select, mapIds, metadata,
-           loadDb, unlist2, taxonomyId)
-
 importFrom("Biobase", createPackage)
 
 importFrom("BiocInstaller", biocinstallRepos)
-
-import(GenomicFeatures)
 
 importFrom("graph", ftM2graphNEL)
 

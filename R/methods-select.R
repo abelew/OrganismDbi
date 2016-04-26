@@ -62,7 +62,7 @@ setMethod("columns", "MultiDb", function(x){.cols(x)})
 }
 
 .keys <- function(x, keytype, ...){
-    AnnotationDbi:::.testForValidKeytype(x, keytype)
+    testForValidKeytype(x, keytype)
     db <- .lookupDbFromKeytype(x, keytype)
     ## And then we can just call keys...
     as.character(keys(db, keytype, ...))
@@ -301,8 +301,8 @@ setMethod("keys", "MultiDb", .keys)
     if(missing(keytype)){stop("You must provide a keytype argument")}
     ## Some more argument checking
     skipValidKeysTest <- .hasSynonymousKeys(x, keytype) 
-    AnnotationDbi:::.testSelectArgs(x, keys=keys, cols=cols, keytype=keytype,
-                                    skipValidKeysTest=skipValidKeysTest)
+    testSelectArgs(x, keys=keys, cols=cols, keytype=keytype,
+                   skipValidKeysTest=skipValidKeysTest)
     ## if asked for what they have, just return that.
     if(all(cols %in% keytype)  && length(cols)==1L){
         res <- data.frame(keys=keys)
@@ -340,15 +340,11 @@ setMethod("keys", "MultiDb", .keys)
     
     ## Then call code to clean up, reorder the rows (and add NA rows as needed).
     if(nrow(res) > 0L){
-        res <- AnnotationDbi:::.resort(tab=res, keys=keys,
-                                       jointype=keytype,
-                                       reqCols=colnames(res))
+        res <- resort_base(res, keys, keytype, colnames(res))
     }
 #    unique(res) ## NO! We don't want to do this.
     res
 }
-
-
 
 setMethod("select", "MultiDb",
           function(x, keys, columns, keytype, ...){
@@ -357,9 +353,7 @@ setMethod("select", "MultiDb",
           }
 )
 
-
 ##TODO: .mergeSelectResults is leaving incorrect labels on things:  Clean this up!
-
 
 ## methods for easy DB access:
 .dbconn <- function(x){
@@ -381,23 +375,10 @@ setMethod("dbfile", "MultiDb", function(x){.dbfile(x)})
 
 ## mapIds
 ## Standard methods:
-.mapIds <- function(x, keys, column, keytype, ..., multiVals){
-    AnnotationDbi:::.testForValidKeytype(x, keytype)
-    ## Do it this way (INSTEAD of calling the method) - this is deliberate!
-    ## because 'x' needs to use a select method that can actually work
-    ## for composite objects for argument 'x', and this will not
-    ## happen if you use the method (which is defined in
-    ## AnnotationDbi)
-    ## In case you are wondering how this works: the function in
-    ## AnnotationDbi calls a select method (and there is such a method
-    ## defined for MultiDb objects)
-    AnnotationDbi:::.mapIds(x, keys, column, keytype, ...,
-                    multiVals=multiVals)
-}
-
 setMethod("mapIds", "MultiDb",
-          function(x,keys,column,keytype,...,multiVals){
-              .mapIds(x,keys,column,keytype,...,multiVals=multiVals)})
+          function(x,keys,column,keytype,...,multiVals)
+              mapIds_base(x,keys,column,keytype,...,multiVals=multiVals)
+)
 
 ## library(Homo.sapiens); debug(OrganismDbi:::.mapIds);
 

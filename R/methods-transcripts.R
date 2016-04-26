@@ -56,7 +56,7 @@ setMethod("TxDb", "OrganismDb", function(x, ...){.getTxDb(x)})
     ## 1st get the current TxDbs name
     txDbName <- OrganismDbi:::.lookupDbNameFromKeytype(x, 'TXID')
     ## we will use a generated name for internals when user does this.
-    newTxDbName <- GenomicFeatures:::.makePackageName(value)
+    newTxDbName <- makePackageName(value)
     
     ## To modify the TxDb value rebuild the MultiDb
     ## 1) Extract/modify the keys/graphData
@@ -300,17 +300,16 @@ setMethod("genes", "MultiDb",
 .transcriptsBy <- function(x, by, columns, use.names, outerMcols){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
-    ## call transcriptsBy with use.names set to FALSE
-    txby <- transcriptsBy(txdb, by=by, use.names=FALSE)
+    txby <- transcriptsBy(txdb, by=by, use.names=use.names)
 
     if(length(columns) >= 1){ 
         ## get the tx_ids from the transcripts
         ## AND I need to one from the internal slot.
         gr <- txby@unlistData
         k  <- as.character(mcols(gr)$tx_id)
-    
+ 
         ## call select on the rest and use tx_id as keys 
-        meta <- select(x, keys=k, columns, "TXID")    
+        meta <- select(x, keys=k, columns, "TXID") 
         ## assemble it all together.
         mcols(gr) <- .combineMetadata(gr, meta, avoidID="TXID",
                                       joinID="tx_id", columns=columns) 
@@ -327,21 +326,8 @@ setMethod("genes", "MultiDb",
             mcols(txby) <- metaC
         }
     }
-    ## then put the names back (if available)
-    if(use.names==TRUE){
-        txby <- GenomicFeatures:::.set_group_names(txby, use.names, txdb, by)
-        ## names <- id2name(txdb, feature.type='tx')
-        ## names(txby) <- names[match(names(txby), names(names))]  
-    }
     txby
 }
-
-## library(Homo.sapiens);transcriptsBy(Homo.sapiens, by='exon', use.names=TRUE)
-
-## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH')); txm = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'), outerMcols=TRUE)
-## Then this can work too:
-## library(Homo.sapiens); tx = transcriptsBy(Homo.sapiens, columns=c('SYMBOL','PATH'))
-## Added outerMcols argument because the extra lookup adds an additional half a second for some things...
 
 setMethod("transcriptsBy", "MultiDb",
           function(x, by="gene", columns=character(), use.names=FALSE,
@@ -353,21 +339,10 @@ setMethod("transcriptsBy", "MultiDb",
                              outerMcols=outerMcols)})
 
 
-
-## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
-## transcriptsBy(h, by="gene", columns)
-
-
-
-
-
-
-
 .exonsBy <- function(x, by, columns, use.names, outerMcols){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
-    ## call transcriptsBy with use.names set to FALSE
-    exby <- exonsBy(txdb, by=by, use.names=FALSE)
+    exby <- exonsBy(txdb, by=by, use.names=use.names)
 
     if(length(columns) >= 1){ 
         ## get the tx_ids from the transcripts
@@ -393,12 +368,6 @@ setMethod("transcriptsBy", "MultiDb",
             mcols(exby) <- metaC
         }
     }
-    ## then put the names back (if available)
-    if(use.names==TRUE){
-        exby <- GenomicFeatures:::.set_group_names(exby, use.names, txdb, by)
-        ## names <- id2name(txdb, feature.type='exon')
-        ## names(exby) <- names[match(names(exby), names(names))]
-    }
     exby
 }
 
@@ -411,29 +380,19 @@ setMethod("exonsBy", "MultiDb",
               .exonsBy(x, by, columns, use.names=use.names,
                        outerMcols=outerMcols)})
 
-
-
-## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
-## exonsBy(h, by="tx", columns)
-
-## library(Homo.sapiens); ex = exonsBy(Homo.sapiens, columns=c('SYMBOL','PATH')); exm = exonsBy(Homo.sapiens, columns=c('SYMBOL','PATH'), outerMcols=TRUE)
-
-
-
 .cdsBy <- function(x, by, columns, use.names, outerMcols){
     ## 1st get the TxDb object.
     txdb <- .getTxDb(x)
-    ## call transcriptsBy with use.names set to FALSE
-    cdsby <- cdsBy(txdb, by=by, use.names=FALSE)
+    cdsby <- cdsBy(txdb, by=by, use.names=use.names)
 
     if(length(columns) >= 1){ 
         ## get the tx_ids from the transcripts
         ## AND I need to one from the internal slot.
         gr <- cdsby@unlistData
         k  <- as.character(mcols(gr)$cds_id)
-        
+ 
         ## call select on the rest and use tx_id as keys 
-        meta <- select(x, keys=k, columns, "CDSID")    
+        meta <- select(x, keys=k, columns, "CDSID") 
         ## assemble it all together.
         mcols(gr) <- .combineMetadata(gr, meta, avoidID="CDSID",
                                       joinID="cds_id", columns=columns) 
@@ -450,12 +409,6 @@ setMethod("exonsBy", "MultiDb",
             mcols(cdsby) <- metaC
         }
     }
-    ## then put the names back (if available)
-    if(use.names==TRUE){
-        cdsby <- GenomicFeatures:::.set_group_names(cdsby, use.names, txdb, by)
-        ## names <- id2name(txdb, feature.type='cds')
-        ## names(cdsby) <- names[match(names(cdsby), names(names))]
-    }
     cdsby
 }
 
@@ -467,16 +420,6 @@ setMethod("cdsBy", "MultiDb",
                   stop("You must provide a valid argument for by")}
               .cdsBy(x, by, columns, use.names=use.names,
                      outerMcols=outerMcols)})
-
-
-
-## library(Homo.sapiens);h=Homo.sapiens;by="gene";columns = c("GENENAME","SYMBOL")
-## cdsBy(h, by="tx", columns)
-
-## library(Homo.sapiens); cd = exonsBy(Homo.sapiens, columns=c('SYMBOL','PATH')); cdm = exonsBy(Homo.sapiens, columns=c('SYMBOL','PATH'), outerMcols=TRUE)
-
-
-
 
 ## TODO: (known issues)
 ## 1) columns don't come back in same order that the went in
