@@ -1,12 +1,34 @@
- 	**************************************************
-	*						 *
-	*	        1.10.x SERIES NEWS		 *
-	*						 *
-	**************************************************
+CHANGES IN VERSION 1.14.0
+------------------------
+
+MODIFICATIONS
+
+    o replace www.biomart.org with www.ensembl.org
+
+    o import 'mcols', 'mcols<-' from S4Vectors
+
+    o follow name change for GenomicFeatures:::.set_group_names()
+
+    o add biomaRt, rtracklayer to 'Suggests'; used in unit tests/man pages
+
+    o elementLengths was renamed -> elementNROWS in S4Vectors
+
+    o replace require() with requireNamespace()
+
+    o adjustments in response to the 'vals' -> 'filter' renaming 
+      in GenomicFeatures
+
+    o update unit tests to reflect new PFAM data
+
+    o load RSQLite in unit tests; no longer free from 
+      AnnotationDbi::dbFileConnect
+
+    o use newly exported functions from AnnotationDbi related to select() 
+      and building annotation packages
 
 
-		OrganismDbi VERSION 1.10.x
-
+CHANGES IN VERSION 1.10.0
+------------------------
 
 NEW FEATURES
 
@@ -17,46 +39,31 @@ NEW FEATURES
 
     o Exports getTxDbIfAvailable() for those who may want convenient access to 
     the underlying TxDb object.
-        
+ 
 BUG FIXES
 
     o use.names arguments now work with exonsBy and related methods.
 
 
- 	**************************************************
-	*						 *
-	*	        1.6.x SERIES NEWS		 *
-	*						 *
-	**************************************************
-
-
-		OrganismDbi VERSION 1.6.x
-
+CHANGES IN VERSION 1.4.0
+------------------------
 
 NEW FEATURES
 
     o genes method now works on these objects
-        
+ 
 BUG FIXES
 
     o safer argument handling for 'by' arguments on accessors that use it.
 
 
- 	**************************************************
-	*						 *
-	*	        1.4.x SERIES NEWS		 *
-	*						 *
-	**************************************************
-
-
-		OrganismDbi VERSION 1.4.x
-
+CHANGES IN VERSION 1.4.0
+------------------------
 
 NEW FEATURES
 
     o keys method now has new arguments to allow for more
     sophisticated filtering.
-    
 
 BUG FIXES
 
@@ -65,20 +72,13 @@ BUG FIXES
     o stricter argument checking for select and friends
 
 
- 	**************************************************
-	*						 *
-	*	        1.2.x SERIES NEWS		 *
-	*						 *
-	**************************************************
-
-
-		OrganismDbi VERSION 1.2.x
-
+CHANGES IN VERSION 1.2.0
+------------------------
 
 NEW FEATURES
 
     o There are now range based accessors (transcripts, exons, cds)
-    that can be used to get data out of OrganismDb objects.  
+    that can be used to get data out of OrganismDb objects. 
 
     o There are now list oriented range based accesors (transcriptsBy,
     exonsBy, cdsBy) that can be used to get data out of OrganismDb
@@ -87,7 +87,6 @@ NEW FEATURES
     o All these new ranged based operations allow users to extract
     additional metadata via mcols slot in the resulting object.  The
     extra data is specified via the columns argument to these methods.
-    
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
@@ -104,30 +103,22 @@ BUG FIXES
 
 
 
- 	**************************************************
-	*						 *
-	*	        1.0.0 SERIES NEWS		 *
-	*						 *
-	**************************************************
+CHANGES IN VERSION 1.0.0
+------------------------
 
+NEW FEATURES
 
-		OrganismDbi VERSION 1.0.0
-
-
-PKG FEATURES
-
-    o	OrganismDbi is for the creation and support of a new class of
+    o OrganismDbi is for the creation and support of a new class of
     super-annotation packages
 
-    o	'Stock' OrganismDbi packages are available for human mouse and
+    o 'Stock' OrganismDbi packages are available for human mouse and
     rat with the 2.11 release of Bioconductor.
 
-    o	OrganismDbi has functionality for generating these packages.
+    o OrganismDbi has functionality for generating these packages.
 
-    o	OrganismDbi has methods that allow these packages to function.
+    o OrganismDbi has methods that allow these packages to function.
 
-    o	OrganismDbi works by combining resources from Annotation
+    o OrganismDbi works by combining resources from Annotation
     packages that implement the four methods needed for a "select"
     style interface.  The essense of this is detailed in the
     AnnotationDbi package, along with base classes etc.
-
