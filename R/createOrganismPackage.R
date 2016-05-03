@@ -22,18 +22,18 @@
       '36329'='org.Pf.plasmo.db')
 }
     
-.taxIdToOrgDb <- function(taxid){
+.taxIdToOrgDb <- function(taxid) {
     ## These are the packaged TaxIds
     packageTaxIds <- .packageTaxIds() 
-    if(taxid %in% names(packageTaxIds)){
+    if (taxid %in% names(packageTaxIds)) {
         pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
-        library(pkg, character.only = TRUE)
-        res <- get(pkg)
-    }else{
+        nmspc <- loadNamespace(pkg)
+        res <- get(pkg, nmspc)
+    } else {
         ## If we don't have a package, then lets get the taxIds and AHIds
         ## for the hub objects
-        requireNamespace("AnnotationHub")
-        ah <- AnnotationHub()
+        loadNamespace("AnnotationHub")
+        ah <- AnnotationHub::AnnotationHub()
         ah <- subset(ah, ah$rdataclass=='OrgDb') 
         mc <- mcols(ah)[,'taxonomyid', drop=FALSE]
         ## Then just get the object
@@ -48,20 +48,18 @@
 
 
 ## Need another helper to get us from taxID to the OrgDbName...
-.taxIdToOrgDbName <- function(taxid){
+.taxIdToOrgDbName <- function(taxid) {
     packageTaxIds <- .packageTaxIds() 
-    if(taxid %in% names(packageTaxIds)){
+    if (taxid %in% names(packageTaxIds)) {
         pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
-        library(pkg, character.only = TRUE)
-        obj <- get(pkg)
-        path <- dbfile(obj)
-        pathSplit <- unlist(strsplit(path, split=.Platform$file.sep))
-        res <- sub("sqlite","db", pathSplit[length(pathSplit)])
-    }else{
+        nmspc <- loadNamespace(pkg)
+        path <- dbfile(get(pkg, nmspc))
+        res <- sub("sqlite$", "db", basename(path))
+    } else {
         ## If we don't have a package, then lets get the taxIds and AHIds
         ## for the hub objects
-        requireNamespace("AnnotationHub")
-        ah <- AnnotationHub()
+        loadNamespace("AnnotationHub")
+        ah <- AnnotationHub::AnnotationHub()
         ah <- subset(ah, ah$rdataclass=='OrgDb') 
         mc <- mcols(ah)[,c('taxonomyid','title'), drop=FALSE]
         ## Then just get the object
@@ -441,13 +439,13 @@ makeOrganismDbFromBiomart <- function(biomart="ENSEMBL_MART_ENSEMBL",
 ## I need a function that will list the GTFs that end users can use to
 ## make into TxDbs (will probably not overlap perfectly with available
 ## OrgDbs)
-available.GTFsForTxDbs <- function(){
-    requireNamespace("AnnotationHub")
-    ah <-  AnnotationHub()
+available.GTFsForTxDbs <- function() {
+    loadNamespace("AnnotationHub")
+    ah <-  AnnotationHub::AnnotationHub()
     ## get OrgDb species
     aho <- subset(ah, ah$rdataclass=='OrgDb')
     oTaxids <-unique(aho$taxonomyid)
-        
+    
     ## get GTF species from ensembl
     ahg <- subset(ah, grepl('gtf.gz$',ah$sourceurl))
     ahg <- subset(ahg, ahg$dataprovider=='Ensembl')
