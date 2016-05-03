@@ -1,0 +1,87 @@
+import(methods)
+import(BiocGenerics)
+import(AnnotationDbi)
+import(GenomicFeatures)
+import(S4Vectors)
+import(IRanges)
+
+importClassesFrom("graph", graphNEL)
+
+importClassesFrom("GenomicRanges", "GenomicRanges")
+
+importMethodsFrom("graph", edgeNames, edges, nodes, show, subGraph,
+                  union)
+
+importMethodsFrom("RBGL", bfs)
+
+importMethodsFrom("RSQLite", dbGetQuery)
+
+importFrom("Biobase", createPackage)
+
+importFrom("BiocInstaller", biocinstallRepos)
+
+importFrom("graph", ftM2graphNEL)
+
+importFrom("stats", setNames)
+
+importFrom("utils", available.packages, contrib.url)
+
+exportClasses("OrganismDb")
+
+exportMethods(columns,
+              keys,
+              keytypes,
+              select,
+              mapIds,
+              transcripts,
+              exons,
+              cds,
+              genes,
+              transcriptsBy,
+              exonsBy,
+              cdsBy,
+              dbconn,
+              dbfile,
+              taxonomyId,
+              metadata,
+              seqinfo,
+              getTxDbIfAvailable,
+              TxDb, ## formal getter 
+              "TxDb<-", ## formal setter
+              
+              ## Below are methods that we are 'just wrapping' from TxDbs
+              ## transcriptsByOverlaps,
+              ## exonsByOverlaps,
+              ## cdsByOverlaps,
+              promoters,
+              disjointExons,
+              microRNAs,
+              tRNAs,
+              intronsByTranscript,
+              fiveUTRsByTranscript,
+              threeUTRsByTranscript,
+              extractUpstreamSeqs,
+              isActiveSeq ,
+              "isActiveSeq<-",
+              asBED, asGFF,
+              distance,
+              mapToTranscripts,
+              selectByRanges,
+              selectRangesById
+              )
+
+export(getTxDbIfAvailable,  ## b/c the generic is here
+       TxDb, ## formal getter 
+       "TxDb<-", ## formal setter,
+       resources,
+##       saveDb,
+       selectByRanges,
+       selectRangesById,
+       makeOrganismPackage,
+       makeOrganismDbFromTxDb,
+       makeOrganismDbFromUCSC,
+       makeOrganismDbFromBiomart)
+
+
+
+## checkUsagePackage("OrganismDbi",all=TRUE)
