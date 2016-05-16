@@ -39,7 +39,7 @@
         ## Then just get the object
         AHID <- rownames(mc[mc$taxonomyid==taxid,,drop=FALSE])
         if (!length(AHID))
-            stop("no OrgDb package for taxid ", taxid, " in AnnotationHub")
+            stop("no OrgDb package found for taxid ", taxid)
         else res <- ah[[AHID]]
     }
     res
