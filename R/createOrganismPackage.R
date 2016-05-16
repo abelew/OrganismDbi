@@ -21,7 +21,7 @@
       '7955'='org.Dr.eg.db',
       '36329'='org.Pf.plasmo.db')
 }
-    
+ 
 .taxIdToOrgDb <- function(taxid) {
     ## These are the packaged TaxIds
     packageTaxIds <- .packageTaxIds() 
@@ -38,7 +38,9 @@
         mc <- mcols(ah)[,'taxonomyid', drop=FALSE]
         ## Then just get the object
         AHID <- rownames(mc[mc$taxonomyid==taxid,,drop=FALSE])
-        res <- ah[[AHID]]
+        if (!length(AHID))
+            stop("no OrgDb package for taxid ", taxid, " in AnnotationHub")
+        else res <- ah[[AHID]]
     }
     res
 }
