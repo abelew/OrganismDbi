@@ -39,7 +39,7 @@
         ## Then just get the object
         AHID <- rownames(mc[mc$taxonomyid==taxid,,drop=FALSE])
         if (!length(AHID))
-            stop("no OrgDb package for taxid ", taxid, " in AnnotationHub")
+            stop("no OrgDb package found for taxid ", taxid)
         else res <- ah[[AHID]]
     }
     res
@@ -389,7 +389,8 @@ makeOrganismDbFromBiomart <- function(biomart="ENSEMBL_MART_ENSEMBL",
                                       host="www.ensembl.org",
                                       port=80,
                                       miRBaseBuild=NA,
-                                      keytype="ENSEMBL"){
+                                      keytype="ENSEMBL",
+                                      orgdb = NA){
 
     ## So call the function to make that TxDb
     txdb <- makeTxDbFromBiomart(biomart=biomart,
@@ -401,7 +402,7 @@ makeOrganismDbFromBiomart <- function(biomart="ENSEMBL_MART_ENSEMBL",
                                 host=host,
                                 port=port,
                                 miRBaseBuild=miRBaseBuild)
-    makeOrganismDbFromTxDb(txdb, keytype=keytype)
+    makeOrganismDbFromTxDb(txdb, keytype=keytype, orgdb=orgdb)
 }
 
 ## PROBLEM: OrganismDbi:::.extractDbFiles(gd, deps) requires (strictly) that all objects be available as files somewhere (no exceptions allowed)

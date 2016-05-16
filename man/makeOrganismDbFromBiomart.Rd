@@ -21,7 +21,8 @@ makeOrganismDbFromBiomart(biomart="ENSEMBL_MART_ENSEMBL",
                     host="www.ensembl.org",
                     port=80,
                     miRBaseBuild=NA,
-                    keytype = "ENSEMBL")
+                    keytype = "ENSEMBL",
+                    orgdb = NA)
 
 }
 \arguments{
@@ -64,6 +65,10 @@ makeOrganismDbFromBiomart(biomart="ENSEMBL_MART_ENSEMBL",
     By default it is "ENSEMBL" since the GENEID's for most biomaRt based
     TxDbs will be ensembl gene ids and therefore they will need to map
     to ENSEMBL gene mappings from the associated OrgDb object.}
+  \item{orgdb}{By default, \code{makeOrganismDbFromBiomart} will use the
+    taxonomyID from your txdb to lookup an appropriate matching
+    \code{OrgDb} object but using this you can supply a different
+    \code{OrgDb} object.}
 }
 
 \details{
