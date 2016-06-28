@@ -21,10 +21,10 @@
       '7955'='org.Dr.eg.db',
       '36329'='org.Pf.plasmo.db')
 }
- 
+
 .taxIdToOrgDb <- function(taxid) {
     ## These are the packaged TaxIds
-    packageTaxIds <- .packageTaxIds() 
+    packageTaxIds <- .packageTaxIds()
     if (taxid %in% names(packageTaxIds)) {
         pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
         nmspc <- loadNamespace(pkg)
@@ -34,13 +34,21 @@
         ## for the hub objects
         loadNamespace("AnnotationHub")
         ah <- AnnotationHub::AnnotationHub()
-        ah <- subset(ah, ah$rdataclass=='OrgDb') 
+        ah <- subset(ah, ah$rdataclass=='OrgDb')
         mc <- mcols(ah)[,'taxonomyid', drop=FALSE]
         ## Then just get the object
         AHID <- rownames(mc[mc$taxonomyid==taxid,,drop=FALSE])
-        if (!length(AHID))
+        if (!length(AHID)) {
             stop("no OrgDb package found for taxid ", taxid)
-        else res <- ah[[AHID]]
+        } else if (length(AHID) > 1) {
+            ## This extra if() statement is in response to an attempt to use
+            ## OrganismDbi::makeORganismDbFromBiomart(biomart="metazoa_mart", host="metazoa.ensembl.org", dataset="iscapularis_eg_gene")
+            ## Attempting to do so returns an error because more than one AHID gets returned as well as more than one orgdbname.
+            message("There is more than one AHID for this taxon: ", toString(AHID), "; arbitrarily taking the first.")
+            res <- ah[[ AHID[[1]] ]]
+        } else {
+            res <- ah[[AHID]]
+        }
     }
     res
 }
@@ -51,7 +59,7 @@
 
 ## Need another helper to get us from taxID to the OrgDbName...
 .taxIdToOrgDbName <- function(taxid) {
-    packageTaxIds <- .packageTaxIds() 
+    packageTaxIds <- .packageTaxIds()
     if (taxid %in% names(packageTaxIds)) {
         pkg <- packageTaxIds[names(packageTaxIds) %in% taxid]
         nmspc <- loadNamespace(pkg)
@@ -62,11 +70,11 @@
         ## for the hub objects
         loadNamespace("AnnotationHub")
         ah <- AnnotationHub::AnnotationHub()
-        ah <- subset(ah, ah$rdataclass=='OrgDb') 
+        ah <- subset(ah, ah$rdataclass=='OrgDb')
         mc <- mcols(ah)[,c('taxonomyid','title'), drop=FALSE]
         ## Then just get the object
         data <- mc[mc$taxonomyid==taxid,,drop=FALSE]
-        res <- sub("sqlite","db", data$title) 
+        res <- sub("sqlite","db", data$title)
     }
     res
 }
@@ -110,8 +118,8 @@
   pkgs <- unlist(lapply(names(fkeys), get))
   res <- logical(length(pkgs))
   for(i in seq_len(length(pkgs))){
-    res[i] <- fkeys[i] %in% columns(pkgs[[i]]) 
-  }  
+    res[i] <- fkeys[i] %in% columns(pkgs[[i]])
+  }
   if(!all(res))
     stop("some foreign keys are not present in their associated databases")
 }
@@ -156,9 +164,9 @@ makeOrganismPackage <- function(pkgname,
    ## Filter dependencies to make sure they are really package names
    biocPkgNames <- .biocAnnPackages()
    deps <- allDeps[allDeps %in% biocPkgNames]
-   depsStr <- paste(deps,collapse=", ")   
+   depsStr <- paste(deps,collapse=", ")
    ## We need to define some symbols in order to have the
-   ## template filled out correctly. 
+   ## template filled out correctly.
    symvals <- list(
     PKGTITLE=paste("Annotation package for the",pkgname,"object"),
     PKGDESCRIPTION=paste("Contains the",pkgname,"object",
@@ -166,7 +174,7 @@ makeOrganismPackage <- function(pkgname,
     PKGVERSION=version,
     AUTHOR=author,
     MAINTAINER=maintainer,
-    LIC=license,        
+    LIC=license,
     ORGANISM=organism,
     ORGANISMBIOCVIEW=gsub(" ","_",organism),
     PKGNAME=pkgname,
@@ -178,8 +186,8 @@ makeOrganismPackage <- function(pkgname,
 ## pkgs <- unique(names(.extractPkgsAndCols(gd)))
 ## for (pkg in pkgs)
 ##     .initPkg(pkg)
-   
-   ## ######################################################################### 
+
+   ## #########################################################################
    ## Extract the dbFile information from each object and store that
    ## into resources
 
@@ -189,15 +197,15 @@ makeOrganismPackage <- function(pkgname,
    ## TODO: change this so that it isn't getting a bunch of dbFiles
    ## and then throwing them aways (or so that it's optional with a
    ## parameter or whatever seems appropriate for this function)
-   
+
    resources <- .extractDbFiles(gd, deps)
    resources <- unlist(lapply(resources, function(x){return("")}))
-   ## ######################################################################### 
-   
+   ## #########################################################################
+
    ## Also check that the fkeys are really columns for the graphData
    fkeys <- .extractPkgsAndCols(gd)
    .testKeys(fkeys)
-   
+
    ## Should never have duplicates
    if (any(duplicated(names(symvals))))
        stop("'symvals' contains duplicated symbols")
@@ -220,7 +228,7 @@ makeOrganismPackage <- function(pkgname,
    graphInfo <- list(graphData=graphData, resources=resources)
    ## create data dir (because R CMD build removes empty dirs)
    ## And then save the data there.
-   dir.create(file.path(destDir,pkgname,"data"))   
+   dir.create(file.path(destDir,pkgname,"data"))
    save(graphInfo, file=file.path(destDir,pkgname,"data","graphInfo.rda"))
 
    ## Get and other things that need to be saved and stash them into
@@ -306,22 +314,29 @@ makeOrganismDbFromTxDb <- function(txdb, keytype=NA, orgdb=NA){
               "'orgdb' must be an OrgDb object or NA")
     if (!isSingleStringOrNA(keytype))
         stop("'keytype' must be a single string or NA")
-    
+
     ## Then assign that object value to the appropriate name:
     txdbName <- makePackageName(txdb)
     ## We temp assign to global scope
     ## (b/c you need it there if you 'generated' it)
     ## After we can remove it? (will be stored in the object)
-    assign(txdbName, txdb, .GlobalEnv)  
+    assign(txdbName, txdb, .GlobalEnv)
     ## Then get the tax ID:
     taxId <- taxonomyId(txdb)
-    
+
     ## Then get the name and valued for the OrgDb object
-    if(is.na(orgdb)){
+    if(is.na(orgdb)) {
         orgdbName <- OrganismDbi:::.taxIdToOrgDbName(taxId)
+        if (length(orgdbName) > 1) {
+            ## This extra if() statement is in response to an attempt to use
+            ## OrganismDbi::makeORganismDbFromBiomart(biomart="metazoa_mart", host="metazoa.ensembl.org", dataset="iscapularis_eg_gene")
+            ## Attempting to do so returns an error because more than one orgdbName gets returned and causes the following graphData() to fail.
+            message(paste0("Multiple orgDbs returned: ", toString(orgdbName), "; arbitrarily using the first."))
+            orgdbName <- orgdbName[[1]]
+        }
         orgdb <- OrganismDbi:::.taxIdToOrgDb(taxId)
         assign(orgdbName, orgdb, .GlobalEnv)
-    }else{
+    } else {
         org <- metadata(orgdb)[metadata(orgdb)$name=='ORGANISM',2]
         org <- sub(" ", "_", org)
         orgdbName <- paste0('org.',org,'.db')
@@ -334,23 +349,23 @@ makeOrganismDbFromTxDb <- function(txdb, keytype=NA, orgdb=NA){
     }else{
         geneKeyType <- keytype
     }
-       
+
     graphData <- list(join1 = setNames(object=c('GOID', 'GO'),
                                        nm=c('GO.db', orgdbName)),
                       join2 = setNames(object=c(geneKeyType, 'GENEID'),
                                        nm=c(orgdbName, txdbName)))
-    
+
     ## get the organism
     organism <- organism(txdb)
 
     #############################################################
     ## Process and then test the graph Data
     gd <- OrganismDbi:::.mungeGraphData(graphData)
-    OrganismDbi:::.testGraphData(gd)    
+    OrganismDbi:::.testGraphData(gd)
     allDeps <- unique(as.vector(gd[,1:2]))
     biocPkgNames <- OrganismDbi:::.biocAnnPackages()
     deps <- allDeps[allDeps %in% biocPkgNames]
-    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)    
+    resources <- OrganismDbi:::.gentlyExtractDbFiles(gd, deps)
     ## Check that the fkeys are really columns for the graphData
     fkeys <- OrganismDbi:::.extractPkgsAndCols(gd)
     OrganismDbi:::.testKeys(fkeys)
@@ -408,27 +423,6 @@ makeOrganismDbFromBiomart <- function(biomart="ENSEMBL_MART_ENSEMBL",
 ## PROBLEM: OrganismDbi:::.extractDbFiles(gd, deps) requires (strictly) that all objects be available as files somewhere (no exceptions allowed)
 ## This means that when I get to this stage, with biomaRt, it fails because there is not a TxDb on disc...
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
 ################################################################################
 
@@ -448,7 +442,7 @@ available.GTFsForTxDbs <- function() {
     ## get OrgDb species
     aho <- subset(ah, ah$rdataclass=='OrgDb')
     oTaxids <-unique(aho$taxonomyid)
-    
+
     ## get GTF species from ensembl
     ahg <- subset(ah, grepl('gtf.gz$',ah$sourceurl))
     ahg <- subset(ahg, ahg$dataprovider=='Ensembl')
@@ -456,7 +450,7 @@ available.GTFsForTxDbs <- function() {
     maxStr <- paste0("ftp://ftp.ensembl.org/pub/release-",max)
     ahg <- subset(ahg, grepl(maxStr,ahg$sourceurl))
     gTaxids <-unique(ahg$taxonomyid)
-    
+
     ## intersect of taxIds
     taxInt <- intersect(oTaxids, gTaxids)
     ## subset down to just the ahgs that can work...
@@ -480,9 +474,9 @@ makeHubGTFIntoTxDb <- function(ahg){
                                     taxonomyId=ahg$taxonomyid)
         require(OrganismDbi)
         ## requires using the 'ENSEMBL' keytype (for these TxDbs)
-        ## odb <- makeOrganismDbFromTxDb(txdb, keytype='ENSEMBL')        
-        odb <- makeOrganismDbFromTxDb(txdb)        
-    }else{
+        ## odb <- makeOrganismDbFromTxDb(txdb, keytype='ENSEMBL')
+        odb <- makeOrganismDbFromTxDb(txdb)
+    } else{
         stop('No OrgDb information for ', ahg$species)
     }
     odb
@@ -522,5 +516,3 @@ makeHubGTFIntoTxDb <- function(ahg){
 ## could benefit from a universal application of that metadata to the
 ## contents that come out of these cars...  Then it would be
 ## straightforward to write a method like I wanted to here.
-
-
